@@ -831,10 +831,17 @@ def cmd_dispatch(args):
         print(json.dumps({"dispatch": selected, "delegate_task_prompt": dispatch_prompt(selected)}, ensure_ascii=False, indent=2))
         return
     if args.dispatch_action == "consume":
-        if not items:
-            print("NO_DISPATCH")
-            return
-        consume_dispatch(root, items[0], args.actor or "orchestrator", args.executor_command, args.executor_timeout, args.loop_timeout, args.force, args.allow_no_executor)
+        if args.path:
+            path = Path(args.path)
+            if not path.is_absolute():
+                path = root / path
+            selected = parse_dispatch_artifact(path)
+        else:
+            if not items:
+                print("NO_DISPATCH")
+                return
+            selected = items[0]
+        consume_dispatch(root, selected, args.actor or "orchestrator", args.executor_command, args.executor_timeout, args.loop_timeout, args.force, args.allow_no_executor)
         return
     if not args.path:
         raise SystemExit("--path is required for claim/complete/cancel")

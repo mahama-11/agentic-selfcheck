@@ -1,0 +1,42 @@
+id: selfcheck-v-requirement-integration
+project: v-ecommerce-worktree
+description: "Integrate /root/work/v requirement delivery with Agentic SelfCheck gates: requirement contracts, event trigger, bounded loop, dispatch repair, rerun, and verified final evidence."
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - frontend-runtime
+target_services:
+  frontend: ecommerce-frontend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - frontend-typecheck
+    - frontend-build
+  api:
+    - api-readiness-smoke
+  browser:
+    - browser-login-surface-smoke
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - New business requirements must define or update feature acceptance before final implementation acceptance.
+  - SelfCheck failure dispatch must be handled by assigned owner roles; verifier must not silently self-fix product code.
+  - Authenticated Product Detail AI Pipeline E2E requires real runtime/browser/API evidence before claiming full PASS.
+evidence_required:
+  - docs/v-requirement-selfcheck-integration.md
+  - scripts/v-requirement-gate.sh
+  - events/changed-v-ecommerce-requirement.yaml
+  - .hermes/workflows/selfcheck-v-requirement-integration/01-requirement.md
+  - .hermes/workflows/selfcheck-v-requirement-integration/02-architecture-review.md
+  - .hermes/workflows/selfcheck-v-requirement-integration/04-developer-summary.md
+  - .hermes/workflows/selfcheck-v-requirement-integration/05-spec-review-report.md
+  - .hermes/workflows/selfcheck-v-requirement-integration/06-quality-review-report.md
+  - .hermes/workflows/selfcheck-v-requirement-integration/07-qa-report.md
+  - .hermes/workflows/selfcheck-v-requirement-integration/08-final-verification.md

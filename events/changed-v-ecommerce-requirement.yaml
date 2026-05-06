@@ -1,0 +1,19 @@
+id: changed-v-ecommerce-requirement
+# Requirement landing event for Agent Ecommerce work in /root/work/v or its isolated worktree.
+event: requirement.changed.v.ecommerce-product-ai-pipeline
+description: Gate Agent Ecommerce requirement implementation through SelfCheck after code/docs changes.
+feature: ecommerce-product-ai-pipeline
+groups:
+  - static
+  - api
+  - browser
+  - evidence
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 30
