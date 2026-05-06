@@ -1,0 +1,9 @@
+id: browser-login-surface-smoke
+kind: browser
+description: Verify a live frontend login/public surface renders in a real headless browser and emits screenshot/DOM artifacts; does not imply authenticated feature E2E.
+command: "scripts/project_browser_smoke.sh {project.id} {feature.id}"
+requires: [running_frontend]
+evidence:
+  - screenshot
+  - dom_snapshot
+  - surface_assertions

@@ -2,6 +2,12 @@
 set -euo pipefail
 PROJECT_ID="${1:?project id required}"
 FEATURE_ID="${2:?feature id required}"
-echo "api-smoke placeholder: project=${PROJECT_ID} feature=${FEATURE_ID}"
-echo "Wire a project-specific smoke implementation before marking API verifier PASS."
-exit 2
+case "${PROJECT_ID}:${FEATURE_ID}" in
+  v-ecommerce-worktree:ecommerce-product-ai-pipeline|v-ecommerce-worktree:selfcheck-runtime-loops)
+    python3 scripts/ecommerce_api_smoke.py --project "$PROJECT_ID" --feature "$FEATURE_ID"
+    ;;
+  *)
+    echo "No API smoke harness registered for project=${PROJECT_ID} feature=${FEATURE_ID}" >&2
+    exit 2
+    ;;
+esac

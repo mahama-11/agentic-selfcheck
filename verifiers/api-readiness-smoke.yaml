@@ -1,0 +1,9 @@
+id: api-readiness-smoke
+kind: api
+description: Verify live project services required by a feature are reachable; does not imply authenticated business-path acceptance.
+command: "scripts/project_api_smoke.sh {project.id} {feature.id}"
+requires: [running_backend, running_frontend]
+evidence:
+  - health_status
+  - readiness_status
+  - public_boundary_status

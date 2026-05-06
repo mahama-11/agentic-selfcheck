@@ -20,7 +20,7 @@ reviewer_gates:
   - qa
   - final-verification
 human_required:
-  - Approve when to wire non-static API/browser harnesses.
+  - Approve when to replace readiness/browser-surface smoke with authenticated full business-path smoke.
   - Approve whether generated reports are sufficient for CI publication.
 evidence_required:
   - reports/ecommerce-product-ai-pipeline/frontend-typecheck.json

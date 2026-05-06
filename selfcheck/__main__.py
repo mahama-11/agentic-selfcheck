@@ -23,7 +23,7 @@ KINDS = {
     "loop": ("loops", "schemas/loop.schema.json"),
 }
 
-SAFE_EXECUTABLE_KINDS = {"static", "unit", "evidence"}
+SAFE_EXECUTABLE_KINDS = {"static", "unit", "evidence", "api", "browser"}
 
 
 @dataclass
@@ -235,6 +235,22 @@ def write_report(root: Path, feature_id: str, verifier_id: str, report: dict[str
     return p
 
 
+def resolve_harness_command(root: Path, command: str) -> tuple[list[str], Path]:
+    argv = shlex.split(command)
+    if not argv:
+        raise ValueError("harness command is empty")
+    script = Path(argv[0])
+    if script.is_absolute() or ".." in script.parts:
+        raise ValueError(f"unsafe harness path: {script}")
+    script_path = (root / script).resolve()
+    scripts_root = (root / "scripts").resolve()
+    if scripts_root not in [script_path, *script_path.parents]:
+        raise ValueError(f"harness escapes scripts directory: {script_path}")
+    if not script_path.exists():
+        raise ValueError(f"harness not found: {script_path}")
+    return [str(script_path), *argv[1:]], root
+
+
 def run_verifier(root: Path, feature: dict[str, Any], verifier: dict[str, Any], timeout: int) -> dict[str, Any]:
     cwd, argv, command, resolved = resolve_service_command(root, feature, verifier)
     started = time.time()
@@ -257,9 +273,13 @@ def run_verifier(root: Path, feature: dict[str, Any], verifier: dict[str, Any], 
         if argv is not None and cwd is not None:
             proc = subprocess.run(argv, cwd=cwd, capture_output=True, text=True, timeout=timeout)
         else:
-            if verifier["kind"] != "evidence" or not command.startswith("python3 -m selfcheck audit "):
+            if verifier["kind"] == "evidence" and command.startswith("python3 -m selfcheck audit "):
+                proc = subprocess.run(shlex.split(command), cwd=root, capture_output=True, text=True, timeout=timeout)
+            elif verifier["kind"] in {"api", "browser"}:
+                harness_argv, harness_cwd = resolve_harness_command(root, command)
+                proc = subprocess.run(harness_argv, cwd=harness_cwd, capture_output=True, text=True, timeout=timeout)
+            else:
                 raise ValueError("generic shell command execution is disabled; use service_command or a dedicated harness")
-            proc = subprocess.run(shlex.split(command), cwd=root, capture_output=True, text=True, timeout=timeout)
         report.update({
             "status": "PASS" if proc.returncode == 0 else "FAIL",
             "exit_code": proc.returncode,
@@ -366,4 +386,3 @@ def main(argv=None):
 
 if __name__ == "__main__":
     main()
-

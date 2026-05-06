@@ -1,0 +1,42 @@
+id: selfcheck-runtime-loops
+project: v-ecommerce-worktree
+description: "Wire API/browser smoke harnesses and local loop/hook gates for Agentic SelfCheck L3.5."
+level_target: L3.5
+depends_on:
+  - frontend-runtime
+  - ai-generation
+  - review-gates
+target_services:
+  frontend: ecommerce-frontend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - frontend-typecheck
+    - frontend-build
+  api:
+    - api-readiness-smoke
+  browser:
+    - browser-login-surface-smoke
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Approve promotion from login-surface browser smoke to authenticated generated-asset business E2E.
+  - Approve attaching CI/GitHub PR hooks to enforce this outside local repo.
+evidence_required:
+  - reports/ecommerce-product-ai-pipeline/frontend-typecheck.json
+  - reports/ecommerce-product-ai-pipeline/frontend-build.json
+  - reports/ecommerce-product-ai-pipeline/api-readiness-smoke.json
+  - reports/ecommerce-product-ai-pipeline/browser-login-surface-smoke.json
+  - .hermes/workflows/selfcheck-runtime-loops/01-requirement.md
+  - .hermes/workflows/selfcheck-runtime-loops/02-architecture-review.md
+  - .hermes/workflows/selfcheck-runtime-loops/04-developer-summary.md
+  - .hermes/workflows/selfcheck-runtime-loops/05-spec-review-report.md
+  - .hermes/workflows/selfcheck-runtime-loops/06-quality-review-report.md
+  - .hermes/workflows/selfcheck-runtime-loops/07-qa-report.md
+  - .hermes/workflows/selfcheck-runtime-loops/08-final-verification.md

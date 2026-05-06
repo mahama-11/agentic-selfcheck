@@ -21,7 +21,7 @@ Results:
 Guard checks:
 ```bash
 python3 -m selfcheck run --root . --feature ecommerce-product-ai-pipeline --groups api --timeout 10
-# SKIPPED api-smoke; treated as nonzero unless --allow-skipped is explicit.
+# API verifier executes a readiness harness; missing harnesses are treated as nonzero unless --allow-skipped is explicit.
 
 python3 -m selfcheck audit --root . --feature ecommerce-product-ai-pipeline --strict-missing
 # Missing required workflow evidence is ERROR/nonzero.

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+python3 -m selfcheck validate --root .
+# Keep commit hook cheap and non-destructive. Runtime/static verifiers are enforced by pre-final gate or CI loop.

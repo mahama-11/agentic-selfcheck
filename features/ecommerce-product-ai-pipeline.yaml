@@ -14,9 +14,9 @@ must_pass:
     - frontend-typecheck
     - frontend-build
   api:
-    - api-smoke
+    - api-readiness-smoke
   browser:
-    - browser-smoke
+    - browser-login-surface-smoke
   evidence:
     - evidence-gate
 reviewer_gates:
@@ -32,6 +32,8 @@ human_required:
 evidence_required:
   - reports/ecommerce-product-ai-pipeline/frontend-typecheck.json
   - reports/ecommerce-product-ai-pipeline/frontend-build.json
+  - reports/ecommerce-product-ai-pipeline/api-readiness-smoke.json
+  - reports/ecommerce-product-ai-pipeline/browser-login-surface-smoke.json
   - .hermes/workflows/ecommerce-product-ai-pipeline/01-requirement.md
   - .hermes/workflows/ecommerce-product-ai-pipeline/02-architecture-review.md
   - .hermes/workflows/ecommerce-product-ai-pipeline/05-spec-review-report.md
