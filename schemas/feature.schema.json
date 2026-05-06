@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FeatureAcceptance",
+  "type": "object",
+  "required": ["id", "project", "depends_on", "must_pass", "human_required"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "project": {"type": "string"},
+    "description": {"type": "string"},
+    "level_target": {"enum": ["L2", "L3", "L3.5", "L4"]},
+    "depends_on": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "must_pass": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"type": "array", "items": {"type": "string"}}
+    },
+    "reviewer_gates": {"type": "array", "items": {"enum": ["architect", "spec-review", "quality-review", "qa", "final-verification"]}},
+    "human_required": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "evidence_required": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

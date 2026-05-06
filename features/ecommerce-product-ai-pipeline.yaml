@@ -1,0 +1,35 @@
+id: ecommerce-product-ai-pipeline
+project: v-workspace
+description: "First validation sample: Agent Ecommerce product detail AI pipeline user path."
+level_target: L3.5
+depends_on:
+  - frontend-runtime
+  - ai-generation
+  - review-gates
+must_pass:
+  static:
+    - frontend-typecheck
+    - frontend-build
+  api:
+    - api-smoke
+  browser:
+    - browser-smoke
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - AI Pipeline page information architecture is understandable to a target user.
+  - Generated image/listing quality is acceptable for the product promise.
+  - Release readiness and business tradeoffs are approved by the product owner.
+evidence_required:
+  - .hermes/workflows/ecommerce-product-ai-pipeline/01-requirement.md
+  - .hermes/workflows/ecommerce-product-ai-pipeline/02-architecture-review.md
+  - .hermes/workflows/ecommerce-product-ai-pipeline/05-spec-review-report.md
+  - .hermes/workflows/ecommerce-product-ai-pipeline/06-quality-review-report.md
+  - .hermes/workflows/ecommerce-product-ai-pipeline/07-qa-report.md
+  - .hermes/workflows/ecommerce-product-ai-pipeline/08-final-verification.md

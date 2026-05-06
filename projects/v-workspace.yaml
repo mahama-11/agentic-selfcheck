@@ -1,0 +1,32 @@
+id: v-workspace
+description: /root/work/v multi-product workspace validation adapter. This is the first proving ground, not a hard dependency of Agentic SelfCheck.
+root: /root/work/v
+services:
+  ecommerce-backend:
+    path: ecommerce-backend
+    kind: go-backend
+    health: http://127.0.0.1:8396/healthz
+    ready: http://127.0.0.1:8396/readyz
+    commands:
+      test: go test ./...
+  ecommerce-frontend:
+    path: ecommerce-frontend
+    kind: vite-react-frontend
+    dev: pnpm run dev -- --host 0.0.0.0 --port 5181
+    commands:
+      typecheck: pnpm exec tsc --noEmit
+      build: pnpm run build
+  platform-backend:
+    path: platform-backend
+    kind: go-backend
+    health: http://127.0.0.1:8195/healthz
+environment:
+  preferred_backend_ports:
+    platform: 8195
+    ecommerce: 8396
+  preferred_frontend_ports:
+    platform: 5173
+    ecommerce: 5181
+notes:
+  - Read /root/work/v/AGENTS.md before project-specific changes.
+  - /root/work/v is multi-repo; subprojects have separate git histories.

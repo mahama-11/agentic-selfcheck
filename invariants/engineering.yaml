@@ -1,0 +1,20 @@
+id: engineering
+scope: project-agnostic
+description: Cross-project engineering invariants for AI-assisted development.
+invariants:
+  - id: runtime-proof-for-user-facing-change
+    statement: User-facing workflows require runtime evidence, not static checks only.
+    severity: must
+    applies_to: [frontend, backend, fullstack]
+  - id: no-self-approval
+    statement: The role that implements a non-trivial change must not be the final approver of that change.
+    severity: must
+    applies_to: [workflow, review]
+  - id: evidence-before-done
+    statement: A feature cannot be marked done until required evidence files or command outputs are recorded.
+    severity: must
+    applies_to: [workflow, ci]
+  - id: explicit-human-boundaries
+    statement: Product direction, release decisions, and high-risk tradeoffs must be explicitly marked as human-required decisions.
+    severity: must
+    applies_to: [product, release]

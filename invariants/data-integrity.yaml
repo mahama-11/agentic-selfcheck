@@ -1,0 +1,16 @@
+id: data-integrity
+scope: project-agnostic
+description: Durable data and contract invariants.
+invariants:
+  - id: traceable-generated-output
+    statement: Generated outputs must preserve lineage to their inputs, prompts, jobs, and owning business entity when applicable.
+    severity: must
+    applies_to: [ai-generation, asset-management]
+  - id: idempotent-external-callback
+    statement: External or async callbacks must be idempotent and replay-safe.
+    severity: must
+    applies_to: [runtime, callback]
+  - id: immutable-adopted-user-visible-version
+    statement: Adopted user-visible versions must not be silently overwritten.
+    severity: must
+    applies_to: [versioning, listing, document]

@@ -1,0 +1,14 @@
+id: ai-generation
+description: AI generation capability contract reusable across projects.
+contracts:
+  - Generation jobs preserve request identity, prompt identity when supplied, source assets, and owning entity.
+  - Billable generation actions must be quota-checked or explicitly marked as non-billable test actions.
+  - Result callbacks archive generated assets with replay-safe idempotency.
+  - User-visible generated outputs require runtime or browser evidence.
+verifiers:
+  - api-smoke
+  - browser-smoke
+  - evidence-gate
+human_boundaries:
+  - generated output business quality
+  - brand and product fit

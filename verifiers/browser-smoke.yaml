@@ -1,0 +1,10 @@
+id: browser-smoke
+kind: browser
+description: Execute browser or Playwright smoke for a user-visible feature path.
+command: "scripts/project_browser_smoke.sh {project.id} {feature.id}"
+requires: [running_frontend, running_backend, seeded_data]
+evidence:
+  - screenshot
+  - console_log
+  - network_failures
+  - path_assertions

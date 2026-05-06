@@ -1,0 +1,15 @@
+id: workflow-health
+trigger: every 2h or before final report
+description: Detect missing role handoffs, stale evidence, unbound verifier references, and features without human boundaries.
+allowed_actions:
+  - validate governance files
+  - generate audit report
+  - notify orchestrator/user of missing gates
+  - create non-destructive TODOs
+forbidden_actions:
+  - mark a feature done without evidence
+  - approve release decisions
+  - delete workflow evidence
+escalation:
+  - missing final-verification blocks DONE
+  - missing runtime/browser evidence downgrades PASS to PARTIAL_PASS

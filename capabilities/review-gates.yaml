@@ -1,0 +1,13 @@
+id: review-gates
+description: Independent review gate contract.
+contracts:
+  - Non-trivial changes require separated implementer, spec reviewer, quality reviewer, QA, and final verifier roles.
+  - "Reviewer conclusions must be explicit: APPROVE, REQUEST_CHANGES, or BLOCK."
+  - "QA conclusions must be explicit: PASS, PASS_WITH_NOTES, PARTIAL_PASS, FAIL, or BLOCKED."
+  - Final verification must cite concrete evidence rather than self-report.
+verifiers:
+  - workflow-health
+  - evidence-gate
+human_boundaries:
+  - scope tradeoff acceptance
+  - release approval

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Verifier",
+  "type": "object",
+  "required": ["id", "kind", "description"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "kind": {"enum": ["static", "unit", "api", "runtime", "browser", "review", "evidence"]},
+    "description": {"type": "string"},
+    "command": {"type": "string"},
+    "requires": {"type": "array", "items": {"type": "string"}},
+    "evidence": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

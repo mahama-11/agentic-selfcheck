@@ -1,0 +1,9 @@
+id: frontend-typecheck
+kind: static
+description: Run the frontend TypeScript typecheck for the affected project adapter service.
+command: "cd {project.root}/{service.path} && {service.commands.typecheck}"
+requires: [project, service]
+evidence:
+  - command
+  - exit_code
+  - stdout_tail

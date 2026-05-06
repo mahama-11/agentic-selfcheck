@@ -1,0 +1,9 @@
+id: frontend-build
+kind: static
+description: Build the affected frontend bundle.
+command: "cd {project.root}/{service.path} && {service.commands.build}"
+requires: [project, service]
+evidence:
+  - command
+  - exit_code
+  - artifact_summary

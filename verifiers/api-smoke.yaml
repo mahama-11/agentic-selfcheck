@@ -1,0 +1,9 @@
+id: api-smoke
+kind: api
+description: Execute feature-specific API smoke checks against a running service.
+command: "scripts/project_api_smoke.sh {project.id} {feature.id}"
+requires: [running_backend, feature_fixture]
+evidence:
+  - request_response_log
+  - status_codes
+  - idempotency_result

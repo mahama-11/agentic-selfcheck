@@ -1,0 +1,7 @@
+id: workflow-health
+kind: review
+description: Check workflow folders for missing role handoffs, stale acceptance specs, and unbound verifiers.
+command: "python3 -m selfcheck audit --root ."
+requires: [governance_files]
+evidence:
+  - audit_report

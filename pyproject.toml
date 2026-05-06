@@ -1,0 +1,9 @@
+[project]
+name = "agentic-selfcheck"
+version = "0.1.0"
+description = "Project-agnostic autonomy and acceptance control plane for AI-assisted software engineering"
+requires-python = ">=3.11"
+dependencies = ["PyYAML", "jsonschema"]
+
+[project.scripts]
+selfcheck = "selfcheck.__main__:main"

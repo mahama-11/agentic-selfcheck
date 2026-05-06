@@ -1,0 +1,16 @@
+id: ci-repair
+trigger: failed static/unit/build verifier or CI webhook
+description: Diagnose bounded build/test failures, propose or execute repair in an isolated branch/worktree, then rerun the failed verifier.
+allowed_actions:
+  - read logs
+  - identify failing verifier
+  - patch implementation in isolated worktree after assignment
+  - rerun failed verifier
+  - request independent review after changes
+forbidden_actions:
+  - redefine acceptance to make failure pass
+  - bypass tests
+  - merge or release without reviewer/QA gates
+escalation:
+  - escalate after two failed repair attempts
+  - escalate when fix requires product tradeoff

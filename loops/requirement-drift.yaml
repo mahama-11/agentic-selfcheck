@@ -1,0 +1,14 @@
+id: requirement-drift
+trigger: new requirement, changed acceptance file, or V2/V3 scope expansion
+description: Compare new requirements against invariants and capability contracts; require explicit extension instead of replacing old checklists.
+allowed_actions:
+  - diff acceptance specs
+  - identify affected capabilities
+  - flag invariant conflicts
+  - draft new feature acceptance
+forbidden_actions:
+  - treat V1 checklist as universal truth
+  - silently weaken existing must-pass gates
+escalation:
+  - invariant conflict requires architect and product-owner decision
+  - backward compatibility break requires human approval

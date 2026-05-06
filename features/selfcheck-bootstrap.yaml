@@ -1,0 +1,28 @@
+id: selfcheck-bootstrap
+project: v-workspace
+description: "Bootstrap Agentic SelfCheck governance control plane v0."
+level_target: L3.5
+depends_on:
+  - review-gates
+must_pass:
+  static:
+    - workflow-health
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Accept v0 scope as governance bootstrap rather than full CI replacement.
+  - Approve when to enable non-dry-run verifier execution.
+evidence_required:
+  - .hermes/workflows/selfcheck-bootstrap/01-requirement.md
+  - .hermes/workflows/selfcheck-bootstrap/02-architecture-review.md
+  - .hermes/workflows/selfcheck-bootstrap/04-developer-summary.md
+  - .hermes/workflows/selfcheck-bootstrap/05-spec-review-report.md
+  - .hermes/workflows/selfcheck-bootstrap/06-quality-review-report.md
+  - .hermes/workflows/selfcheck-bootstrap/07-qa-report.md
+  - .hermes/workflows/selfcheck-bootstrap/08-final-verification.md

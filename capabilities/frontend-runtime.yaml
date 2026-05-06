@@ -1,0 +1,16 @@
+id: frontend-runtime
+description: Frontend user workflow runtime capability.
+contracts:
+  - Frontend builds and typechecks before runtime acceptance.
+  - User-facing critical paths are exercised in a real browser or Playwright-equivalent harness.
+  - Browser console and failed network requests are captured as evidence.
+  - Visible product copy and UX fit remain human-reviewable boundaries.
+verifiers:
+  - frontend-typecheck
+  - frontend-build
+  - browser-smoke
+  - evidence-gate
+human_boundaries:
+  - UX clarity
+  - copy quality
+  - visual product fit

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Loop",
+  "type": "object",
+  "required": ["id", "trigger", "description", "allowed_actions", "escalation"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "trigger": {"type": "string"},
+    "description": {"type": "string"},
+    "allowed_actions": {"type": "array", "items": {"type": "string"}},
+    "forbidden_actions": {"type": "array", "items": {"type": "string"}},
+    "escalation": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

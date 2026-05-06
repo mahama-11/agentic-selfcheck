@@ -1,0 +1,9 @@
+id: evidence-gate
+kind: evidence
+description: Verify required workflow evidence files exist and are not stale.
+command: "python3 -m selfcheck audit --root . --feature {feature.id}"
+requires: [workflow_folder]
+evidence:
+  - missing_files
+  - stale_files
+  - gate_status
