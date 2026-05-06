@@ -1,5 +1,6 @@
 reports/
 .hermes/dispatch/
+.hermes/dispatch-runs/
 __pycache__/
 *.pyc
 .venv/

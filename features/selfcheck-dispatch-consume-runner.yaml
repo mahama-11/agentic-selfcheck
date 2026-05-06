@@ -1,0 +1,41 @@
+id: selfcheck-dispatch-consume-runner
+project: v-ecommerce-worktree
+description: "One-shot dispatch consumption runner: claim dispatch, invoke explicit owner executor, rerun SelfCheck, and complete only with verified PASS/PASS_WITH_NOTES evidence."
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - frontend-runtime
+target_services:
+  frontend: ecommerce-frontend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - frontend-typecheck
+    - frontend-build
+  api:
+    - api-readiness-smoke
+  browser:
+    - browser-login-surface-smoke
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - External executor command must be explicitly supplied; SelfCheck must not silently self-fix.
+  - Completion must be based on SelfCheck rerun evidence, not executor self-report.
+evidence_required:
+  - docs/dispatch-consume-runner.md
+  - docs/dispatch-runner.md
+  - scripts/test_dispatch_executor.py
+  - .hermes/workflows/selfcheck-dispatch-consume-runner/01-requirement.md
+  - .hermes/workflows/selfcheck-dispatch-consume-runner/02-architecture-review.md
+  - .hermes/workflows/selfcheck-dispatch-consume-runner/04-developer-summary.md
+  - .hermes/workflows/selfcheck-dispatch-consume-runner/05-spec-review-report.md
+  - .hermes/workflows/selfcheck-dispatch-consume-runner/06-quality-review-report.md
+  - .hermes/workflows/selfcheck-dispatch-consume-runner/07-qa-report.md
+  - .hermes/workflows/selfcheck-dispatch-consume-runner/08-final-verification.md

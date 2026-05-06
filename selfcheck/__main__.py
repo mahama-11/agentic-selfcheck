@@ -707,6 +707,115 @@ def write_dispatch_meta(item: dict[str, Any], updates: dict[str, Any]) -> Path:
     return meta_path
 
 
+
+def safe_path_segment(value: Any, fallback: str = "unknown") -> str:
+    text = str(value or fallback)
+    safe = re.sub(r"[^A-Za-z0-9_.-]+", "-", text).strip(".-")
+    return safe or fallback
+
+
+def dispatch_runs_dir(root: Path, feature: str) -> Path:
+    d = root / ".hermes" / "dispatch-runs" / safe_path_segment(feature, "feature")
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def run_external_executor(root: Path, item: dict[str, Any], prompt_path: Path, executor_command: str | None, timeout: int) -> dict[str, Any]:
+    if not executor_command:
+        return {"status": "SKIPPED", "reason": "no executor command supplied"}
+    argv = shlex.split(executor_command)
+    if not argv:
+        raise SystemExit("--executor-command resolved to empty argv")
+    env = os.environ.copy()
+    env.update({
+        "SELFCHECK_ROOT": str(root),
+        "SELFCHECK_DISPATCH_PATH": item["path"],
+        "SELFCHECK_FEATURE": item["feature"],
+        "SELFCHECK_OWNER": item["owner"],
+        "SELFCHECK_PROMPT_FILE": str(prompt_path),
+    })
+    started = time.time()
+    try:
+        proc = subprocess.run(argv, cwd=root, env=env, text=True, capture_output=True, timeout=timeout)
+        return {
+            "status": "PASS" if proc.returncode == 0 else "FAIL",
+            "argv": argv,
+            "exit_code": proc.returncode,
+            "duration_seconds": round(time.time() - started, 3),
+            "stdout_tail": proc.stdout[-4000:],
+            "stderr_tail": proc.stderr[-4000:],
+        }
+    except Exception as e:
+        return {
+            "status": "FAIL",
+            "argv": argv,
+            "exit_code": None,
+            "duration_seconds": round(time.time() - started, 3),
+            "error_type": type(e).__name__,
+            "error": str(e),
+        }
+
+
+def consume_dispatch(root: Path, item: dict[str, Any], actor: str, executor_command: str | None, timeout: int, loop_timeout: int, force: bool = False, allow_no_executor: bool = False) -> dict[str, Any]:
+    if not executor_command and not allow_no_executor:
+        raise SystemExit("--executor-command is required for consume unless --allow-no-executor is set")
+    run_id = f"{time.time_ns()}-{os.getpid()}-{safe_path_segment(item['owner'], 'owner')}-{safe_path_segment(Path(item['path']).stem, 'dispatch')}"
+    run_dir = dispatch_runs_dir(root, item["feature"]) / run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+    prompt = dispatch_prompt(item)
+    prompt_path = run_dir / "delegate_task_prompt.md"
+    prompt_path.write_text(prompt, encoding="utf-8")
+    if item["state"] not in {"OPEN", "CLAIMED"} and not force:
+        raise SystemExit(f"cannot consume dispatch in state {item['state']} without --force")
+    claimed = parse_dispatch_artifact(Path(item["path"]))
+    if claimed["state"] == "OPEN":
+        write_dispatch_meta(claimed, {"state": "CLAIMED", "claimed_by": actor, "claimed_at_epoch": time.time(), "consume_run_id": run_id})
+        claimed = parse_dispatch_artifact(Path(item["path"]))
+    if claimed["state"] != "CLAIMED" and not force:
+        raise SystemExit(f"cannot consume dispatch after refresh in state {claimed['state']} without --force")
+    executor_result = run_external_executor(root, claimed, prompt_path, executor_command, timeout)
+    if executor_result["status"] == "FAIL":
+        report = {"status": "EXECUTOR_FAIL", "dispatch": claimed, "prompt_path": str(prompt_path), "executor": executor_result}
+        (run_dir / "consume-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+        raise SystemExit(4)
+    groups = sorted({str(f.get("group")) for f in claimed.get("failed_checks", []) if f.get("group")})
+    if not groups:
+        raise SystemExit("dispatch contains no affected groups; refusing unverifiable consume")
+    # Rerun through SelfCheck itself; this is the verification boundary after owner/executor work.
+    loop_args = argparse.Namespace(root=str(root), feature=claimed["feature"], groups=",".join(groups), timeout=loop_timeout, allow_skipped=False, strict_audit=True, reset_state=False, inject_failure=None)
+    loop_status = "PASS"
+    loop_exit = 0
+    try:
+        cmd_loop(loop_args)
+    except SystemExit as e:
+        loop_exit = int(e.code) if isinstance(e.code, int) else 1
+        loop_status = "FAIL"
+    latest = root / "reports" / "loops" / claimed["feature"] / "latest.json"
+    verified_status = None
+    if latest.exists():
+        verified_status = json.loads(latest.read_text(encoding="utf-8")).get("status")
+    pass_like = loop_exit == 0 and verified_status in {"PASS", "PASS_WITH_NOTES"}
+    if pass_like:
+        write_dispatch_meta(parse_dispatch_artifact(Path(claimed["path"])), {"state": "COMPLETED", "completed_by": actor, "completed_at_epoch": time.time(), "result": "consume runner verified fix", "verified_report": str(latest.relative_to(root)), "verified_status": verified_status, "consume_run_id": run_id})
+    report = {
+        "status": "COMPLETED" if pass_like else "VERIFY_FAIL",
+        "dispatch": parse_dispatch_artifact(Path(claimed["path"])),
+        "prompt_path": str(prompt_path),
+        "executor": executor_result,
+        "rerun_groups": groups,
+        "loop_exit": loop_exit,
+        "verified_report": str(latest),
+        "verified_status": verified_status,
+    }
+    report_path = run_dir / "consume-report.json"
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    if not pass_like:
+        print(f"VERIFY_FAIL: {claimed['path']} -> {report_path}")
+        raise SystemExit(5)
+    print(f"CONSUMED: {claimed['path']} -> {report_path}")
+    return report
+
+
 def cmd_dispatch(args):
     root = Path(args.root)
     items = iter_dispatch_artifacts(root, args.feature, args.owner, include_closed=args.include_closed)
@@ -720,6 +829,12 @@ def cmd_dispatch(args):
             return
         selected = items[0]
         print(json.dumps({"dispatch": selected, "delegate_task_prompt": dispatch_prompt(selected)}, ensure_ascii=False, indent=2))
+        return
+    if args.dispatch_action == "consume":
+        if not items:
+            print("NO_DISPATCH")
+            return
+        consume_dispatch(root, items[0], args.actor or "orchestrator", args.executor_command, args.executor_timeout, args.loop_timeout, args.force, args.allow_no_executor)
         return
     if not args.path:
         raise SystemExit("--path is required for claim/complete/cancel")
@@ -915,7 +1030,7 @@ def main(argv=None):
             p.add_argument("--payload-file")
             p.add_argument("--source", help="event source, e.g. local, git-hook, ci-webhook, hermes-webhook, cron")
         if name == "dispatch":
-            p.add_argument("dispatch_action", choices=["list", "plan", "claim", "complete", "cancel"])
+            p.add_argument("dispatch_action", choices=["list", "plan", "claim", "complete", "cancel", "consume"])
             p.add_argument("--feature")
             p.add_argument("--owner")
             p.add_argument("--path")
@@ -924,6 +1039,10 @@ def main(argv=None):
             p.add_argument("--include-closed", action="store_true")
             p.add_argument("--verified-report", help="loop report proving the fix before completing dispatch")
             p.add_argument("--force", action="store_true")
+            p.add_argument("--executor-command", help="opt-in external owner executor command; run without shell with prompt/env vars")
+            p.add_argument("--executor-timeout", type=int, default=600)
+            p.add_argument("--loop-timeout", type=int, default=300)
+            p.add_argument("--allow-no-executor", action="store_true", help="test-only: allow consume to verify without owner executor")
         if name == "audit":
             p.add_argument("--strict-missing", action="store_true")
         if name in {"run", "trigger"}:
