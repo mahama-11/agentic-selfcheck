@@ -1,4 +1,5 @@
 reports/
+.hermes/dispatch/
 __pycache__/
 *.pyc
 .venv/

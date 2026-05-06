@@ -2,6 +2,7 @@ id: selfcheck-event-callbacks
 project: v-ecommerce-worktree
 description: "Promote SelfCheck from blind loop-first automation to event-callback-first routing with watchdog fallback."
 level_target: L3.5
+repair_policy: default-repair-policy
 depends_on:
   - review-gates
   - frontend-runtime

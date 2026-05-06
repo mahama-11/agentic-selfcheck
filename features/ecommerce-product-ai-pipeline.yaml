@@ -2,6 +2,7 @@ id: ecommerce-product-ai-pipeline
 project: v-ecommerce-worktree
 description: "First validation sample: Agent Ecommerce product detail AI pipeline user path."
 level_target: L3.5
+repair_policy: default-repair-policy
 depends_on:
   - frontend-runtime
   - ai-generation

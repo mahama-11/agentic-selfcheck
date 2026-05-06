@@ -8,6 +8,7 @@
     "project": {"type": "string"},
     "description": {"type": "string"},
     "level_target": {"enum": ["L2", "L3", "L3.5", "L4"]},
+    "repair_policy": {"type": "string"},
     "depends_on": {"type": "array", "minItems": 1, "items": {"type": "string"}},
     "target_services": {
       "type": "object",
@@ -16,7 +17,7 @@
     "must_pass": {
       "type": "object",
       "minProperties": 1,
-      "additionalProperties": {"type": "array", "items": {"type": "string"}}
+      "additionalProperties": {"type": "array", "minItems": 1, "items": {"type": "string"}}
     },
     "reviewer_gates": {"type": "array", "items": {"enum": ["architect", "spec-review", "quality-review", "qa", "final-verification"]}},
     "human_required": {"type": "array", "minItems": 1, "items": {"type": "string"}},

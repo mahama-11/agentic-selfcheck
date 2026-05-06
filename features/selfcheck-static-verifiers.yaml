@@ -2,6 +2,7 @@ id: selfcheck-static-verifiers
 project: v-ecommerce-worktree
 description: "Execute safe static verifiers through project adapters and emit evidence reports."
 level_target: L3.5
+repair_policy: default-repair-policy
 depends_on:
   - frontend-runtime
   - review-gates

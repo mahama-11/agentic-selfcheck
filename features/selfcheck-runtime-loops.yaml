@@ -2,6 +2,7 @@ id: selfcheck-runtime-loops
 project: v-ecommerce-worktree
 description: "Wire API/browser smoke harnesses and local loop/hook gates for Agentic SelfCheck L3.5."
 level_target: L3.5
+repair_policy: default-repair-policy
 depends_on:
   - frontend-runtime
   - ai-generation

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RepairPolicy",
+  "type": "object",
+  "required": ["id", "max_attempts", "same_failure_limit", "owners", "terminal_statuses", "escalation"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "description": {"type": "string"},
+    "max_attempts": {"type": "integer", "minimum": 1, "maximum": 10},
+    "same_failure_limit": {"type": "integer", "minimum": 1, "maximum": 5},
+    "owners": {
+      "type": "object",
+      "additionalProperties": {"enum": ["developer", "architect", "spec-reviewer", "quality-reviewer", "qa", "orchestrator", "human"]}
+    },
+    "review_after_fix": {"type": "array", "items": {"enum": ["spec-reviewer", "quality-reviewer", "qa", "final-verifier"]}},
+    "terminal_statuses": {"type": "array", "minItems": 1, "items": {"enum": ["PASS", "PASS_WITH_NOTES", "BLOCKED", "ESCALATE"]}},
+    "escalation": {"type": "array", "items": {"type": "string"}},
+    "forbidden_actions": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

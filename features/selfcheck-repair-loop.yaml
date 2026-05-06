@@ -1,0 +1,41 @@
+id: selfcheck-repair-loop
+project: v-ecommerce-worktree
+description: "Bounded repair loop: SelfCheck classifies failed verifiers, dispatches owner assignments, reruns gates after fixes, and stops on PASS/BLOCKED."
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - frontend-runtime
+target_services:
+  frontend: ecommerce-frontend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - frontend-typecheck
+    - frontend-build
+  api:
+    - api-readiness-smoke
+  browser:
+    - browser-login-surface-smoke
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - SelfCheck must not patch implementation code while acting as verifier/control-plane.
+  - Attempts exhausted, repeated failures, product tradeoffs, secrets, permissions, and safety boundaries require human or explicit owner escalation.
+evidence_required:
+  - docs/repair-loop.md
+  - repair-policies/default-repair-policy.yaml
+  - reports/loops/ecommerce-product-ai-pipeline/latest.json
+  - .hermes/workflows/selfcheck-repair-loop/01-requirement.md
+  - .hermes/workflows/selfcheck-repair-loop/02-architecture-review.md
+  - .hermes/workflows/selfcheck-repair-loop/04-developer-summary.md
+  - .hermes/workflows/selfcheck-repair-loop/05-spec-review-report.md
+  - .hermes/workflows/selfcheck-repair-loop/06-quality-review-report.md
+  - .hermes/workflows/selfcheck-repair-loop/07-qa-report.md
+  - .hermes/workflows/selfcheck-repair-loop/08-final-verification.md

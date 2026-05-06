@@ -1,0 +1,38 @@
+id: default-repair-policy
+description: Bounded repair loop policy. SelfCheck classifies failures and dispatches owner assignments; it does not patch implementation code itself.
+max_attempts: 3
+same_failure_limit: 2
+owners:
+  static: developer
+  unit: developer
+  api: developer
+  browser: developer
+  evidence: orchestrator
+  audit: orchestrator
+  spec-review: spec-reviewer
+  quality-review: quality-reviewer
+  qa: qa
+  architecture: architect
+  human-boundary: human
+review_after_fix:
+  - spec-reviewer
+  - quality-reviewer
+  - qa
+  - final-verifier
+terminal_statuses:
+  - PASS
+  - PASS_WITH_NOTES
+  - BLOCKED
+  - ESCALATE
+forbidden_actions:
+  - SelfCheck must not patch implementation code while acting as verifier.
+  - Do not redefine acceptance or remove failing verifiers to make a run pass.
+  - Do not approve release, billing, security, data, or product tradeoffs without human decision.
+escalation:
+  - repeated_same_failure
+  - attempts_exhausted
+  - missing_secret_or_permission
+  - missing_external_service
+  - product_tradeoff_required
+  - auth_billing_data_security_boundary
+  - scope_expansion_required

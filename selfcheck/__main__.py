@@ -22,6 +22,7 @@ KINDS = {
     "verifier": ("verifiers", "schemas/verifier.schema.json"),
     "loop": ("loops", "schemas/loop.schema.json"),
     "event": ("events", "schemas/event-route.schema.json"),
+    "repair_policy": ("repair-policies", "schemas/repair-policy.schema.json"),
 }
 
 SAFE_EXECUTABLE_KINDS = {"static", "unit", "evidence", "api", "browser"}
@@ -87,6 +88,7 @@ def validate(root: Path) -> list[Issue]:
     verifier_ids = set(indexes.get("verifier", {}))
     capability_ids = set(indexes.get("capability", {}))
     project_ids = set(indexes.get("project", {}))
+    repair_policy_ids = set(indexes.get("repair_policy", {}))
 
     for cid, cap in indexes.get("capability", {}).items():
         for vid in cap.get("verifiers", []):
@@ -107,6 +109,8 @@ def validate(root: Path) -> list[Issue]:
             project = indexes.get("project", {}).get(feat["project"], {})
             if sid not in project.get("services", {}):
                 issues.append(Issue("ERROR", feat["__path"], f"feature {fid} target_services.{alias} references missing service {sid}"))
+        if feat.get("repair_policy") and feat["repair_policy"] not in repair_policy_ids:
+            issues.append(Issue("ERROR", feat["__path"], f"feature {fid} references missing repair_policy {feat['repair_policy']}"))
         if not feat.get("human_required"):
             issues.append(Issue("ERROR", feat["__path"], f"feature {fid} has no human_required boundaries"))
         if "final-verification" not in feat.get("reviewer_gates", []):
@@ -369,6 +373,227 @@ def run_feature_groups(root: Path, feature_id: str, groups: list[str], timeout: 
     return results
 
 
+def loop_dir(root: Path, feature_id: str) -> Path:
+    d = root / "reports" / "loops" / feature_id
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def load_loop_state(root: Path, feature_id: str) -> dict[str, Any]:
+    p = loop_dir(root, feature_id) / "state.json"
+    if not p.exists():
+        return {"attempts": 0, "failure_counts": {}}
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {"attempts": 0, "failure_counts": {}}
+
+
+def save_loop_state(root: Path, feature_id: str, state: dict[str, Any]) -> None:
+    (loop_dir(root, feature_id) / "state.json").write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def reset_loop_state(root: Path, feature_id: str) -> None:
+    p = loop_dir(root, feature_id) / "state.json"
+    if p.exists():
+        p.unlink()
+
+
+def load_repair_policy(root: Path, feature: dict[str, Any]) -> dict[str, Any]:
+    policies = load_index(root, "repair_policy")
+    pid = feature.get("repair_policy") or "default-repair-policy"
+    if pid not in policies:
+        raise ValueError(f"missing repair policy: {pid}")
+    return policies[pid]
+
+
+def failure_signature(failures: list[dict[str, Any]]) -> str:
+    parts = []
+    for f in failures:
+        parts.append(f"{f.get('group')}:{f.get('verifier')}:{f.get('status')}:{f.get('exit_code')}")
+    return "|".join(sorted(parts)) or "no-failure"
+
+
+def classify_failures(results: list[dict[str, Any]], policy: dict[str, Any]) -> list[dict[str, Any]]:
+    owners = policy.get("owners", {})
+    out = []
+    for r in results:
+        if r.get("ok"):
+            continue
+        group = r.get("group") or r.get("kind") or "unknown"
+        status = r.get("status")
+        text = "\n".join(str(r.get(k, "")) for k in ["error", "stderr_tail", "stdout_tail"])
+        reason = "verifier_failed"
+        owner_key = group
+        if status == "SKIPPED":
+            reason = "verifier_skipped"
+            owner_key = "evidence"
+        if "missing required evidence" in text or group == "evidence":
+            reason = "missing_evidence"
+            owner_key = "evidence"
+        if any(tok in text.lower() for tok in ["permission", "unauthorized", "forbidden", "secret", "token"]):
+            reason = "missing_secret_or_permission"
+            owner_key = "human-boundary"
+        if any(tok in text.lower() for tok in ["connection refused", "timed out", "timeout", "service unavailable"]):
+            reason = "runtime_unavailable"
+            owner_key = group
+        out.append({
+            "group": group,
+            "verifier": r.get("verifier"),
+            "status": status,
+            "exit_code": r.get("exit_code"),
+            "report_path": r.get("report_path"),
+            "reason": reason,
+            "owner": owners.get(owner_key, owners.get(group, "developer")),
+        })
+    return out
+
+
+def dispatch_dir(root: Path, feature_id: str) -> Path:
+    d = root / ".hermes" / "dispatch" / feature_id
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def write_dispatch_artifacts(root: Path, feature: dict[str, Any], policy: dict[str, Any], failures: list[dict[str, Any]], attempt: int, terminal: str) -> list[str]:
+    created = []
+    by_owner: dict[str, list[dict[str, Any]]] = {}
+    for f in failures:
+        by_owner.setdefault(f["owner"], []).append(f)
+    ts = int(time.time())
+    for owner, items in sorted(by_owner.items()):
+        md = dispatch_dir(root, feature["id"]) / f"{ts}-attempt-{attempt}-{owner}.md"
+        lines = [
+            f"# Repair Assignment: {feature['id']}",
+            "",
+            f"Owner: {owner}",
+            f"Attempt: {attempt}",
+            f"Loop status: {terminal}",
+            "",
+            "## Failed checks",
+        ]
+        for item in items:
+            lines += [
+                f"- verifier: `{item['verifier']}`",
+                f"  group: `{item['group']}`",
+                f"  status: `{item['status']}`",
+                f"  reason: `{item['reason']}`",
+                f"  evidence: `{item.get('report_path')}`",
+            ]
+        lines += [
+            "",
+            "## Required behavior",
+            "- Investigate root cause before patching.",
+            "- Do not change acceptance criteria or remove failing verifiers.",
+            "- Implement fixes only in the assigned owner role; SelfCheck remains verifier/control-plane.",
+            "- After fix, rerun:",
+            f"  `python3 -m selfcheck loop --root . --feature {feature['id']} --groups <affected-groups> --timeout 300`",
+            "",
+            "## Review after fix",
+        ]
+        for reviewer in policy.get("review_after_fix", []):
+            lines.append(f"- {reviewer}")
+        md.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        created.append(str(md))
+    return created
+
+
+def write_loop_report(root: Path, feature_id: str, report: dict[str, Any]) -> Path:
+    d = loop_dir(root, feature_id)
+    content = json.dumps(report, ensure_ascii=False, indent=2)
+    p = d / f"loop-{int(time.time())}.json"
+    p.write_text(content, encoding="utf-8")
+    (d / "latest.json").write_text(content, encoding="utf-8")
+    return p
+
+
+def cmd_loop(args):
+    root = Path(args.root)
+    validation_issues = validate(root)
+    if any(i.level == "ERROR" for i in validation_issues):
+        raise SystemExit(print_issues(validation_issues))
+    feature, planned_verifiers = feature_plan(root, args.feature)
+    policy = load_repair_policy(root, feature)
+    all_groups = set(feature.get("must_pass", {}).keys())
+    groups = [g.strip() for g in (args.groups or ",".join(sorted(all_groups))).split(",") if g.strip()]
+    if not groups:
+        raise SystemExit("--groups resolved to no verifier groups; refusing empty PASS")
+    selected_groups = set(groups)
+    if not selected_groups <= all_groups:
+        raise SystemExit(f"Unknown verifier group(s): {', '.join(sorted(selected_groups - all_groups))}")
+    selected_verifiers = [v for v in planned_verifiers if v["group"] in selected_groups]
+    if not selected_verifiers:
+        raise SystemExit("selected verifier groups contain no verifiers; refusing empty PASS")
+    full_selection = selected_groups == all_groups
+    state = load_loop_state(root, feature["id"])
+    if args.reset_state:
+        state = {"attempts": 0, "failure_counts": {}}
+    state["attempts"] = int(state.get("attempts", 0)) + 1
+    started = time.time()
+    results = run_feature_groups(root, feature["id"], groups, args.timeout, args.allow_skipped)
+    failures = classify_failures(results, policy)
+    if args.inject_failure:
+        for injected in args.inject_failure:
+            group, _, verifier = injected.partition(":")
+            failures.append({"group": group or "static", "verifier": verifier or "injected-failure", "status": "FAIL", "exit_code": 1, "report_path": None, "reason": "injected_test_failure", "owner": policy.get("owners", {}).get(group or "static", "developer")})
+    audit_issues: list[Issue] = []
+    if args.strict_audit:
+        audit_issues = audit(root, feature["id"], strict_missing=True)
+        for issue in audit_issues:
+            if issue.level == "ERROR":
+                failures.append({"group": "evidence", "verifier": "strict-audit", "status": "FAIL", "exit_code": None, "report_path": issue.path, "reason": "missing_evidence", "owner": policy.get("owners", {}).get("evidence", "orchestrator")})
+    sig = failure_signature(failures)
+    failure_counts = state.setdefault("failure_counts", {})
+    if failures:
+        failure_counts[sig] = int(failure_counts.get(sig, 0)) + 1
+    terminal = "PASS" if not failures else "NEEDS_REPAIR"
+    if not failures and (not full_selection or not args.strict_audit):
+        terminal = "PASS_WITH_NOTES"
+    escalation_reasons = []
+    if failures:
+        if int(state["attempts"]) >= int(policy["max_attempts"]):
+            escalation_reasons.append("attempts_exhausted")
+        if int(failure_counts.get(sig, 0)) >= int(policy["same_failure_limit"]):
+            escalation_reasons.append("repeated_same_failure")
+        if any(f["owner"] == "human" for f in failures):
+            escalation_reasons.append("human_boundary_required")
+        if escalation_reasons:
+            terminal = "BLOCKED"
+            escalation_owner = "human" if "human_boundary_required" in escalation_reasons else "orchestrator"
+            for f in failures:
+                f["owner"] = escalation_owner
+                f["reason"] = f"escalation:{','.join(escalation_reasons)}"
+    dispatches = [] if terminal in {"PASS", "PASS_WITH_NOTES"} else write_dispatch_artifacts(root, feature, policy, failures, int(state["attempts"]), terminal)
+    if terminal == "PASS":
+        reset_loop_state(root, feature["id"])
+    elif terminal == "PASS_WITH_NOTES":
+        save_loop_state(root, feature["id"], state)
+    else:
+        save_loop_state(root, feature["id"], state)
+    report = {
+        "feature": feature["id"],
+        "policy": policy["id"],
+        "status": terminal,
+        "attempt": int(state["attempts"]),
+        "groups": groups,
+        "duration_seconds": round(time.time() - started, 3),
+        "failures": failures,
+        "escalation_reasons": escalation_reasons,
+        "dispatches": dispatches,
+        "verifiers": [{"id": r.get("verifier"), "group": r.get("group"), "status": r.get("status"), "ok": r.get("ok"), "report_path": r.get("report_path")} for r in results],
+        "audit": [{"level": i.level, "path": i.path, "message": i.message} for i in audit_issues],
+    }
+    p = write_loop_report(root, feature["id"], report)
+    print(f"{terminal}: {feature['id']} -> {p}")
+    for d in dispatches:
+        print(f"DISPATCH: {d}")
+    if terminal in {"PASS", "PASS_WITH_NOTES"}:
+        return
+    if terminal == "BLOCKED":
+        raise SystemExit(3)
+    raise SystemExit(2)
+
+
 def event_state_path(root: Path) -> Path:
     d = root / "reports" / "events"
     d.mkdir(parents=True, exist_ok=True)
@@ -513,11 +738,11 @@ def cmd_run(args):
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="selfcheck")
     sub = ap.add_subparsers(required=True)
-    for name, fn in [("validate", cmd_validate), ("audit", cmd_audit), ("plan", cmd_plan), ("run", cmd_run), ("trigger", cmd_trigger)]:
+    for name, fn in [("validate", cmd_validate), ("audit", cmd_audit), ("plan", cmd_plan), ("run", cmd_run), ("trigger", cmd_trigger), ("loop", cmd_loop)]:
         p = sub.add_parser(name)
         p.add_argument("--root", default=".")
         p.set_defaults(func=fn)
-        if name in {"audit", "plan", "run"}:
+        if name in {"audit", "plan", "run", "loop"}:
             p.add_argument("--feature")
         if name == "trigger":
             p.add_argument("--event", required=True)
@@ -531,10 +756,17 @@ def main(argv=None):
             p.add_argument("--dry-run", action="store_true")
             p.add_argument("--timeout", type=int, default=300)
             p.add_argument("--allow-skipped", action="store_true")
+        if name == "loop":
+            p.add_argument("--groups", help="comma-separated must_pass groups to run")
+            p.add_argument("--timeout", type=int, default=300)
+            p.add_argument("--allow-skipped", action="store_true")
+            p.add_argument("--strict-audit", action="store_true")
+            p.add_argument("--reset-state", action="store_true")
+            p.add_argument("--inject-failure", action="append", help="test-only injected failure as group:verifier")
         if name == "run":
             p.add_argument("--groups", help="comma-separated must_pass groups to run, e.g. static,evidence")
     args = ap.parse_args(argv)
-    if getattr(args, "feature", None) is None and args.func in {cmd_plan, cmd_run}:
+    if getattr(args, "feature", None) is None and args.func in {cmd_plan, cmd_run, cmd_loop}:
         ap.error("--feature is required")
     args.func(args)
 
