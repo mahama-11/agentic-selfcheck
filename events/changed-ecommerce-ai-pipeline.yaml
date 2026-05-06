@@ -1,0 +1,20 @@
+id: changed-ecommerce-ai-pipeline
+event: feature.changed.ecommerce-product-ai-pipeline
+description: Run relevant gates when the Ecommerce AI Pipeline feature files or project code changes.
+feature: ecommerce-product-ai-pipeline
+groups:
+  - static
+  - api
+  - browser
+mode: event
+strict_audit: true
+debounce_seconds: 30
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+human_escalation:
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - full_business_e2e_required

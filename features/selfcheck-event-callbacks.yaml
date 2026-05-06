@@ -1,0 +1,40 @@
+id: selfcheck-event-callbacks
+project: v-ecommerce-worktree
+description: "Promote SelfCheck from blind loop-first automation to event-callback-first routing with watchdog fallback."
+level_target: L3.5
+depends_on:
+  - review-gates
+  - frontend-runtime
+target_services:
+  frontend: ecommerce-frontend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - frontend-typecheck
+    - frontend-build
+  api:
+    - api-readiness-smoke
+  browser:
+    - browser-login-surface-smoke
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Approve external webhook provider and secret management before exposing a public callback URL.
+  - Approve whether each event should auto-fix, only verify, or escalate.
+evidence_required:
+  - reports/events/feature.changed.ecommerce-product-ai-pipeline-latest.json
+  - reports/events/watchdog.every-2h-latest.json
+  - docs/event-callbacks.md
+  - .hermes/workflows/selfcheck-event-callbacks/01-requirement.md
+  - .hermes/workflows/selfcheck-event-callbacks/02-architecture-review.md
+  - .hermes/workflows/selfcheck-event-callbacks/04-developer-summary.md
+  - .hermes/workflows/selfcheck-event-callbacks/05-spec-review-report.md
+  - .hermes/workflows/selfcheck-event-callbacks/06-quality-review-report.md
+  - .hermes/workflows/selfcheck-event-callbacks/07-qa-report.md
+  - .hermes/workflows/selfcheck-event-callbacks/08-final-verification.md

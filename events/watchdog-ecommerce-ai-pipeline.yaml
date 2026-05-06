@@ -1,0 +1,17 @@
+id: watchdog-ecommerce-ai-pipeline
+event: watchdog.every-2h
+description: Watchdog fallback for missed events, stale services, or evidence drift. This is not the primary autonomy mechanism.
+feature: ecommerce-product-ai-pipeline
+groups:
+  - static
+  - api
+  - browser
+mode: watchdog
+strict_audit: true
+debounce_seconds: 0
+allowed_sources:
+  - cron
+human_escalation:
+  - repeated_watchdog_failure
+  - service_unavailable
+  - stale_or_missing_evidence

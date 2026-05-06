@@ -21,6 +21,7 @@ KINDS = {
     "feature": ("features", "schemas/feature.schema.json"),
     "verifier": ("verifiers", "schemas/verifier.schema.json"),
     "loop": ("loops", "schemas/loop.schema.json"),
+    "event": ("events", "schemas/event-route.schema.json"),
 }
 
 SAFE_EXECUTABLE_KINDS = {"static", "unit", "evidence", "api", "browser"}
@@ -110,6 +111,17 @@ def validate(root: Path) -> list[Issue]:
             issues.append(Issue("ERROR", feat["__path"], f"feature {fid} has no human_required boundaries"))
         if "final-verification" not in feat.get("reviewer_gates", []):
             issues.append(Issue("WARN", feat["__path"], f"feature {fid} lacks final-verification reviewer gate"))
+
+    feature_ids = set(indexes.get("feature", {}))
+    feature_groups = {fid: set(feat.get("must_pass", {})) for fid, feat in indexes.get("feature", {}).items()}
+    for eid, route in indexes.get("event", {}).items():
+        fid = route["feature"]
+        if fid not in feature_ids:
+            issues.append(Issue("ERROR", route["__path"], f"event route {eid} references missing feature {fid}"))
+            continue
+        missing_groups = set(route.get("groups", [])) - feature_groups.get(fid, set())
+        if missing_groups:
+            issues.append(Issue("ERROR", route["__path"], f"event route {eid} references missing feature groups: {', '.join(sorted(missing_groups))}"))
 
     return issues
 
@@ -308,6 +320,142 @@ def run_verifier(root: Path, feature: dict[str, Any], verifier: dict[str, Any], 
     return report
 
 
+def load_payload(payload: str | None, payload_file: str | None) -> dict[str, Any]:
+    if payload_file:
+        return json.loads(Path(payload_file).read_text(encoding="utf-8"))
+    if payload:
+        return json.loads(payload)
+    return {}
+
+
+def match_event_routes(root: Path, event_name: str) -> list[dict[str, Any]]:
+    routes = load_index(root, "event")
+    matched = []
+    for route in routes.values():
+        pattern = route["event"]
+        if pattern == event_name or pattern == "*" or (pattern.endswith(".*") and event_name.startswith(pattern[:-1])):
+            matched.append(route)
+    return matched
+
+
+def write_event_report(root: Path, event_name: str, report: dict[str, Any], update_latest: bool = True) -> Path:
+    safe = re.sub(r"[^a-zA-Z0-9_.-]+", "-", event_name).strip("-") or "event"
+    d = root / "reports" / "events"
+    d.mkdir(parents=True, exist_ok=True)
+    content = json.dumps(report, ensure_ascii=False, indent=2)
+    p = d / f"{safe}-{int(time.time())}.json"
+    p.write_text(content, encoding="utf-8")
+    if update_latest:
+        latest = d / f"{safe}-latest.json"
+        latest.write_text(content, encoding="utf-8")
+    return p
+
+
+def run_feature_groups(root: Path, feature_id: str, groups: list[str], timeout: int, allow_skipped: bool = False) -> list[dict[str, Any]]:
+    feature, verifiers = feature_plan(root, feature_id)
+    selected_groups = set(groups)
+    available_groups = {v["group"] for v in verifiers}
+    if not selected_groups <= available_groups:
+        raise ValueError(f"unknown verifier group(s): {', '.join(sorted(selected_groups - available_groups))}")
+    results = []
+    for v in verifiers:
+        if v["group"] not in selected_groups:
+            continue
+        report = run_verifier(root, feature, v, timeout)
+        path = write_report(root, feature["id"], v["id"], report)
+        report["report_path"] = str(path)
+        report["ok"] = report["status"] != "FAIL" and (report["status"] != "SKIPPED" or allow_skipped)
+        results.append(report)
+    return results
+
+
+def event_state_path(root: Path) -> Path:
+    d = root / "reports" / "events"
+    d.mkdir(parents=True, exist_ok=True)
+    return d / ".state.json"
+
+
+def load_event_state(root: Path) -> dict[str, Any]:
+    p = event_state_path(root)
+    if not p.exists():
+        return {}
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def save_event_state(root: Path, state: dict[str, Any]) -> None:
+    event_state_path(root).write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def cmd_trigger(args):
+    root = Path(args.root)
+    issues = validate(root)
+    if any(i.level == "ERROR" for i in issues):
+        raise SystemExit(print_issues(issues))
+    payload = load_payload(args.payload, args.payload_file)
+    source = args.source or str(payload.get("source") or "local")
+    routes = match_event_routes(root, args.event)
+    if args.route:
+        routes = [r for r in routes if r["id"] == args.route]
+    if not routes:
+        report = {"event": args.event, "source": source, "status": "NO_ROUTE", "payload_keys": sorted(payload.keys())}
+        p = write_event_report(root, args.event, report, update_latest=False)
+        print(f"NO_ROUTE: {args.event} -> {p}")
+        raise SystemExit(2)
+    failures = 0
+    skipped_only = True
+    now = time.time()
+    state = load_event_state(root)
+    event_report = {"event": args.event, "source": source, "status": "DRY_RUN" if args.dry_run else "PASS", "routes": [], "payload_keys": sorted(payload.keys())}
+    for route in routes:
+        route_report = {"route": route["id"], "feature": route["feature"], "groups": route["groups"], "mode": route["mode"]}
+        allowed_sources = set(route.get("allowed_sources", []))
+        if allowed_sources and source not in allowed_sources:
+            route_report.update({"status": "REJECTED", "reason": f"source {source} is not allowed"})
+            failures += 1
+            event_report["routes"].append(route_report)
+            print(f"REJECTED: route={route['id']} source={source}")
+            continue
+        state_key = f"{route['id']}::{args.event}"
+        debounce = int(route.get("debounce_seconds", 0) or 0)
+        last = float(state.get(state_key, 0) or 0)
+        if debounce and not args.dry_run and now - last < debounce:
+            route_report.update({"status": "DEBOUNCED", "seconds_since_last": round(now - last, 3), "debounce_seconds": debounce})
+            event_report["routes"].append(route_report)
+            print(f"DEBOUNCED: route={route['id']} event={args.event}")
+            continue
+        if args.dry_run:
+            route_report["status"] = "DRY_RUN"
+            print(f"DRY-RUN route={route['id']} feature={route['feature']} groups={','.join(route['groups'])}")
+        else:
+            skipped_only = False
+            results = run_feature_groups(root, route["feature"], route["groups"], args.timeout, args.allow_skipped)
+            route_report["verifiers"] = [{"id": r["verifier"], "status": r["status"], "report_path": r.get("report_path")} for r in results]
+            route_ok = all(r["ok"] for r in results)
+            if route.get("strict_audit"):
+                audit_issues = audit(root, route["feature"], strict_missing=True)
+                route_report["audit"] = [{"level": i.level, "path": i.path, "message": i.message} for i in audit_issues]
+                route_ok = route_ok and not any(i.level == "ERROR" for i in audit_issues)
+            route_report["status"] = "PASS" if route_ok else "FAIL"
+            if route_ok:
+                state[state_key] = now
+            else:
+                failures += 1
+            print(f"{route_report['status']}: route={route['id']} feature={route['feature']}")
+        event_report["routes"].append(route_report)
+    if failures:
+        event_report["status"] = "FAIL"
+    elif not args.dry_run and skipped_only:
+        event_report["status"] = "NOOP"
+    if not args.dry_run:
+        save_event_state(root, state)
+    p = write_event_report(root, args.event, event_report, update_latest=(not args.dry_run and (failures > 0 or not skipped_only)))
+    print(f"EVENT_REPORT: {p}")
+    if failures:
+        raise SystemExit(1)
+
 def cmd_validate(args):
     raise SystemExit(print_issues(validate(Path(args.root))))
 
@@ -365,19 +513,26 @@ def cmd_run(args):
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="selfcheck")
     sub = ap.add_subparsers(required=True)
-    for name, fn in [("validate", cmd_validate), ("audit", cmd_audit), ("plan", cmd_plan), ("run", cmd_run)]:
+    for name, fn in [("validate", cmd_validate), ("audit", cmd_audit), ("plan", cmd_plan), ("run", cmd_run), ("trigger", cmd_trigger)]:
         p = sub.add_parser(name)
         p.add_argument("--root", default=".")
         p.set_defaults(func=fn)
         if name in {"audit", "plan", "run"}:
             p.add_argument("--feature")
+        if name == "trigger":
+            p.add_argument("--event", required=True)
+            p.add_argument("--route")
+            p.add_argument("--payload")
+            p.add_argument("--payload-file")
+            p.add_argument("--source", help="event source, e.g. local, git-hook, ci-webhook, hermes-webhook, cron")
         if name == "audit":
             p.add_argument("--strict-missing", action="store_true")
-        if name == "run":
+        if name in {"run", "trigger"}:
             p.add_argument("--dry-run", action="store_true")
-            p.add_argument("--groups", help="comma-separated must_pass groups to run, e.g. static,evidence")
             p.add_argument("--timeout", type=int, default=300)
             p.add_argument("--allow-skipped", action="store_true")
+        if name == "run":
+            p.add_argument("--groups", help="comma-separated must_pass groups to run, e.g. static,evidence")
     args = ap.parse_args(argv)
     if getattr(args, "feature", None) is None and args.func in {cmd_plan, cmd_run}:
         ap.error("--feature is required")
