@@ -1,0 +1,40 @@
+id: selfcheck-dispatch-runner
+project: v-ecommerce-worktree
+description: "Consume SelfCheck repair dispatch artifacts through a claim/plan/complete lifecycle so Hermes orchestrator can delegate fixes and re-enter verification."
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - frontend-runtime
+target_services:
+  frontend: ecommerce-frontend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - frontend-typecheck
+    - frontend-build
+  api:
+    - api-readiness-smoke
+  browser:
+    - browser-login-surface-smoke
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Dispatch planner must not directly execute privileged model/tool calls from inside the CLI.
+  - Orchestrator must verify subagent self-reports before marking a dispatch complete.
+evidence_required:
+  - docs/dispatch-runner.md
+  - docs/repair-loop.md
+  - .hermes/workflows/selfcheck-dispatch-runner/01-requirement.md
+  - .hermes/workflows/selfcheck-dispatch-runner/02-architecture-review.md
+  - .hermes/workflows/selfcheck-dispatch-runner/04-developer-summary.md
+  - .hermes/workflows/selfcheck-dispatch-runner/05-spec-review-report.md
+  - .hermes/workflows/selfcheck-dispatch-runner/06-quality-review-report.md
+  - .hermes/workflows/selfcheck-dispatch-runner/07-qa-report.md
+  - .hermes/workflows/selfcheck-dispatch-runner/08-final-verification.md

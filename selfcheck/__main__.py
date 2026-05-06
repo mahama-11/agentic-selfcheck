@@ -594,6 +594,170 @@ def cmd_loop(args):
     raise SystemExit(2)
 
 
+
+def backtick_value(text: str, fallback: str) -> str:
+    parts = text.split("`")
+    return parts[1] if len(parts) >= 3 else fallback.strip()
+
+
+def parse_dispatch_artifact(path: Path) -> dict[str, Any]:
+    text = path.read_text(encoding="utf-8")
+    def grab(prefix: str) -> str | None:
+        for line in text.splitlines():
+            if line.startswith(prefix):
+                return line[len(prefix):].strip()
+        return None
+    owner = grab("Owner:") or "unknown"
+    attempt_s = grab("Attempt:") or "0"
+    status = grab("Loop status:") or "UNKNOWN"
+    title = next((line.removeprefix("# Repair Assignment:").strip() for line in text.splitlines() if line.startswith("# Repair Assignment:")), path.parent.name)
+    failed = []
+    cur: dict[str, Any] | None = None
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("- verifier:"):
+            if cur:
+                failed.append(cur)
+            cur = {"verifier": backtick_value(stripped, stripped.removeprefix("- verifier:"))}
+        elif cur is not None and stripped.startswith("group:"):
+            cur["group"] = backtick_value(stripped, stripped.removeprefix("group:"))
+        elif cur is not None and stripped.startswith("status:"):
+            cur["status"] = backtick_value(stripped, stripped.removeprefix("status:"))
+        elif cur is not None and stripped.startswith("reason:"):
+            cur["reason"] = backtick_value(stripped, stripped.removeprefix("reason:"))
+        elif cur is not None and stripped.startswith("evidence:"):
+            cur["evidence"] = backtick_value(stripped, stripped.removeprefix("evidence:"))
+    if cur:
+        failed.append(cur)
+    meta_path = path.with_suffix(path.suffix + ".json")
+    meta = {}
+    if meta_path.exists():
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        except Exception as e:
+            meta = {"state": "CORRUPT", "error": str(e)}
+    return {
+        "path": str(path),
+        "feature": title,
+        "owner": owner,
+        "attempt": int(attempt_s) if str(attempt_s).isdigit() else attempt_s,
+        "loop_status": status,
+        "failed_checks": failed,
+        "state": meta.get("state", "OPEN"),
+        "claimed_by": meta.get("claimed_by"),
+        "completed_by": meta.get("completed_by"),
+        "meta_path": str(meta_path),
+    }
+
+
+def iter_dispatch_artifacts(root: Path, feature: str | None = None, owner: str | None = None, include_closed: bool = False) -> list[dict[str, Any]]:
+    base = root / ".hermes" / "dispatch"
+    if not base.exists():
+        return []
+    paths = sorted((base / feature).glob("*.md") if feature else base.glob("*/*.md"))
+    out = []
+    for path in paths:
+        item = parse_dispatch_artifact(path)
+        if owner and item["owner"] != owner:
+            continue
+        if not include_closed and item["state"] in {"COMPLETED", "CANCELLED"}:
+            continue
+        out.append(item)
+    return out
+
+
+def dispatch_prompt(item: dict[str, Any]) -> str:
+    groups = sorted({str(f.get("group")) for f in item.get("failed_checks", []) if f.get("group")})
+    checks = "\n".join(f"- {f.get('group')} / {f.get('verifier')}: {f.get('reason')} ({f.get('evidence')})" for f in item.get("failed_checks", [])) or "- no parsed checks"
+    return f"""Role: {item['owner']}
+Feature: {item['feature']}
+Dispatch artifact: {item['path']}
+Loop status: {item['loop_status']}
+Attempt: {item['attempt']}
+
+Task:
+Investigate and fix the assigned SelfCheck failure in the correct role. Do not change acceptance criteria or remove failing verifiers. Preserve role separation: implementer fixes implementation; reviewer/QA only review/verify.
+
+Failed checks:
+{checks}
+
+After the fix, rerun:
+python3 -m selfcheck loop --root . --feature {item['feature']} --groups {','.join(groups) or '<affected-groups>'} --strict-audit --timeout 300
+
+Return:
+- files changed
+- root cause
+- fix summary
+- verification commands and results
+- remaining risks or BLOCKED reason
+"""
+
+
+def write_dispatch_meta(item: dict[str, Any], updates: dict[str, Any]) -> Path:
+    meta_path = Path(item["meta_path"])
+    meta = {}
+    if meta_path.exists():
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        except Exception:
+            meta = {}
+    meta.update(updates)
+    meta["updated_at_epoch"] = time.time()
+    meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    return meta_path
+
+
+def cmd_dispatch(args):
+    root = Path(args.root)
+    items = iter_dispatch_artifacts(root, args.feature, args.owner, include_closed=args.include_closed)
+    if args.dispatch_action == "list":
+        for item in items:
+            print(f"{item['state']} owner={item['owner']} feature={item['feature']} attempt={item['attempt']} path={item['path']}")
+        return
+    if args.dispatch_action == "plan":
+        if not items:
+            print("NO_DISPATCH")
+            return
+        selected = items[0]
+        print(json.dumps({"dispatch": selected, "delegate_task_prompt": dispatch_prompt(selected)}, ensure_ascii=False, indent=2))
+        return
+    if not args.path:
+        raise SystemExit("--path is required for claim/complete/cancel")
+    path = Path(args.path)
+    if not path.is_absolute():
+        path = root / path
+    item = parse_dispatch_artifact(path)
+    if args.dispatch_action == "claim":
+        if item["state"] in {"COMPLETED", "CANCELLED", "CORRUPT"} and not args.force:
+            raise SystemExit(f"cannot claim dispatch in state {item['state']} without --force")
+        p = write_dispatch_meta(item, {"state": "CLAIMED", "claimed_by": args.actor or item["owner"], "claimed_at_epoch": time.time()})
+        print(f"CLAIMED: {item['path']} -> {p}")
+        return
+    if args.dispatch_action == "complete":
+        if item["state"] != "CLAIMED" and not args.force:
+            raise SystemExit(f"cannot complete dispatch in state {item['state']} without --force")
+        if not args.result:
+            raise SystemExit("--result is required for complete")
+        if not args.verified_report and not args.force:
+            raise SystemExit("--verified-report is required for complete")
+        verified = None
+        if args.verified_report:
+            vp = Path(args.verified_report)
+            if not vp.is_absolute():
+                vp = root / vp
+            verified = json.loads(vp.read_text(encoding="utf-8"))
+            if verified.get("status") not in {"PASS", "PASS_WITH_NOTES"} and not args.force:
+                raise SystemExit(f"verified report status is not pass-like: {verified.get('status')}")
+        p = write_dispatch_meta(item, {"state": "COMPLETED", "completed_by": args.actor or item["owner"], "completed_at_epoch": time.time(), "result": args.result, "verified_report": args.verified_report, "verified_status": verified.get("status") if isinstance(verified, dict) else None})
+        print(f"COMPLETED: {item['path']} -> {p}")
+        return
+    if args.dispatch_action == "cancel":
+        p = write_dispatch_meta(item, {"state": "CANCELLED", "completed_by": args.actor or "orchestrator", "completed_at_epoch": time.time(), "result": args.result or "cancelled"})
+        print(f"CANCELLED: {item['path']} -> {p}")
+        return
+    raise SystemExit(f"unknown dispatch action: {args.dispatch_action}")
+
+
 def event_state_path(root: Path) -> Path:
     d = root / "reports" / "events"
     d.mkdir(parents=True, exist_ok=True)
@@ -738,7 +902,7 @@ def cmd_run(args):
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="selfcheck")
     sub = ap.add_subparsers(required=True)
-    for name, fn in [("validate", cmd_validate), ("audit", cmd_audit), ("plan", cmd_plan), ("run", cmd_run), ("trigger", cmd_trigger), ("loop", cmd_loop)]:
+    for name, fn in [("validate", cmd_validate), ("audit", cmd_audit), ("plan", cmd_plan), ("run", cmd_run), ("trigger", cmd_trigger), ("loop", cmd_loop), ("dispatch", cmd_dispatch)]:
         p = sub.add_parser(name)
         p.add_argument("--root", default=".")
         p.set_defaults(func=fn)
@@ -750,6 +914,16 @@ def main(argv=None):
             p.add_argument("--payload")
             p.add_argument("--payload-file")
             p.add_argument("--source", help="event source, e.g. local, git-hook, ci-webhook, hermes-webhook, cron")
+        if name == "dispatch":
+            p.add_argument("dispatch_action", choices=["list", "plan", "claim", "complete", "cancel"])
+            p.add_argument("--feature")
+            p.add_argument("--owner")
+            p.add_argument("--path")
+            p.add_argument("--actor")
+            p.add_argument("--result")
+            p.add_argument("--include-closed", action="store_true")
+            p.add_argument("--verified-report", help="loop report proving the fix before completing dispatch")
+            p.add_argument("--force", action="store_true")
         if name == "audit":
             p.add_argument("--strict-missing", action="store_true")
         if name in {"run", "trigger"}:
