@@ -9,6 +9,10 @@
     "description": {"type": "string"},
     "level_target": {"enum": ["L2", "L3", "L3.5", "L4"]},
     "depends_on": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "target_services": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
     "must_pass": {
       "type": "object",
       "minProperties": 1,

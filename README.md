@@ -40,6 +40,7 @@ cd /root/work/agentic-selfcheck
 python3 -m selfcheck validate --root .
 python3 -m selfcheck plan --root . --feature ecommerce-product-ai-pipeline
 python3 -m selfcheck run --root . --feature ecommerce-product-ai-pipeline --dry-run
+python3 -m selfcheck run --root . --feature ecommerce-product-ai-pipeline --groups static
 python3 -m selfcheck audit --root .
 ```
 
@@ -50,6 +51,7 @@ python3 -m selfcheck audit --root .
 - Every capability references existing verifier IDs.
 - Human decision boundaries are explicit.
 - Verifier commands can be planned and dry-run listed without being project-specific.
+- Safe static verifiers can be executed through project adapters and emit JSON evidence under `reports/<feature>/`.
 - Workflow-health audit can flag missing/stale evidence.
 
 ## Non-goals for v0

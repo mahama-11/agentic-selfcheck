@@ -1,0 +1,34 @@
+id: selfcheck-static-verifiers
+project: v-ecommerce-worktree
+description: "Execute safe static verifiers through project adapters and emit evidence reports."
+level_target: L3.5
+depends_on:
+  - frontend-runtime
+  - review-gates
+target_services:
+  frontend: ecommerce-frontend
+must_pass:
+  static:
+    - frontend-typecheck
+    - frontend-build
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Approve when to wire non-static API/browser harnesses.
+  - Approve whether generated reports are sufficient for CI publication.
+evidence_required:
+  - reports/ecommerce-product-ai-pipeline/frontend-typecheck.json
+  - reports/ecommerce-product-ai-pipeline/frontend-build.json
+  - .hermes/workflows/selfcheck-static-verifiers/01-requirement.md
+  - .hermes/workflows/selfcheck-static-verifiers/02-architecture-review.md
+  - .hermes/workflows/selfcheck-static-verifiers/04-developer-summary.md
+  - .hermes/workflows/selfcheck-static-verifiers/05-spec-review-report.md
+  - .hermes/workflows/selfcheck-static-verifiers/06-quality-review-report.md
+  - .hermes/workflows/selfcheck-static-verifiers/07-qa-report.md
+  - .hermes/workflows/selfcheck-static-verifiers/08-final-verification.md

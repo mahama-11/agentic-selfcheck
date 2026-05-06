@@ -1,0 +1,26 @@
+id: v-ecommerce-worktree
+description: Isolated Agent Ecommerce V1 validation worktree for Agentic SelfCheck L3.5 trials.
+root: /root/work/v-worktrees/ecommerce-v1-listing-immutability
+services:
+  ecommerce-backend:
+    path: ecommerce-backend
+    kind: go-backend
+    health: http://127.0.0.1:8396/healthz
+    ready: http://127.0.0.1:8396/readyz
+    commands:
+      test: go test ./...
+  ecommerce-frontend:
+    path: ecommerce-frontend
+    kind: vite-react-frontend
+    dev: pnpm run dev -- --host 0.0.0.0 --port 5181
+    commands:
+      typecheck: pnpm exec tsc --noEmit
+      build: pnpm run build
+environment:
+  preferred_backend_ports:
+    ecommerce: 8396
+  preferred_frontend_ports:
+    ecommerce: 5181
+notes:
+  - First real L3.5 validation adapter for the active Agent Ecommerce V1 worktree.
+  - Keep this separate from /root/work/v so validation does not depend on dirty root workspace state.

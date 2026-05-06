@@ -2,6 +2,7 @@ id: frontend-build
 kind: static
 description: Build the affected frontend bundle.
 command: "cd {project.root}/{service.path} && {service.commands.build}"
+service_command: build
 requires: [project, service]
 evidence:
   - command
