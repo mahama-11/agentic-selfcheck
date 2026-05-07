@@ -1,0 +1,162 @@
+id: github-pr-autonomy-v-workspace
+description: Generic GitHub PR autonomy policy instance for mahama-11 V workspace repositories.
+version: 1
+
+defaults:
+  dry_run: true
+  unknown_repo: ignored
+  unknown_action: blocked
+  high_risk_requires_human: true
+  max_repair_attempts: 1
+  auto_merge:
+    enabled: false
+    allowed_risks: [low]
+    method: squash
+
+states:
+  - RECEIVED
+  - NORMALIZED
+  - POLICY_MATCHED
+  - SNAPSHOT_LOADED
+  - RISK_CLASSIFIED
+  - WAITING_FOR_CHECKS
+  - WAITING_FOR_AUTHOR
+  - AI_REVIEW_PENDING
+  - AI_REVIEWED
+  - VERIFYING
+  - NEEDS_REPAIR
+  - REPAIRING
+  - REVERIFYING
+  - READY_FOR_HUMAN
+  - READY_TO_MERGE
+  - PASS
+  - PASS_WITH_NOTES
+  - NEEDS_HUMAN
+  - BLOCKED
+  - IGNORED
+  - MERGED
+
+terminal_states:
+  - PASS
+  - PASS_WITH_NOTES
+  - READY_FOR_HUMAN
+  - NEEDS_HUMAN
+  - BLOCKED
+  - IGNORED
+  - MERGED
+
+repositories:
+  - id: mahama-11/platform-backend
+    owner: mahama-11
+    name: platform-backend
+    base_branches: [main]
+    required_checks:
+      - Go baseline checks
+    selfcheck:
+      feature: platform-ops-visible-baseline
+      groups: [static, api, evidence]
+    risk: &backend_risk
+      large_diff_file_limit: 20
+      high_globs:
+        - .github/workflows/**
+        - '**/migration/**'
+        - '**/migrations/**'
+        - '**/auth/**'
+        - '**/access/**'
+        - '**/rbac/**'
+        - '**/permission/**'
+        - '**/billing/**'
+        - '**/commercial/**'
+        - '**/payment/**'
+        - '**/config.prod*'
+        - '**/.env*'
+        - '**/*secret*'
+        - '**/*credential*'
+      medium_globs:
+        - '**/config*.yaml'
+        - '**/cmd/**'
+        - '**/internal/modules/**'
+    repair: &default_repair
+      enabled: false
+      max_attempts: 1
+      allowed_globs:
+        - '**/*.go'
+        - '**/*.ts'
+        - '**/*.tsx'
+        - '**/*.py'
+        - '**/*.md'
+        - '**/*_test.go'
+      denied_globs:
+        - .github/workflows/**
+        - '**/migration/**'
+        - '**/migrations/**'
+        - '**/.env*'
+        - '**/*secret*'
+        - '**/*credential*'
+    merge: &default_merge
+      auto_merge_enabled: false
+      require_human_approval: true
+      allowed_methods: [squash]
+
+  - id: mahama-11/ecommerce-backend
+    owner: mahama-11
+    name: ecommerce-backend
+    base_branches: [main]
+    required_checks:
+      - Go tests
+    selfcheck:
+      feature: platform-template-mastering
+      groups: [static, api, evidence]
+    risk: *backend_risk
+    repair: *default_repair
+    merge: *default_merge
+
+  - id: mahama-11/platform-frontend
+    owner: mahama-11
+    name: platform-frontend
+    base_branches: [main]
+    required_checks:
+      - Build
+    selfcheck:
+      feature: platform-ops-visible-baseline
+      groups: [static, browser, evidence]
+    risk:
+      large_diff_file_limit: 20
+      high_globs:
+        - .github/workflows/**
+        - '**/.env*'
+        - '**/*secret*'
+        - '**/*credential*'
+        - '**/vite.config.*'
+        - '**/deploy/**'
+      medium_globs:
+        - src/**
+        - package.json
+        - tsconfig*.json
+    repair: *default_repair
+    merge: *default_merge
+
+  - id: mahama-11/ecommerce-frontend
+    owner: mahama-11
+    name: ecommerce-frontend
+    base_branches: [main]
+    required_checks:
+      - Typecheck and build
+    selfcheck:
+      feature: platform-template-mastering
+      groups: [static, browser, evidence]
+    risk:
+      large_diff_file_limit: 20
+      high_globs:
+        - .github/workflows/**
+        - '**/.env*'
+        - '**/*secret*'
+        - '**/*credential*'
+        - '**/vite.config.*'
+        - '**/deploy/**'
+      medium_globs:
+        - src/**
+        - package.json
+        - tsconfig*.json
+    repair: *default_repair
+    merge: *default_merge

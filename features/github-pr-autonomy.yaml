@@ -1,0 +1,27 @@
+id: github-pr-autonomy
+project: v-workspace
+description: GitHub PR webhook driven AI review/autonomy control plane with generic policy and V workspace policy instance.
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+must_pass:
+  static:
+    - github-pr-autonomy-policy-validate
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Auto-merge remains disabled by default until a separate policy flip is approved.
+  - High-risk/security/migration/prod-config PRs require human decision.
+  - Unknown repositories, invalid policies, or unknown actions must not perform live side effects.
+evidence_required:
+  - .hermes/workflows/github-pr-autonomy/01-requirement.md
+  - .hermes/workflows/github-pr-autonomy/02-architecture-review.md
+  - docs/github-pr-autonomy.md
+  - reports/github-pr-autonomy/github-pr-autonomy-policy-validate.json

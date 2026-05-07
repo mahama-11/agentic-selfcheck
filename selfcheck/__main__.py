@@ -23,6 +23,7 @@ KINDS = {
     "loop": ("loops", "schemas/loop.schema.json"),
     "event": ("events", "schemas/event-route.schema.json"),
     "repair_policy": ("repair-policies", "schemas/repair-policy.schema.json"),
+    "pr_autonomy_policy": ("pr-autonomy-policies", "schemas/pr-autonomy-policy.schema.json"),
 }
 
 SAFE_EXECUTABLE_KINDS = {"static", "unit", "evidence", "api", "browser"}
@@ -302,7 +303,7 @@ def run_verifier(root: Path, feature: dict[str, Any], verifier: dict[str, Any], 
         else:
             if verifier["kind"] == "evidence" and command.startswith("python3 -m selfcheck audit "):
                 proc = subprocess.run(shlex.split(command), cwd=root, capture_output=True, text=True, timeout=timeout)
-            elif verifier["kind"] in {"api", "browser"}:
+            elif verifier["kind"] in {"static", "unit", "api", "browser"}:
                 harness_argv, harness_cwd = resolve_harness_command(root, command)
                 proc = subprocess.run(harness_argv, cwd=harness_cwd, capture_output=True, text=True, timeout=timeout)
             else:
@@ -933,6 +934,12 @@ def cmd_trigger(args):
     event_report = {"event": args.event, "source": source, "status": "DRY_RUN" if args.dry_run else "PASS", "routes": [], "payload_keys": sorted(payload.keys())}
     for route in routes:
         route_report = {"route": route["id"], "feature": route["feature"], "groups": route["groups"], "mode": route["mode"]}
+        if route["id"] == "github-pr-autonomy":
+            try:
+                from selfcheck.pr_autonomy import dispatch_payload
+                route_report["pr_autonomy_decision"] = dispatch_payload(root, "github-pr-autonomy-v-workspace", payload)
+            except Exception as exc:
+                route_report["pr_autonomy_decision"] = {"state": "BLOCKED", "terminal": True, "reason": f"dispatcher error: {exc}"}
         allowed_sources = set(route.get("allowed_sources", []))
         if allowed_sources and source not in allowed_sources:
             route_report.update({"status": "REJECTED", "reason": f"source {source} is not allowed"})
