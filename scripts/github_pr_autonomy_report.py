@@ -19,6 +19,76 @@ def run(args: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess
     return subprocess.run(args, cwd=cwd, text=True, capture_output=True, timeout=60)
 
 
+def desired_labels(decision: dict) -> list[str]:
+    state = str(decision.get("state") or "UNKNOWN")
+    risk = decision.get("risk")
+    risk_level = risk.get("level") if isinstance(risk, dict) else "unknown"
+    labels = ["ai-reviewed", f"ai-state:{state.lower().replace('_', '-')}"]
+    if risk_level:
+        labels.append(f"risk:{risk_level}")
+    if state in {"NEEDS_HUMAN", "BLOCKED"}:
+        labels.append("ai-needs-human")
+    elif state == "WAITING_FOR_CHECKS":
+        labels.append("ai-waiting-checks")
+    elif state == "NEEDS_REPAIR":
+        labels.append("ai-needs-repair")
+    return labels
+
+
+def ensure_labels(repo: str, labels: list[str], cwd: Path) -> list[dict]:
+    applied: list[dict] = []
+    for label in labels:
+        color = "ededed"
+        if label.startswith("risk:high") or label in {"ai-needs-human", "ai-needs-repair"}:
+            color = "d73a4a"
+        elif label.startswith("risk:medium") or label == "ai-waiting-checks":
+            color = "fbca04"
+        elif label.startswith("risk:low") or label == "ai-reviewed":
+            color = "0e8a16"
+        cp = run(["gh", "label", "create", label, "--repo", repo, "--color", color, "--force"], cwd=cwd)
+        applied.append({"action": "ensure_label", "label": label, "exit_code": cp.returncode, "stderr_tail": cp.stderr[-300:]})
+    return applied
+
+
+def current_labels(repo: str, pr: int, cwd: Path) -> list[str]:
+    cp = run(["gh", "pr", "view", str(pr), "--repo", repo, "--json", "labels", "--jq", ".[0]"], cwd=cwd)
+    # The jq above intentionally returns null on old gh versions; fall back to JSON parsing.
+    cp = run(["gh", "pr", "view", str(pr), "--repo", repo, "--json", "labels"], cwd=cwd)
+    if cp.returncode != 0:
+        return []
+    try:
+        data = json.loads(cp.stdout)
+    except Exception:
+        return []
+    return [str(x.get("name")) for x in data.get("labels", []) if x.get("name")]
+
+
+def reconcile_labels(repo: str, pr: int, labels: list[str], cwd: Path) -> list[dict]:
+    applied = ensure_labels(repo, labels, cwd)
+    managed_prefixes = ("ai-state:", "risk:")
+    managed_exact = {"ai-waiting-checks", "ai-needs-human", "ai-needs-repair"}
+    existing = current_labels(repo, pr, cwd)
+    remove = [x for x in existing if (x.startswith(managed_prefixes) or x in managed_exact) and x not in labels]
+    for label in remove:
+        cp = run(["gh", "issue", "edit", str(pr), "--repo", repo, "--remove-label", label], cwd=cwd)
+        applied.append({"action": "remove_label", "label": label, "exit_code": cp.returncode, "stderr_tail": cp.stderr[-300:]})
+    cp = run(["gh", "issue", "edit", str(pr), "--repo", repo, "--add-label", ",".join(labels)], cwd=cwd)
+    applied.append({"action": "labels", "labels": labels, "exit_code": cp.returncode, "stderr_tail": cp.stderr[-500:]})
+    if cp.returncode != 0:
+        raise SystemExit(cp.returncode)
+    return applied
+
+
+def post_or_update_comment(repo: str, pr: int, body: str, cwd: Path) -> subprocess.CompletedProcess:
+    marker = "## AI PR Autonomy Decision"
+    cp = run(["gh", "api", f"repos/{repo}/issues/{pr}/comments", "--jq", f".[] | select(.body | contains(\"{marker}\")) | .id"], cwd=cwd)
+    if cp.returncode == 0:
+        ids = [line.strip() for line in cp.stdout.splitlines() if line.strip()]
+        if ids:
+            return run(["gh", "api", "--method", "PATCH", f"repos/{repo}/issues/comments/{ids[-1]}", "-f", f"body={body}"], cwd=cwd)
+    return run(["gh", "pr", "comment", str(pr), "--repo", str(repo), "--body", body], cwd=cwd)
+
+
 def markdown_summary(decision: dict) -> str:
     risk = decision.get("risk")
     if isinstance(risk, dict):
@@ -48,6 +118,7 @@ def main() -> int:
     parser.add_argument("--pr", type=int, help="PR number for GitHub reporting")
     parser.add_argument("--apply", action="store_true", help="Apply GitHub comment/check reporting. Default is dry-run only.")
     parser.add_argument("--allow-merge", action="store_true", help="Allow actual merge if policy decision is READY_TO_MERGE. Requires --apply.")
+    parser.add_argument("--labels", action="store_true", help="Apply PR labels alongside comment/status when --apply is set.")
     parser.add_argument("--report", default="reports/github-pr-autonomy/github-pr-autonomy-report.json")
     args = parser.parse_args()
 
@@ -62,8 +133,8 @@ def main() -> int:
     if args.apply:
         if not repo or not pr:
             raise SystemExit("--repo and --pr are required for --apply")
-        cp = run(["gh", "pr", "comment", str(pr), "--repo", str(repo), "--body", comment], cwd=root)
-        applied.append({"action": "comment", "exit_code": cp.returncode, "stderr_tail": cp.stderr[-500:]})
+        cp = post_or_update_comment(str(repo), int(pr), comment, root)
+        applied.append({"action": "comment_upsert", "exit_code": cp.returncode, "stderr_tail": cp.stderr[-500:]})
         if cp.returncode != 0:
             raise SystemExit(cp.returncode)
         state = str(decision.get("state"))
@@ -77,6 +148,9 @@ def main() -> int:
                 "-f", f"description={state}: {str(decision.get('reason'))[:120]}",
             ], cwd=root)
             applied.append({"action": "status", "exit_code": cp.returncode, "stderr_tail": cp.stderr[-500:]})
+        if args.labels:
+            labels = desired_labels(decision)
+            applied.extend(reconcile_labels(str(repo), int(pr), labels, root))
         if args.allow_merge and state == "READY_TO_MERGE" and "MERGE_PR_PLANNED_ONLY" in decision.get("actions", []):
             cp = run(["gh", "pr", "merge", str(pr), "--repo", str(repo), "--squash", "--delete-branch"], cwd=root)
             applied.append({"action": "merge", "exit_code": cp.returncode, "stderr_tail": cp.stderr[-500:]})

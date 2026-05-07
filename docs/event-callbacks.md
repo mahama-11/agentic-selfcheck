@@ -45,8 +45,10 @@ Watchdog loop:
 ## Local event dispatch
 
 ```bash
-scripts/event-dispatch.sh . feature.changed.ecommerce-product-ai-pipeline
+scripts/event-dispatch.sh . feature.changed.ecommerce-product-ai-pipeline '' local
+scripts/event-dispatch.sh . github.pull_request /path/to/github-pull-request.json hermes-webhook
 python3 -m selfcheck trigger --root . --event feature.changed.ecommerce-product-ai-pipeline --source local
+python3 -m selfcheck trigger --root . --event github.pull_request --source hermes-webhook --payload-file /path/to/github-pull-request.json
 ```
 
 Event routes can restrict `allowed_sources` and define `debounce_seconds`; `selfcheck trigger` enforces both before running verifiers.
