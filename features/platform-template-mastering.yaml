@@ -1,0 +1,31 @@
+id: platform-template-mastering
+project: v-workspace
+description: "Platform-owned template metadata import/mastering gate with Ecommerce Platform-backed consumption fallback."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+target_services:
+  platform: platform-backend
+  backend: ecommerce-backend
+must_pass:
+  api:
+    - platform-template-mastering-gate
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Live Platform preview/import requires an admin token; the static gate must not print or require secrets.
+  - Media/image storage association gaps are allowed only when reported in missingAssets and summary.
+  - Ecommerce must consume Platform templates through API contracts and preserve local seed fallback for Platform unavailable or empty catalog.
+evidence_required:
+  - reports/platform-template-mastering/platform-template-mastering-gate.json
+  - .hermes/workflows/platform-template-mastering/01-requirement.md
+  - .hermes/workflows/platform-template-mastering/02-architecture-review.md
+  - .hermes/workflows/platform-template-mastering/03-discovery-inventory.md
+  - .hermes/workflows/platform-template-mastering/04-developer-summary.md

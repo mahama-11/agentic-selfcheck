@@ -1,0 +1,17 @@
+id: ai-state-ledger-closed-loop
+project: v-workspace
+description: "Ensure the Feishu AI state ledger can serve as a closed-loop control plane for concurrent/autonomous AI tasks."
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+must_pass:
+  static:
+    - ai-state-ledger-health
+reviewer_gates:
+  - final-verification
+human_required:
+  - Approve when to promote the ledger from MVP scripts to mandatory gateway/cron middleware.
+evidence_required:
+  - /root/.hermes/scripts/state_ledger.py
+  - /root/.hermes/state-ledger/README.md

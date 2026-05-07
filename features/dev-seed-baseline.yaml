@@ -1,0 +1,40 @@
+id: dev-seed-baseline
+project: v-workspace
+description: "Dev seed baseline for local v autonomy: platform common identity/access seeds plus ecommerce-owned business template fixtures and a SelfCheck gate."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - frontend-runtime
+target_services:
+  platform: platform-backend
+  backend: ecommerce-backend
+  frontend: ecommerce-frontend
+must_pass:
+  static:
+    - frontend-typecheck
+    - frontend-build
+  api:
+    - dev-seed-baseline-gate
+  browser:
+    - browser-login-surface-smoke
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Production data must not be copied into dev seed fixtures.
+  - Platform seeds remain common identity/access/platform primitives; product-specific business fixtures stay in product backends.
+evidence_required:
+  - reports/dev-seed-baseline/dev-seed-baseline-gate.json
+  - .hermes/workflows/dev-seed-baseline/01-requirement.md
+  - .hermes/workflows/dev-seed-baseline/02-architecture-review.md
+  - .hermes/workflows/dev-seed-baseline/04-developer-summary.md
+  - .hermes/workflows/dev-seed-baseline/05-spec-review-report.md
+  - .hermes/workflows/dev-seed-baseline/06-quality-review-report.md
+  - .hermes/workflows/dev-seed-baseline/07-qa-report.md
+  - .hermes/workflows/dev-seed-baseline/08-final-verification.md

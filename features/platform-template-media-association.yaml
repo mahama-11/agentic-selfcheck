@@ -1,0 +1,31 @@
+id: platform-template-media-association
+project: v-workspace
+description: "Platform Template Ops Ecommerce example media source readiness gate and blocked-with-evidence report."
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+target_services:
+  platform: platform-backend
+  backend: ecommerce-backend
+must_pass:
+  api:
+    - platform-template-media-association-gate
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Real Ecommerce example image files must be supplied under a configured source root before media import/binding can be claimed ready.
+  - This slice must report MEDIA_SOURCE_MISSING as blocked-with-evidence when source files are absent; it must not fabricate placeholders or write Platform DB asset rows.
+  - Future MEDIA_READY/PASS requires --require-ready strict mode plus supported Platform import/binding verification using real files.
+evidence_required:
+  - reports/platform-template-media-association/platform-template-media-association-gate.json
+  - .hermes/workflows/platform-template-media-association/01-requirement.md
+  - .hermes/workflows/platform-template-media-association/02-architecture-review.md
+  - .hermes/workflows/platform-template-media-association/03-discovery-inventory.md
+  - .hermes/workflows/platform-template-media-association/04-developer-summary.md

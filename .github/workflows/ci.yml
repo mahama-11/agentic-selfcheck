@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  selfcheck:
+    name: Validate SelfCheck control plane
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Create virtualenv and install dependencies
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Compile Python sources
+        run: |
+          . .venv/bin/activate
+          python -m compileall selfcheck scripts
+
+      - name: Validate registry
+        run: |
+          . .venv/bin/activate
+          PYTHONPATH=. python -m selfcheck validate --root .
+
+      - name: Audit registry
+        run: |
+          . .venv/bin/activate
+          PYTHONPATH=. python -m selfcheck audit --root .

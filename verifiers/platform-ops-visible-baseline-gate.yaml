@@ -1,0 +1,10 @@
+id: platform-ops-visible-baseline-gate
+kind: api
+description: "Semantic API gate for Platform Template Ops Ecommerce projections and Catalog & Assets Ecommerce commercial price data."
+command: "scripts/project_api_smoke.sh {project.id} {feature.id}"
+requires: [running_backend, running_frontend, local_postgres]
+evidence:
+  - platform_admin_login
+  - template_ops_ecommerce_projection_content
+  - catalog_ecommerce_commercial_rows
+  - wallet_ecommerce_asset_definitions

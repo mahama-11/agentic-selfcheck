@@ -1,0 +1,11 @@
+id: platform-template-mastering-gate
+kind: api
+description: "Generate and validate Platform Template Ops real-import artifacts; prove preview/import wiring and optional live preview."
+command: "scripts/project_api_smoke.sh {project.id} {feature.id}"
+requires: [local_workspace]
+evidence:
+  - generated_real_import_csv_187_rows
+  - ecommerce_rows_present
+  - template_ops_preview_import_route_wired
+  - template_ops_service_preview_tests
+  - optional_live_platform_preview

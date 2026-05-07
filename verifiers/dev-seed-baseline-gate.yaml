@@ -1,0 +1,9 @@
+id: dev-seed-baseline-gate
+kind: api
+description: "Verify local dev baseline seeds: platform admin/access rows and ecommerce business template fixtures."
+command: "scripts/project_api_smoke.sh {project.id} {feature.id}"
+requires: [running_backend, running_frontend, local_postgres]
+evidence:
+  - platform_admin_login
+  - platform_access_seed_counts
+  - ecommerce_template_seed_counts

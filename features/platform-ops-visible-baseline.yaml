@@ -1,0 +1,31 @@
+id: platform-ops-visible-baseline
+project: v-workspace
+description: "Platform Ops visibility baseline: Template Ops Ecommerce projections plus Catalog & Assets Ecommerce commercial data."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - frontend-runtime
+target_services:
+  platform: platform-backend
+  backend: ecommerce-backend
+  frontend: platform-frontend
+must_pass:
+  api:
+    - platform-ops-visible-baseline-gate
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Platform must not contain Ecommerce workflow state or frontend fake rows.
+  - Browser QA should separately confirm Template Ops and Catalog & Assets visible data.
+evidence_required:
+  - reports/platform-ops-visible-baseline/platform-ops-visible-baseline-gate.json
+  - .hermes/workflows/platform-ops-visible-baseline/01-requirement.md
+  - .hermes/workflows/platform-ops-visible-baseline/02-architecture-review.md
+  - .hermes/workflows/platform-ops-visible-baseline/04-developer-summary.md

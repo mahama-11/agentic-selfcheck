@@ -1,0 +1,7 @@
+id: ai-state-ledger-health
+kind: api
+description: "Verify Feishu AI 状态账本 schema, record uniqueness, active-next-action completeness, SESSION resume entries, live SESSION heartbeat/progress freshness, and ambient UX: normal chat does not create task noise and natural task continuation resolves to human-readable TASK/LEDGER records instead of raw session IDs."
+command: "scripts/state_ledger_health_harness.py"
+requires: [feishu_base, lark_cli]
+evidence:
+  - state_ledger_health_json

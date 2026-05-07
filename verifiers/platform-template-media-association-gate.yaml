@@ -1,0 +1,9 @@
+id: platform-template-media-association-gate
+kind: api
+description: "Validate Platform Template Ops media source readiness from the real asset manifest without importing or fabricating assets."
+command: "scripts/project_api_smoke.sh {project.id} {feature.id}"
+requires: [local_workspace]
+evidence:
+  - asset_manifest_media_source_readiness
+  - media_source_missing_evidence_full_list
+  - future_require_ready_strict_mode

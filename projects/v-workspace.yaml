@@ -20,6 +20,13 @@ services:
     path: platform-backend
     kind: go-backend
     health: http://127.0.0.1:8195/healthz
+  platform-frontend:
+    path: platform-frontend
+    kind: vite-react-frontend
+    dev: pnpm run dev -- --host 0.0.0.0 --port 5173
+    commands:
+      typecheck: pnpm exec tsc --noEmit
+      build: pnpm run build
 environment:
   preferred_backend_ports:
     platform: 8195
