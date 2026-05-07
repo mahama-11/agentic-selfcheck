@@ -1,0 +1,9 @@
+id: role-model-routing-validate
+kind: static
+description: Validate SelfCheck/Hermes role-to-model routing policy.
+command: "scripts/role_model_routing_validate.py --root . --policy default-role-model-routing"
+requires:
+  - jsonschema
+  - yaml
+evidence:
+  - reports/role-model-routing/role-model-routing-validate.json

@@ -1,0 +1,72 @@
+id: default-role-model-routing
+description: Default role-to-model routing for SelfCheck/Hermes autonomy roles. Deterministic/repetitive checks use MiniMax high-speed to reduce cost; high-risk architecture/development decisions stay on high-capability default model.
+version: 1
+
+defaults:
+  fallback_role: orchestrator
+  prefer_low_cost_for_deterministic: true
+  secret_policy: never_emit
+
+models:
+  high_capability_default:
+    provider: openai-codex
+    model: gpt-5.5
+    tier: high_capability
+    intended_for: [architecture, implementation, final-risk, ambiguous-debugging]
+    notes: Current high-capability default model.
+  minimax_highspeed:
+    provider: minimax-cn
+    model: MiniMax-M2.7-highspeed
+    tier: low_cost_fast
+    intended_for: [deterministic-review, formatting, summarization, report-writing, qa-checklist, status-routing]
+    notes: API key is stored outside repo in Hermes env; never commit credentials.
+
+roles:
+  orchestrator:
+    primary_model: high_capability_default
+    fallback_model: minimax_highspeed
+    determinism: medium
+    allowed_task_classes: [planning, decomposition, routing, final-user-summary]
+    must_escalate_if: [cross-repo-design, high-risk-policy-change, ambiguous-user-intent]
+  architect:
+    primary_model: high_capability_default
+    fallback_model: high_capability_default
+    determinism: low
+    allowed_task_classes: [architecture, domain-boundary, migration-design, risk-tradeoff]
+    must_escalate_if: [always-keep-high-capability]
+  developer:
+    primary_model: high_capability_default
+    fallback_model: high_capability_default
+    determinism: medium
+    allowed_task_classes: [code-change, debugging, integration]
+    must_escalate_if: [security-sensitive, database-migration, billing, auth, cross-service-contract]
+  spec-reviewer:
+    primary_model: minimax_highspeed
+    fallback_model: high_capability_default
+    determinism: high
+    allowed_task_classes: [requirement-coverage, acceptance-checklist, diff-summary]
+    must_escalate_if: [unclear-requirement, conflicting-requirement, product-decision]
+  quality-reviewer:
+    primary_model: high_capability_default
+    fallback_model: minimax_highspeed
+    determinism: medium
+    allowed_task_classes: [security-review, reliability-review, idempotency-review]
+    must_escalate_if: [secret-handling, auth, payment, production-config]
+  qa:
+    primary_model: minimax_highspeed
+    fallback_model: high_capability_default
+    determinism: high
+    allowed_task_classes: [test-plan, command-result-synthesis, screenshot-evidence-summary, smoke-result-classification]
+    must_escalate_if: [flaky-runtime, browser-ambiguity, destructive-test]
+  final-verifier:
+    primary_model: minimax_highspeed
+    fallback_model: high_capability_default
+    determinism: high
+    allowed_task_classes: [evidence-readback, pass-fail-verdict, terminal-condition-check]
+    must_escalate_if: [missing-evidence, conflicting-reviewers, high-risk-pr]
+  reporter:
+    primary_model: minimax_highspeed
+    fallback_model: high_capability_default
+    determinism: high
+    allowed_task_classes: [github-comment, check-run-summary, feishu-summary, label-summary]
+    must_escalate_if: [contains-secret, human-decision-needed]

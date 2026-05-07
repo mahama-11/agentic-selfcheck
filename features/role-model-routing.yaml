@@ -1,0 +1,20 @@
+id: role-model-routing
+project: v-workspace
+description: Role-to-model routing policy so deterministic autonomy roles can use lower-cost MiniMax high-speed while high-risk architecture/development roles keep high-capability defaults.
+level_target: L3
+depends_on:
+  - review-gates
+must_pass:
+  static:
+    - role-model-routing-validate
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - quality-review
+  - final-verification
+human_required:
+  - Any provider credential rotation must happen outside repository files.
+  - High-risk architecture/development/security work must not be downgraded to low-cost models by default.
+evidence_required:
+  - docs/role-model-routing.md
+  - reports/role-model-routing/role-model-routing-validate.json

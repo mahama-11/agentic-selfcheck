@@ -138,6 +138,7 @@ Each repo maps to its current baseline CI check and relevant SelfCheck feature g
 
 ```bash
 python3 scripts/github_pr_autonomy_policy_validate.py --root . --policy github-pr-autonomy-v-workspace
+python3 scripts/github_pr_autonomy_report.py --root . --policy github-pr-autonomy-v-workspace --payload-file /tmp/github-pr-event.json
 python3 -m selfcheck run --root . --feature github-pr-autonomy --groups static --timeout 300
 python3 -m selfcheck validate --root .
 python3 -m selfcheck audit --root .

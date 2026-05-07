@@ -24,6 +24,7 @@ KINDS = {
     "event": ("events", "schemas/event-route.schema.json"),
     "repair_policy": ("repair-policies", "schemas/repair-policy.schema.json"),
     "pr_autonomy_policy": ("pr-autonomy-policies", "schemas/pr-autonomy-policy.schema.json"),
+    "role_model_routing": ("role-model-routing", "schemas/role-model-routing.schema.json"),
 }
 
 SAFE_EXECUTABLE_KINDS = {"static", "unit", "evidence", "api", "browser"}

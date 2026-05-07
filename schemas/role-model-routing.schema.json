@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RoleModelRoutingPolicy",
+  "type": "object",
+  "required": ["id", "description", "defaults", "models", "roles"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "description": {"type": "string"},
+    "version": {"type": "integer", "minimum": 1},
+    "defaults": {
+      "type": "object",
+      "required": ["fallback_role", "prefer_low_cost_for_deterministic", "secret_policy"],
+      "properties": {
+        "fallback_role": {"type": "string"},
+        "prefer_low_cost_for_deterministic": {"type": "boolean"},
+        "secret_policy": {"enum": ["never_emit", "redact"]}
+      },
+      "additionalProperties": false
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["provider", "model", "tier", "intended_for"],
+        "properties": {
+          "provider": {"type": "string"},
+          "model": {"type": "string"},
+          "tier": {"enum": ["low_cost_fast", "balanced", "high_capability"]},
+          "intended_for": {"type": "array", "items": {"type": "string"}},
+          "notes": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "roles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["primary_model", "fallback_model", "determinism", "allowed_task_classes"],
+        "properties": {
+          "primary_model": {"type": "string"},
+          "fallback_model": {"type": "string"},
+          "determinism": {"enum": ["high", "medium", "low"]},
+          "allowed_task_classes": {"type": "array", "items": {"type": "string"}},
+          "must_escalate_if": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
