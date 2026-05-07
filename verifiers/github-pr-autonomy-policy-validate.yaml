@@ -1,0 +1,9 @@
+id: github-pr-autonomy-policy-validate
+kind: static
+description: Validate GitHub PR autonomy policy schema and deterministic dry-run state transitions.
+command: "scripts/github_pr_autonomy_policy_validate.py --root . --policy github-pr-autonomy-v-workspace"
+requires:
+  - jsonschema
+  - yaml
+evidence:
+  - reports/github-pr-autonomy/github-pr-autonomy-policy-validate.json
