@@ -3,15 +3,16 @@ description: Generic GitHub PR autonomy policy instance for mahama-11 V workspac
 version: 1
 
 defaults:
-  dry_run: true
+  dry_run: false
   unknown_repo: ignored
   unknown_action: blocked
   high_risk_requires_human: true
   max_repair_attempts: 1
   auto_merge:
-    enabled: false
+    enabled: true
     allowed_risks: [low]
     method: squash
+    delete_branch: true
 
 states:
   - RECEIVED
@@ -77,15 +78,19 @@ repositories:
         - '**/cmd/**'
         - '**/internal/modules/**'
     repair: &default_repair
-      enabled: false
+      enabled: true
+      execution_enabled: true
       max_attempts: 1
+      fixers:
+        - markdown-marker
+        - gofmt
+      allowed_risks: [low]
       allowed_globs:
+        - README.md
+        - docs/*.md
+        - docs/**/*.md
+        - '*.go'
         - '**/*.go'
-        - '**/*.ts'
-        - '**/*.tsx'
-        - '**/*.py'
-        - '**/*.md'
-        - '**/*_test.go'
       denied_globs:
         - .github/workflows/**
         - '**/migration/**'
@@ -94,9 +99,10 @@ repositories:
         - '**/*secret*'
         - '**/*credential*'
     merge: &default_merge
-      auto_merge_enabled: false
-      require_human_approval: true
+      auto_merge_enabled: true
+      require_human_approval: false
       allowed_methods: [squash]
+      delete_branch: true
 
   - id: mahama-11/ecommerce-backend
     owner: mahama-11

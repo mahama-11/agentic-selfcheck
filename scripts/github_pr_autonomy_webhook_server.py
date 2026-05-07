@@ -217,7 +217,7 @@ def write_json(path: Path, data: Any) -> None:
     path.write_text(json.dumps(redact(data), ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def handle_event(root: Path, event: str, delivery: str, payload: dict[str, Any], apply: bool, allow_merge: bool) -> dict[str, Any]:
+def handle_event(root: Path, event: str, delivery: str, payload: dict[str, Any], apply: bool, allow_merge: bool, allow_repair: bool) -> dict[str, Any]:
     event_id = f"{int(time.time())}-{delivery or uuid.uuid4().hex}"
     reports_dir = root / "reports" / "github-pr-autonomy-live-webhook"
     raw_path = reports_dir / "events" / f"{event_id}.raw.redacted.json"
@@ -256,8 +256,31 @@ def handle_event(root: Path, event: str, delivery: str, payload: dict[str, Any],
         cmd.append("--allow-merge")
     reporter = run(cmd, root, timeout=240)
 
+    repair = None
+    if allow_repair and reporter.returncode == 0:
+        try:
+            report_data = json.loads(result_path.read_text(encoding="utf-8"))
+            decision = report_data.get("decision") or {}
+        except Exception:
+            decision = {}
+        if decision.get("state") == "NEEDS_REPAIR" and "CREATE_REPAIR_DISPATCH" in (decision.get("actions") or []):
+            repair_rel = str((reports_dir / "repairs" / f"{event_id}.repair.json").relative_to(root))
+            repair_cmd = [
+                "python3", "scripts/github_pr_autonomy_repair.py",
+                "--root", ".", "--repo", repo, "--pr", str(pr_number),
+                "--expected-sha", str(decision.get("head_sha") or ""),
+                "--report", repair_rel,
+            ]
+            repair_cp = run(repair_cmd, root, timeout=600)
+            repair = {
+                "exit_code": repair_cp.returncode,
+                "stdout_tail": repair_cp.stdout[-2000:],
+                "stderr_tail": repair_cp.stderr[-1000:],
+                "report_path": str(root / repair_rel),
+            }
+
     result = {
-        "status": "PASS" if trigger.returncode == 0 and reporter.returncode == 0 else "FAIL",
+        "status": "PASS" if trigger.returncode == 0 and reporter.returncode == 0 and (repair is None or repair.get("exit_code") == 0) else "FAIL",
         "event": event,
         "delivery": delivery,
         "repo": repo,
@@ -268,6 +291,7 @@ def handle_event(root: Path, event: str, delivery: str, payload: dict[str, Any],
         "trigger_stderr_tail": trigger.stderr[-1000:],
         "reporter_stdout_tail": reporter.stdout[-2000:],
         "reporter_stderr_tail": reporter.stderr[-1000:],
+        "repair": repair,
         "raw_path": str(raw_path),
         "enriched_path": str(enriched_path),
         "report_path": str(result_path),
@@ -319,7 +343,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._json(400, {"status": "bad_request", "reason": str(exc)})
             return
         try:
-            result = handle_event(self.server.root, event, delivery, payload, self.server.apply, self.server.allow_merge)  # type: ignore[attr-defined]
+            result = handle_event(self.server.root, event, delivery, payload, self.server.apply, self.server.allow_merge, self.server.allow_repair)  # type: ignore[attr-defined]
             self._json(200 if result.get("status") in {"PASS", "IGNORED"} else 500, result)
         except Exception as exc:
             self._json(500, {"status": "FAIL", "reason": str(exc)})
@@ -336,6 +360,7 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=int(os.getenv("GITHUB_PR_AUTONOMY_PORT", "8655")))
     parser.add_argument("--apply", action="store_true", default=bool_env("GITHUB_PR_AUTONOMY_APPLY", True))
     parser.add_argument("--allow-merge", action="store_true", default=bool_env("GITHUB_PR_AUTONOMY_ALLOW_MERGE", False))
+    parser.add_argument("--allow-repair", action="store_true", default=bool_env("GITHUB_PR_AUTONOMY_ALLOW_REPAIR", False))
     args = parser.parse_args()
     root = Path(args.root).resolve()
     secret = os.getenv("GITHUB_PR_AUTONOMY_WEBHOOK_SECRET", "")
@@ -347,7 +372,8 @@ def main() -> int:
     server.webhook_secret = secret  # type: ignore[attr-defined]
     server.apply = args.apply  # type: ignore[attr-defined]
     server.allow_merge = args.allow_merge  # type: ignore[attr-defined]
-    print(json.dumps({"status": "listening", "host": args.host, "port": args.port, "root": str(root), "apply": args.apply, "allow_merge": args.allow_merge}, ensure_ascii=False), flush=True)
+    server.allow_repair = args.allow_repair  # type: ignore[attr-defined]
+    print(json.dumps({"status": "listening", "host": args.host, "port": args.port, "root": str(root), "apply": args.apply, "allow_merge": args.allow_merge, "allow_repair": args.allow_repair}, ensure_ascii=False), flush=True)
     try:
         server.serve_forever()
     finally:

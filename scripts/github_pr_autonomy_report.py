@@ -13,6 +13,7 @@ if str(ROOT_FOR_IMPORT) not in sys.path:
     sys.path.insert(0, str(ROOT_FOR_IMPORT))
 
 from selfcheck.pr_autonomy import dispatch_payload
+import yaml
 
 
 def run(args: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess:
@@ -89,6 +90,80 @@ def post_or_update_comment(repo: str, pr: int, body: str, cwd: Path) -> subproce
     return run(["gh", "pr", "comment", str(pr), "--repo", str(repo), "--body", body], cwd=cwd)
 
 
+def gh_json(root: Path, args: list[str], default):
+    cp = run(["gh", *args], cwd=root)
+    if cp.returncode != 0:
+        raise RuntimeError(cp.stderr[-500:])
+    text = cp.stdout.strip()
+    return json.loads(text) if text else default
+
+
+def live_payload(root: Path, repo: str, pr: int) -> dict:
+    pr_data = gh_json(root, ["api", f"repos/{repo}/pulls/{pr}"], {})
+    files = gh_json(root, ["api", f"repos/{repo}/pulls/{pr}/files", "--paginate"], [])
+    sha = ((pr_data.get("head") or {}).get("sha") or "")
+    checks = {}
+    if sha:
+        check_runs = gh_json(root, ["api", f"repos/{repo}/commits/{sha}/check-runs", "--jq", ".check_runs"], [])
+        for item in check_runs or []:
+            name = str(item.get("name") or "")
+            if not name:
+                continue
+            status = str(item.get("status") or "").lower()
+            conclusion = str(item.get("conclusion") or "").lower()
+            checks[name] = conclusion if status == "completed" else status or "pending"
+        statuses = gh_json(root, ["api", f"repos/{repo}/commits/{sha}/status", "--jq", ".statuses"], [])
+        for item in statuses or []:
+            context = str(item.get("context") or "")
+            if context and context not in checks:
+                checks[context] = str(item.get("state") or "").lower()
+    return {
+        "action": "synchronize",
+        "repository": (pr_data.get("base") or {}).get("repo") or {},
+        "pull_request": pr_data,
+        "number": pr,
+        "head_sha": sha,
+        "changed_files": [str(x.get("filename")) for x in files if x.get("filename")],
+        "check_runs": checks,
+        "labels": [str(x.get("name")) for x in pr_data.get("labels", []) if x.get("name")],
+    }
+
+
+def policy_merge_method(root: Path, policy_id: str, repo: str) -> str:
+    policy_path = root / "pr-autonomy-policies" / f"{policy_id}.yaml"
+    policy = yaml.safe_load(policy_path.read_text(encoding="utf-8")) or {}
+    method = ((policy.get("defaults") or {}).get("auto_merge") or {}).get("method") or "squash"
+    for item in policy.get("repositories", []):
+        if item.get("id") == repo:
+            allowed = ((item.get("merge") or {}).get("allowed_methods") or [method])
+            if method not in allowed:
+                raise RuntimeError("configured merge method is not allowed for repo")
+            if (item.get("merge") or {}).get("require_human_approval"):
+                raise RuntimeError("repo merge policy still requires human approval")
+            break
+    return str(method)
+
+
+def perform_policy_merge(root: Path, policy_id: str, repo: str, pr: int, original_decision: dict) -> dict:
+    payload = live_payload(root, repo, pr)
+    live_decision = dispatch_payload(root, policy_id, payload)
+    original_sha = str(original_decision.get("head_sha") or "")
+    live_sha = str(live_decision.get("head_sha") or payload.get("head_sha") or "")
+    if original_sha and live_sha != original_sha:
+        raise RuntimeError("PR head changed before merge")
+    pr_data = payload.get("pull_request") or {}
+    if pr_data.get("state") != "open" or pr_data.get("draft"):
+        raise RuntimeError("PR is not open and ready for merge")
+    if ((pr_data.get("head") or {}).get("repo") or {}).get("full_name") != repo:
+        raise RuntimeError("fork PR auto-merge is not allowed")
+    if live_decision.get("state") != "READY_TO_MERGE" or "MERGE_PR" not in live_decision.get("actions", []):
+        raise RuntimeError("live policy decision is not mergeable")
+    method = policy_merge_method(root, policy_id, repo)
+    args = ["gh", "pr", "merge", str(pr), "--repo", str(repo), f"--{method}", "--delete-branch"]
+    cp = run(args, cwd=root)
+    return {"action": "merge", "method": method, "exit_code": cp.returncode, "stderr_tail": cp.stderr[-500:], "stdout_tail": cp.stdout[-500:], "live_decision": live_decision}
+
+
 def markdown_summary(decision: dict) -> str:
     risk = decision.get("risk")
     if isinstance(risk, dict):
@@ -151,11 +226,11 @@ def main() -> int:
         if args.labels:
             labels = desired_labels(decision)
             applied.extend(reconcile_labels(str(repo), int(pr), labels, root))
-        if args.allow_merge and state == "READY_TO_MERGE" and "MERGE_PR_PLANNED_ONLY" in decision.get("actions", []):
-            cp = run(["gh", "pr", "merge", str(pr), "--repo", str(repo), "--squash", "--delete-branch"], cwd=root)
-            applied.append({"action": "merge", "exit_code": cp.returncode, "stderr_tail": cp.stderr[-500:]})
-            if cp.returncode != 0:
-                raise SystemExit(cp.returncode)
+        if args.allow_merge and state == "READY_TO_MERGE" and "MERGE_PR" in decision.get("actions", []):
+            merge_result = perform_policy_merge(root, args.policy, str(repo), int(pr), decision)
+            applied.append(merge_result)
+            if int(merge_result.get("exit_code") or 0) != 0:
+                raise SystemExit(int(merge_result.get("exit_code") or 1))
 
     report = {"status": "PASS", "decision": decision, "applied": applied, "apply": args.apply, "allow_merge": args.allow_merge}
     out = root / args.report

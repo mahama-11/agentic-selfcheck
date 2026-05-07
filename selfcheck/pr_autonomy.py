@@ -22,6 +22,7 @@ class PRAutonomyInput:
     base_ref: str
     head_ref: str
     head_sha: str
+    head_repo: str
     changed_files: list[str]
     check_runs: dict[str, str]
     labels: list[str]
@@ -44,6 +45,7 @@ def normalize_github_pr_event(payload: dict[str, Any]) -> PRAutonomyInput:
     pr = payload.get("pull_request") or {}
     base = pr.get("base") or {}
     head = pr.get("head") or {}
+    head_repo_obj = head.get("repo") or {}
     return PRAutonomyInput(
         owner=str(owner_obj.get("login") or payload.get("owner") or ""),
         repo=str(repo.get("name") or payload.get("repo") or ""),
@@ -54,6 +56,7 @@ def normalize_github_pr_event(payload: dict[str, Any]) -> PRAutonomyInput:
         base_ref=str(base.get("ref") or payload.get("base_ref") or ""),
         head_ref=str(head.get("ref") or payload.get("head_ref") or ""),
         head_sha=str(head.get("sha") or payload.get("head_sha") or payload.get("sha") or ""),
+        head_repo=str(head_repo_obj.get("full_name") or payload.get("head_repo") or ""),
         changed_files=[str(x) for x in payload.get("changed_files", [])],
         check_runs={str(k): str(v).lower() for k, v in (payload.get("check_runs") or {}).items()},
         labels=[str(x) for x in payload.get("labels", [])],
@@ -110,6 +113,8 @@ def compute_next_action(event: PRAutonomyInput, policy: dict[str, Any], repair_a
         return {**base, "state": "IGNORED", "terminal": True, "risk": "unknown", "reason": "pull request is closed"}
     if event.base_ref not in repo_cfg.get("base_branches", []):
         return {**base, "state": "BLOCKED", "terminal": True, "risk": "unknown", "reason": f"base branch {event.base_ref!r} is not allowed"}
+    if event.head_repo and event.head_repo != event.repo_id:
+        return {**base, "state": "NEEDS_HUMAN", "terminal": True, "risk": "unknown", "reason": "fork PRs require human decision", "actions": ["COMMENT_ADVISORY", "REQUEST_HUMAN_REVIEW"]}
     if event.draft:
         return {**base, "state": "WAITING_FOR_AUTHOR", "terminal": False, "risk": "unknown", "reason": "pull request is draft", "actions": ["NOOP"]}
     if not event.changed_files:
@@ -127,12 +132,14 @@ def compute_next_action(event: PRAutonomyInput, policy: dict[str, Any], repair_a
     if failed_checks:
         repair = repo_cfg.get("repair", {})
         if repair.get("enabled"):
+            if not repair.get("execution_enabled", False):
+                return {**base, "state": "BLOCKED", "terminal": True, "risk": risk, "reason": "repair execution is disabled", "failed_checks": failed_checks, "actions": ["COMMENT_ADVISORY"]}
             max_attempts = min(int(defaults.get("max_repair_attempts", 0)), int(repair.get("max_attempts", 0)))
             denied = [p for p in event.changed_files if _matches_any(p, repair.get("denied_globs", []))]
             allowed = [p for p in event.changed_files if _matches_any(p, repair.get("allowed_globs", []))]
             if repair_attempts >= max_attempts:
                 return {**base, "state": "BLOCKED", "terminal": True, "risk": risk, "reason": "repair attempts exhausted", "failed_checks": failed_checks, "repair_attempts": repair_attempts, "max_repair_attempts": max_attempts, "actions": ["COMMENT_ADVISORY"]}
-            if denied or len(allowed) != len(event.changed_files) or risk["level"] == "high":
+            if denied or len(allowed) != len(event.changed_files) or risk["level"] == "high" or risk["level"] not in repair.get("allowed_risks", ["low"]):
                 return {**base, "state": "NEEDS_HUMAN", "terminal": True, "risk": risk, "reason": "repair is outside allowed policy scope", "failed_checks": failed_checks, "denied_files": denied, "actions": ["COMMENT_ADVISORY", "REQUEST_HUMAN_REVIEW"]}
             return {**base, "state": "NEEDS_REPAIR", "terminal": False, "risk": risk, "reason": "required checks failed and repair is enabled", "failed_checks": failed_checks, "repair_attempts": repair_attempts, "max_repair_attempts": max_attempts, "actions": ["COMMENT_ADVISORY", "CREATE_REPAIR_DISPATCH"]}
         return {**base, "state": "BLOCKED", "terminal": True, "risk": risk, "reason": "required checks failed and repair is disabled", "failed_checks": failed_checks, "actions": ["COMMENT_ADVISORY"]}
@@ -145,7 +152,8 @@ def compute_next_action(event: PRAutonomyInput, policy: dict[str, Any], repair_a
     if risk["level"] not in allowed_risks:
         return {**base, "state": "NEEDS_HUMAN", "terminal": True, "risk": risk, "reason": "risk exceeds auto-merge policy", "actions": ["COMMENT_ADVISORY", "REQUEST_HUMAN_REVIEW"]}
 
-    return {**base, "state": "READY_TO_MERGE", "terminal": False, "risk": risk, "reason": "eligible for future auto-merge phase", "actions": ["COMMENT_ADVISORY", "MERGE_PR_PLANNED_ONLY"]}
+    action = "MERGE_PR" if not dry_run else "MERGE_PR_PLANNED_ONLY"
+    return {**base, "state": "READY_TO_MERGE", "terminal": False, "risk": risk, "reason": "eligible for policy-gated auto-merge", "actions": ["COMMENT_ADVISORY", action]}
 
 
 def dispatch_payload(root: Path, policy_id: str, payload: dict[str, Any]) -> dict[str, Any]:
