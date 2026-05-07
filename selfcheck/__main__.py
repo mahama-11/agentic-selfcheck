@@ -154,7 +154,18 @@ def audit(root: Path, feature_id: str | None = None, strict_missing: bool = Fals
             p = Path(rel)
             if not p.is_absolute():
                 p = root / p
-            if not p.exists():
+            try:
+                exists = p.exists()
+            except OSError as exc:
+                issues.append(
+                    Issue(
+                        "ERROR" if strict_missing else "WARN",
+                        str(p),
+                        f"cannot access required evidence for feature {fid}: {exc}",
+                    )
+                )
+                continue
+            if not exists:
                 issues.append(Issue("ERROR" if strict_missing else "WARN", str(p), f"missing required evidence for feature {fid}"))
     return issues
 
