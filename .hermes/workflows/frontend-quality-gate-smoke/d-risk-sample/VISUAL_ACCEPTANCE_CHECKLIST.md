@@ -1,0 +1,26 @@
+# Visual Acceptance Checklist
+
+## Prototype review
+
+- [ ] Information architecture is clear.
+- [ ] First screen explains the product/task.
+- [ ] Primary action hierarchy is obvious.
+- [ ] Visual style matches intended product posture.
+- [ ] Layout/density feels usable, not just decorative.
+- [ ] Desktop and mobile are reviewed.
+- [ ] Critical states are visible.
+- [ ] Prototype does not invent unsupported backend capabilities.
+- [ ] User/design reviewer accepted the direction.
+
+## Implementation review
+
+- [ ] Implementation screenshots attached.
+- [ ] Prototype screenshots attached.
+- [ ] Known deviations documented.
+- [ ] 80%+ visual/interaction parity or explicit accepted exception.
+- [ ] Real APIs wired or `contract-needed` documented.
+
+
+## Smoke filled content
+
+This is a synthetic d-risk-sample workflow artifact used only to validate the generic frontend quality gate.

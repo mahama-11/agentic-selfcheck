@@ -1,0 +1,11 @@
+id: frontend-prototype-parity-gate
+kind: static
+description: Validate frontend prototype-to-production parity schema, templates, strict PNG production evidence, fail-closed report checks, and positive/negative smoke fixtures.
+command: scripts/frontend_prototype_parity_smoke.py --root . --format json
+evidence:
+- templates/frontend/prototype-parity/PARITY_REPORT.md
+- schemas/frontend-parity-report.schema.json
+- scripts/frontend_prototype_parity_gate.py
+- scripts/frontend_prototype_parity_smoke.py
+- .hermes/workflows/frontend-prototype-parity-smoke/
+- .hermes/workflows/frontend-prototype-parity-gate/

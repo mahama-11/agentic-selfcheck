@@ -1,0 +1,28 @@
+# Component Inventory
+
+## Status
+
+Choose one:
+
+```yaml
+components_status: declared # declared | contract_needed
+```
+
+## Existing components to reuse
+
+| Component | Path / Storybook | Usage rule | Notes |
+|---|---|---|---|
+| Button | | | |
+| Card | | | |
+| Table/List | | | |
+| Modal/Drawer | | | |
+| Navigation | | | |
+
+## New components proposed
+
+| Component | Why existing components are insufficient | Approval |
+|---|---|---|
+
+## Contract-needed rationale
+
+Fill if `components_status: contract_needed`.

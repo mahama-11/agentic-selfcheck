@@ -1,0 +1,23 @@
+{
+  "msg_title": "Harness Engineering：AI 能在真正\"出事会炸\"的后端系统里写代码吗？",
+  "nickname": "腾讯程序员",
+  "desc": "AI 大规模系统实现可交付代码全指南",
+  "image_count": 15,
+  "images": [
+    "https://mmbiz.qpic.cn/sz_mmbiz_gif/j3gficicyOvasVeMDmWoZ2zyN8iaSc6XWYj79H3xfgvsqK9TDxOBlcUa6W0EE5KBdxacd2Ql6QBmuhBJKIUS4PSZQ/640?wx_fmt=gif&amp;from=appmsg&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1#imgIndex=0",
+    "https://mmbiz.qpic.cn/sz_mmbiz_png/KVER9adz907rCl80a6lTkw4vpI3iaoZ3Fz2dLKI38bQCogI2TtzkEEkNgJJhRF8m7uGWlJWibQ8F5rpqicYcH0W5JOCEJQAA1EiaeERyJlicMX9w/640?wx_fmt=png&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/mmbiz_png/KVER9adz907UkJMFmev4YeibFQU4cnBveEPvL3o3gMibhO33kicX2PPjrQ8owEdLicWib2xiaKQPpVe599zZQaibicgPZZdxG4Uq5XYKR1kD0LSicMs8/640?wx_fmt=png&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/mmbiz_png/KVER9adz906iaYnDvxbo7YGXcWSYG4MROl4Y0kc7MeY7KxwRRKELhGVjgWibKj9HNFBwpFOnNiaYsPsk6gL74UXTubx7pbSnpNbIZkmDhoBGls/640?wx_fmt=png&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/mmbiz_png/KVER9adz907Jw03uIqbzZJjFsKdic2WNEUzPh6jFQOo5pSDc8Psc6jgYia0viczYniaZTvaZrG4znnDSdWCYC9GicAxvkSPia6GTKsVu6FytnOGXc/640?wx_fmt=png&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/sz_mmbiz_png/KVER9adz905SL6fdf676kianF2WXmSysmcRFsVcib4WCmqha0xVkjeUazul1pDe3WyTTh657qdOuGzbNAibE3OC8xLoywoHDibzgXVc1GiaWBqxM/640?wx_fmt=png&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/mmbiz_png/KVER9adz9056bRG4FpkKIrzcBlaYwddhmoVPkJugicDS6fHFkXPUOEW0GnRBHG3lDaPKXR1iaFVxG63M6Z7vgias7oHKtbyxDsRiaYmibiarxSRDA/640?wx_fmt=png&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/sz_mmbiz_png/KVER9adz905tehnibpLnsZD2Jvg1qRbh4DCduAgibh8oiajW3vibWEcGF1oDe2OYWFQgzibR7B4wnic8dMeyACFd60srnYEpu654gF7A0XM0N3zw8/640?wx_fmt=png&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/sz_mmbiz_png/KVER9adz9070zCknNmaQmlECRmKGRNmdG37gvnHryC5ehQvEC29kVcL4BnNXN8LGg3cKp3J3jjBB4999XtbaVu769JHRL5Jf5QWFib8ia3Coc/640?wx_fmt=png&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/mmbiz_png/KVER9adz906700uyiaEfxMhLAmTSMYUXd6BCicqzwoKst3aS6bH6O0NaEuLia0gBtlGtqLg9nIKD10icM26WTicCzZursMyMyDFzdKPiaAjibGibzFU/640?wx_fmt=png&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/mmbiz_png/KVER9adz905k0sCO3QWAGZQNyDvZ9tH8EuAwSsW5QDfu3RMyHeS2FYN7a5belq3rrOibyVRiaQIxWCRPd2MUaG4GgOUsgibCVbibhiaeo0ILCGR0/640?wx_fmt=png&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/mmbiz_png/KVER9adz905icsQiasQczIahY3M9jrXT9vMtjWH43jqmJQ72AOXo1SHzrK4vQtiaU4Wt2TdiaHcypEDIhiahxiaxLicYftrJFIyYdUIXvIRvjdyFL8/640?wx_fmt=png&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/mmbiz_png/KVER9adz906ZMRLibMCyOjyp0uNnXULTVfGY845KS34VxJeyPX5EoY02icFlZevcRs8kJwtdnicCBshpRnSibwLj2q1ZKvoOyvQhqheHvODNUSY/640?wx_fmt=png&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/sz_mmbiz_gif/j3gficicyOvasVeMDmWoZ2zyN8iaSc6XWYjZ7Hx6Udjjk2BGLzC9ahJq7ibxDd1RGA0c9NYZc1husEsvb3tY4FcWPQ/640?wx_fmt=gif&amp;from=appmsg",
+    "https://mmbiz.qpic.cn/sz_mmbiz_png/j3gficicyOvasVeMDmWoZ2zyN8iaSc6XWYj5q5PQEOc5ibURPb03vnRibrxC3UR8xzdyATfiawTYRV2vJvBnAIcE1FeQ/640?wx_fmt=png&amp;from=appmsg"
+  ]
+}

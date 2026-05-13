@@ -1,0 +1,15 @@
+id: low-risk-copy-frontend
+project: agentic-selfcheck
+description: B-risk copy-only frontend tweak.
+level_target: L3
+repair_policy: default-repair-policy
+depends_on: [review-gates]
+must_pass:
+  static:
+    - frontend-high-fidelity-prototype-gate
+reviewer_gates: [spec-review, final-verification]
+human_required: [Reviewer confirms copy-only scope]
+risk_dimensions: [frontend]
+governance:
+  frontend_route_policy: low-risk-copy
+  risk_level: B

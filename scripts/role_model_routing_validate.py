@@ -27,8 +27,12 @@ def main() -> int:
     models = policy["models"]
     assertions = {
         "minimax_highspeed_defined": models.get("minimax_highspeed", {}).get("provider") == "minimax-cn" and models.get("minimax_highspeed", {}).get("model") == "MiniMax-M2.7-highspeed",
+        "codex_spark_patch_defined": models.get("codex_spark_patch", {}).get("provider") == "openai-codex" and models.get("codex_spark_patch", {}).get("model") == "gpt-5.3-codex-spark",
         "no_api_keys_in_policy": not re.search(r"sk-[A-Za-z0-9_.-]{20,}", json.dumps(policy)),
         "deterministic_roles_use_minimax": all(policy["roles"][role]["primary_model"] == "minimax_highspeed" for role in ["spec-reviewer", "qa", "final-verifier", "reporter"]),
+        "spark_worker_uses_spark_only": policy["roles"].get("spark-patch-worker", {}).get("primary_model") == "codex_spark_patch",
+        "spark_worker_not_final_gate": "final-verdict" in policy["roles"].get("spark-patch-worker", {}).get("must_escalate_if", []),
+        "spark_worker_excludes_sensitive_domains": all(item in policy["roles"].get("spark-patch-worker", {}).get("must_escalate_if", []) for item in ["auth", "billing", "wallet", "payment", "database-migration", "production-data", "prod-deploy"]),
         "architect_developer_high_capability": all(policy["roles"][role]["primary_model"] == "high_capability_default" for role in ["architect", "developer"]),
         "every_role_model_exists": all(cfg["primary_model"] in models and cfg["fallback_model"] in models for cfg in policy["roles"].values()),
         "secret_policy_never_emit": policy["defaults"]["secret_policy"] == "never_emit",

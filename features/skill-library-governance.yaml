@@ -1,0 +1,31 @@
+id: skill-library-governance
+project: agentic-selfcheck
+description: "Hermes skill standardization, stale-command detection, and pitfall-backfill governance."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - continuous-governance
+must_pass:
+  static:
+    - skill-library-governance-audit
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - spec-review
+  - quality-review
+  - final-verification
+human_required:
+  - "destructive cleanup requires human approval"
+  - "policy/product decisions require human approval"
+  - "skill deletion"
+  - "skill merge"
+  - "pinned or external skill modification"
+evidence_required:
+  - reports/skill-library-governance/audit.json
+  - reports/skill-library-governance/audit.md
+risk_dimensions:
+  - skill
+governance:
+  cadence: weekly
+  output_contract: compact-json-and-markdown
+  destructive_actions: human-required

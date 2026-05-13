@@ -1,0 +1,44 @@
+id: frontend-design-lane-generation
+project: agentic-selfcheck
+description: Generic multi-lane frontend design generation gate for C/D-risk prototype work.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+must_pass:
+  static:
+  - frontend-design-lane-generation-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- D-risk chosen lane requires human/product acceptance before production implementation.
+evidence_required:
+- templates/frontend/design-lane-generation/DESIGN_LANE_ORCHESTRATION.md
+- templates/frontend/design-lane-generation/LANE_BRIEF.md
+- templates/frontend/design-lane-generation/PROTOTYPE_ARTIFACT.md
+- templates/frontend/design-lane-generation/LANE_NOTES.md
+- schemas/frontend-design-lane.schema.json
+- scripts/frontend_design_lane_gate.py
+risk_dimensions:
+- frontend
+- visual-quality
+- design-lanes
+- ai-generation-context
+governance:
+  generic: true
+  not_mvp: true
+  applies_to_risks:
+  - C
+  - D
+  thresholds:
+    C:
+      min_lanes: 1
+      min_screenshots_per_lane: 1
+    D:
+      min_lanes: 2
+      min_screenshots_per_lane: 1
+      variant_comparison_required: true

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PitfallRecord",
+  "type": "object",
+  "required": [
+    "id",
+    "pitfall_id",
+    "scope",
+    "symptom",
+    "evidence_path",
+    "root_cause",
+    "prevention_action",
+    "updated_artifact",
+    "rerun_evidence",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "scope": {
+      "enum": [
+        "project",
+        "hermes",
+        "skill",
+        "verifier",
+        "docs"
+      ]
+    },
+    "symptom": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "root_cause": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prevention_action": {
+      "enum": [
+        "rule",
+        "verifier",
+        "skill",
+        "doc",
+        "accepted_risk"
+      ]
+    },
+    "updated_artifact": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rerun_evidence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "open",
+        "prevented",
+        "accepted_risk",
+        "obsolete"
+      ]
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "pitfall_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    }
+  },
+  "additionalProperties": false
+}

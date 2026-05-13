@@ -1,0 +1,8 @@
+id: v-project-code-health-governance-audit
+kind: static
+description: V workspace code health governance audit
+command: scripts/governance_audit.py --root /root/work/v --feature project-code-health-governance
+  --format both --fail-on-needs
+evidence:
+- /root/work/v/reports/project-code-health-governance/audit.json
+- /root/work/v/reports/project-code-health-governance/audit.md

@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "risk": "C",
+  "workflow": ".hermes/workflows/frontend-prototype-demo",
+  "image_evidence": [
+    {
+      "path": ".hermes/workflows/frontend-prototype-demo/prototype-screenshots/prototype-v2.png",
+      "kind": "prototype",
+      "viewport": "desktop",
+      "notes": "v2 high-fidelity prototype screenshot reviewed by vision critic"
+    }
+  ],
+  "verdict": "PASS_WITH_NOTES",
+  "scores": {
+    "product_comprehension": 4.4,
+    "information_architecture": 4.2,
+    "visual_hierarchy": 4.5,
+    "interaction_clarity": 3.8,
+    "state_coverage": 3.2,
+    "design_system_fit": 3.7,
+    "feasibility_against_real_apis_components": 3.3,
+    "accessibility_responsiveness_baseline": 3.1,
+    "distinctiveness_non_generic_quality": 4.6,
+    "implementation_parity_readiness": 3.6
+  },
+  "findings": [
+    {
+      "severity": "note",
+      "dimension": "product_comprehension",
+      "message": "The prototype clearly communicates the prototype gate before React implementation and selected workstream review purpose.",
+      "recommendation": "Keep the gate language, but reduce internal jargon when adapting to external-facing products."
+    },
+    {
+      "severity": "warning",
+      "dimension": "interaction_clarity",
+      "message": "Open acceptance and Accept v2 overlap conceptually; file opening behavior is unspecified.",
+      "recommendation": "Define click behavior, confirmation flow, and file-detail destinations before implementation."
+    },
+    {
+      "severity": "warning",
+      "dimension": "state_coverage",
+      "message": "Loading, empty, error, permission denied, stale evidence, request-changes and accepted states are not visualized.",
+      "recommendation": "Expand STATE_MATRIX and add additional prototype frames or Storybook states."
+    },
+    {
+      "severity": "warning",
+      "dimension": "accessibility_responsiveness_baseline",
+      "message": "Desktop first-screen is strong, but contrast, keyboard focus, ARIA behavior and responsive collapse are not proven.",
+      "recommendation": "Add responsive screenshots and accessibility notes before production parity review."
+    }
+  ],
+  "required_changes": [
+    "Define the difference between Open acceptance and Accept v2.",
+    "Specify behavior for file opening, workstream switching, acceptance confirmation, request-changes flow and segmented modes.",
+    "Expand state matrix for loading, empty, error, accepted, rejected, missing evidence and permission denied states.",
+    "Specify responsive behavior for the three-column layout.",
+    "Map cards, buttons, pills, tabs, file rows and status items to real design-system components."
+  ],
+  "acceptance_decision": "ACCEPTED_WITH_NOTES",
+  "human_review_required": false,
+  "average_score": 3.84,
+  "min_score": 3.1
+}

@@ -1,0 +1,12 @@
+id: agentic-selfcheck
+description: "Agentic SelfCheck control plane and governance system."
+root: /root/work/agentic-selfcheck
+services:
+  selfcheck:
+    kind: python-cli
+    root: /root/work/agentic-selfcheck
+    command: python3 -m selfcheck
+environment:
+  scope: local-control-plane
+notes:
+  - "SelfCheck YAML contracts are the source of truth; reports and Feishu ledger are projections."

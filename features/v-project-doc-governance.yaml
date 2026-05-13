@@ -1,0 +1,29 @@
+id: v-project-doc-governance
+project: v-workspace
+description: V workspace documentation freshness/accuracy governance
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+- continuous-governance
+must_pass:
+  static:
+  - v-project-doc-governance-audit
+reviewer_gates:
+- spec-review
+- quality-review
+- final-verification
+human_required:
+- destructive cleanup requires human approval
+- large refactor requires human approval
+- public contract change requires human approval
+- production data or secrets require human approval
+evidence_required:
+- /root/work/v/reports/project-doc-governance/audit.json
+- /root/work/v/reports/project-doc-governance/audit.md
+risk_dimensions:
+- docs-governance
+- v-workspace
+governance:
+  cadence: event-plus-daily
+  target_root: /root/work/v
+  destructive_actions: human-required

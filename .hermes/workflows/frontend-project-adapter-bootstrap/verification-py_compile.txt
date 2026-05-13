@@ -1,0 +1,1 @@
+PASS: py_compile scripts/frontend_project_adapter_init.py scripts/frontend_project_adapter_smoke.py

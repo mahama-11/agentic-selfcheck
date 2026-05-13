@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "risk": "C",
+  "workflow": "/root/work/agentic-selfcheck/.hermes/workflows/frontend-reference-aware-critic-smoke/bad-antipattern",
+  "image_evidence": [
+    {
+      "path": "prototype-screenshots/smoke.png",
+      "kind": "prototype"
+    }
+  ],
+  "verdict": "PASS",
+  "scores": {
+    "product_comprehension": 4.0,
+    "information_architecture": 4.0,
+    "visual_hierarchy": 4.0,
+    "interaction_clarity": 4.0,
+    "state_coverage": 4.0,
+    "design_system_fit": 4.0,
+    "feasibility_against_real_apis_components": 4.0,
+    "accessibility_responsiveness_baseline": 4.0,
+    "distinctiveness_non_generic_quality": 4.0,
+    "implementation_parity_readiness": 4.0
+  },
+  "findings": [],
+  "required_changes": [],
+  "acceptance_decision": "ACCEPTED_WITH_NOTES",
+  "human_review_required": false
+}

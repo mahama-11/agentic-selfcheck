@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "risk": "C",
+  "workflow": "bad-malformed-extra-top-field",
+  "prototype_freeze_evidence": {
+    "path": "prototype-freeze.json",
+    "gate_result_path": "frozen-prototype/prototype-freeze-gate-result.json",
+    "status": "PASS"
+  },
+  "threshold": {
+    "minimum_score": 80,
+    "scoring_basis": "Structured human/agent parity score; CV diff not required yet."
+  },
+  "overall_parity_score": 91,
+  "verdict": "PASS",
+  "coverage": [
+    {
+      "route": "/",
+      "surface": "home",
+      "prototype_screen": "home",
+      "production_screenshot": "production-screenshots/home.png",
+      "status": "covered"
+    }
+  ],
+  "comparisons": [
+    {
+      "route": "/",
+      "surface": "home",
+      "prototype_screen": "home",
+      "prototype_screenshot": "prototype-screenshots/home.png",
+      "production_screenshot": "production-screenshots/home.png",
+      "parity_score": 91,
+      "status": "pass",
+      "notes": "smoke parity"
+    }
+  ],
+  "deviations": [],
+  "contract_needed_exceptions": [
+    {
+      "scope": "analytics event naming",
+      "visual_parity_scope": false,
+      "owner": "frontend",
+      "approval_status": "approved",
+      "rationale": "Non-visual contract to be completed separately; visual parity remains enforced."
+    }
+  ],
+  "approval": {
+    "owner": "design",
+    "status": "accepted",
+    "rationale": "smoke approval",
+    "date": "2026-01-01"
+  },
+  "unexpected": "fail closed"
+}

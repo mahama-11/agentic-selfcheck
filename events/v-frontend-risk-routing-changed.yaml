@@ -1,0 +1,19 @@
+id: v-frontend-risk-routing-changed
+event: v.governance.changed.frontend
+description: Run frontend risk routing when V workspace frontend files change.
+feature: frontend-risk-routing
+groups:
+- static
+mode: event
+strict_audit: true
+debounce_seconds: 60
+allowed_sources:
+- local
+- git-hook
+- ci-webhook
+- hermes-webhook
+- cron
+human_escalation:
+- c_or_d_frontend_needs_prototype_first
+- missing_required_prototype_gate
+- verifier_failure_after_retry

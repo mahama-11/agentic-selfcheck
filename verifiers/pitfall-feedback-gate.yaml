@@ -1,0 +1,8 @@
+id: pitfall-feedback-gate
+kind: static
+description: "Pitfall registry schema and recurrence-prevention governance gate."
+command: "scripts/governance_audit.py --root . --feature pitfall-feedback-loop --format json --fail-on-needs"
+requires: [continuous-governance]
+evidence:
+  - reports/pitfall-feedback-loop/audit.json
+  - reports/pitfall-feedback-loop/audit.md

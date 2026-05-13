@@ -1,0 +1,8 @@
+# Repair Events
+
+- Fixed `init_frontend_workflow.py` README template patch after an initial malformed replacement inserted line-number text. Replaced the full README block with a valid f-string including the prototype freeze step.
+- Repaired frontend-prototype-freeze review blockers: confined lane/screenshot/accepted artifact resolution to workflow/repo evidence paths, removed screenshot discovery fallback, required explicitly listed strict PNG screenshots, tightened nested payload shape/approval requirements, and expanded negative smoke coverage for traversal, empty/missing/invalid screenshots, mapping gaps, missing accepted prototype fields, and missing prior acceptance artifacts.
+- Repaired nested schema enforcement blocker: status is now explicit for component/API mappings (no silent mapped default), mapped/contract_needed conditional requirements are enforced, deviations require the schema fields with boolean material and non-empty required text, and smoke now includes the malformed nested required-fields regression case.
+
+
+Status: CLOSED

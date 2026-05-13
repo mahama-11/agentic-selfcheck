@@ -1,0 +1,8 @@
+id: project-code-health-governance-audit
+kind: static
+description: "Project code health, redundancy, garbage, and dead-code governance audit."
+command: "scripts/governance_audit.py --root . --feature project-code-health-governance --format json --fail-on-needs"
+requires: [continuous-governance]
+evidence:
+  - reports/project-code-health-governance/audit.json
+  - reports/project-code-health-governance/audit.md

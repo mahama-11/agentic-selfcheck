@@ -1,0 +1,8 @@
+id: hermes-self-governance-audit
+kind: static
+description: "Hermes/SelfCheck workflow, report, Harness, and ledger-projection governance audit."
+command: "scripts/governance_audit.py --root . --feature hermes-self-governance --format json --fail-on-needs"
+requires: [continuous-governance]
+evidence:
+  - reports/hermes-self-governance/audit.json
+  - reports/hermes-self-governance/audit.md

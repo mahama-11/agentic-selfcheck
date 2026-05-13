@@ -1,0 +1,31 @@
+# Design Tokens Map
+
+## Status
+
+Choose one:
+
+```yaml
+tokens_status: declared # declared | contract_needed
+```
+
+## Token sources
+
+| Token type | Source file / system | Notes |
+|---|---|---|
+| Color | | |
+| Typography | | |
+| Spacing | | |
+| Radius | | |
+| Shadow | | |
+| Motion | | |
+
+## Allowed new tokens
+
+New tokens are forbidden unless explicitly listed here with rationale.
+
+| Token | Rationale | Approval |
+|---|---|---|
+
+## Contract-needed rationale
+
+Fill if `tokens_status: contract_needed`.

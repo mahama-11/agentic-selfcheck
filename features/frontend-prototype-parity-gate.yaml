@@ -1,0 +1,58 @@
+id: frontend-prototype-parity-gate
+project: agentic-selfcheck
+description: Generic prototype-to-production parity gate requiring frozen prototype evidence, real production PNG screenshots, route/surface coverage, thresholded parity scoring, and approved material deviations for C/D-risk frontend work.
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+must_pass:
+  static:
+  - frontend-prototype-parity-gate
+reviewer_gates:
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- D-risk material parity deviations require human_approved approval.
+- Contract-needed exceptions must be explicit and cannot bypass visual parity evidence.
+evidence_required:
+- templates/frontend/prototype-parity/PARITY_REPORT.md
+- schemas/frontend-parity-report.schema.json
+- scripts/frontend_prototype_parity_gate.py
+- scripts/frontend_prototype_parity_smoke.py
+- .hermes/workflows/frontend-prototype-parity-gate/
+risk_dimensions:
+- frontend
+- visual-regression
+- prototype-parity
+- production-readiness
+governance:
+  generic: true
+  not_mvp: true
+  applies_to_risks:
+  - C
+  - D
+  thresholds:
+    C:
+      minimum_parity_score: 80
+      approval_status:
+      - accepted
+      - human_approved
+      require_prototype_freeze_evidence: true
+      require_production_png_screenshots: true
+    D:
+      minimum_parity_score: 80
+      approval_status:
+      - human_approved
+      material_deviation_approval_required: human_approved
+      require_prototype_freeze_evidence: true
+      require_production_png_screenshots: true
+  fail_closed_on:
+  - missing prototype freeze evidence
+  - missing or fake production screenshots
+  - malformed parity report or unexpected fields
+  - score below threshold
+  - route or surface coverage gaps
+  - unapproved material deviations
+  - visual parity bypass via contract-needed exception

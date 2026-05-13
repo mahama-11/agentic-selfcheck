@@ -1,0 +1,11 @@
+id: frontend-high-fidelity-prototype-gate
+kind: static
+description: Validate generic high-fidelity frontend prototype gate templates, prototype coverage enforcement, and smoke workflow fail-closed behavior.
+command: scripts/frontend_quality_gate_smoke.py --root . --format json
+evidence:
+- docs/frontend-quality-loop.md
+- templates/frontend/high-fidelity-prototype-gate/
+- templates/frontend/high-fidelity-prototype-gate/PROTOTYPE_COVERAGE.md
+- scripts/frontend_quality_gate.py
+- scripts/frontend_quality_gate_smoke.py
+- .hermes/workflows/frontend-quality-gate-smoke/

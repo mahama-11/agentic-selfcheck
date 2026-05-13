@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-selfcheck.local/schemas/frontend-reference-aware-critique.schema.json",
+  "title": "Frontend Reference-Aware Visual Critique",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "risk", "workflow", "critique_source", "design_quality_pack", "reference_alignment", "aesthetic_alignment", "anti_pattern_check", "token_component_fit", "project_rules_alignment", "verdict", "required_changes"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "risk": {"type": "string", "enum": ["C", "D"]},
+    "workflow": {"type": "string", "minLength": 1},
+    "critique_source": {"type": "string", "minLength": 1},
+    "design_quality_pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference_pack", "aesthetic_direction", "anti_patterns", "design_tokens_map", "component_inventory", "project_frontend_rules"],
+      "properties": {
+        "reference_pack": {"type": "string", "minLength": 1},
+        "aesthetic_direction": {"type": "string", "minLength": 1},
+        "anti_patterns": {"type": "string", "minLength": 1},
+        "design_tokens_map": {"type": "string", "minLength": 1},
+        "component_inventory": {"type": "string", "minLength": 1},
+        "project_frontend_rules": {"type": "string", "minLength": 1}
+      }
+    },
+    "reference_alignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["references_used", "borrowed_principles", "not_copied_elements", "score"],
+      "properties": {
+        "references_used": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "borrowed_principles": {"type": "array", "items": {"type": "string"}},
+        "not_copied_elements": {"type": "array", "items": {"type": "string"}},
+        "score": {"type": "number", "minimum": 1, "maximum": 5}
+      }
+    },
+    "aesthetic_alignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "matches", "gaps"],
+      "properties": {
+        "score": {"type": "number", "minimum": 1, "maximum": 5},
+        "matches": {"type": "array", "items": {"type": "string"}},
+        "gaps": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "anti_pattern_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["violations", "avoided", "score"],
+      "properties": {
+        "violations": {"type": "array", "items": {"type": "string"}},
+        "avoided": {"type": "array", "items": {"type": "string"}},
+        "score": {"type": "number", "minimum": 1, "maximum": 5}
+      }
+    },
+    "token_component_fit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "score", "notes"],
+      "properties": {
+        "status": {"type": "string", "enum": ["aligned", "contract_needed", "misaligned"]},
+        "score": {"type": "number", "minimum": 1, "maximum": 5},
+        "notes": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "project_rules_alignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "matched_rules", "violated_rules"],
+      "properties": {
+        "score": {"type": "number", "minimum": 1, "maximum": 5},
+        "matched_rules": {"type": "array", "items": {"type": "string"}},
+        "violated_rules": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "verdict": {"type": "string", "enum": ["PASS", "PASS_WITH_NOTES", "REQUEST_CHANGES", "REJECT_DIRECTION"]},
+    "required_changes": {"type": "array", "items": {"type": "string"}},
+    "average_context_score": {"type": "number", "minimum": 1, "maximum": 5}
+  }
+}

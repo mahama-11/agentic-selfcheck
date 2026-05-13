@@ -1,0 +1,19 @@
+id: v-continuous-governance-docs-changed
+event: v.governance.changed.docs
+description: Run v-project-doc-governance when V workspace governance event fires.
+feature: v-project-doc-governance
+groups:
+- static
+mode: event
+strict_audit: true
+debounce_seconds: 120
+allowed_sources:
+- local
+- git-hook
+- ci-webhook
+- hermes-webhook
+- cron
+human_escalation:
+- governance_status_needs_human
+- verifier_failure_after_retry
+- destructive_cleanup_requested

@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "risk": "C",
+  "workflow": "bad-missing-production-screenshot",
+  "selected_lane": "lane-a",
+  "accepted_prototype": {
+    "artifact_path": "design-lanes/lane-a/prototype.html",
+    "acceptance_doc": "PROTOTYPE_ACCEPTANCE.md",
+    "notes": "accepted"
+  },
+  "frozen_screenshots": [
+    {
+      "screen": "home",
+      "path": "prototype-screenshots/home.png"
+    }
+  ],
+  "component_mapping": [
+    {
+      "prototype_element": "Hero",
+      "production_component": "Hero",
+      "status": "mapped",
+      "rationale": "same"
+    }
+  ],
+  "api_state_mapping": [
+    {
+      "prototype_state": "Loaded home",
+      "production_source": "HomeViewModel",
+      "status": "mapped",
+      "rationale": "same"
+    }
+  ],
+  "implementation_contract": {
+    "owner": "frontend",
+    "readiness": "ready_for_implementation",
+    "scope": "home parity",
+    "handoff_artifacts": [
+      "prototype-freeze.json"
+    ],
+    "open_questions": []
+  },
+  "deviations": [],
+  "approval": {
+    "owner": "design",
+    "status": "accepted",
+    "rationale": "smoke",
+    "date": "2026-01-01"
+  }
+}

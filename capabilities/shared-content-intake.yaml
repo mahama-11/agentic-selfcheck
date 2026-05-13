@@ -1,0 +1,12 @@
+id: shared-content-intake
+description: "User-shared article link intake: turn a link explicitly sent by the user into readable text, metadata, and evidence for downstream notes/docs/tasks."
+contracts:
+  - "Only process links explicitly provided by the user in chat or a local sample file; do not discover or enumerate content."
+  - "Produce a structured JSON report and a plain-text artifact before any analysis or downstream landing."
+  - "If the article body is unavailable, report BLOCKED/needs-user-export rather than retrying aggressively."
+  - "Keep the user-facing wording as content整理/归档/沉淀, not security or crawler language."
+verifiers:
+  - shared-content-intake-smoke
+human_boundaries:
+  - "User decides whether an extracted article becomes a new idea, an update to an existing idea, a Feishu Doc, or an executable task."
+  - "User approval is required before using cookies, private exports, logged-in browser state, or any non-public source."

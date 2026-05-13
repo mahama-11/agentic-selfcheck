@@ -1,0 +1,8 @@
+id: v-project-doc-governance-audit
+kind: static
+description: V workspace documentation governance audit
+command: scripts/governance_audit.py --root /root/work/v --feature project-doc-governance
+  --format both --fail-on-needs
+evidence:
+- /root/work/v/reports/project-doc-governance/audit.json
+- /root/work/v/reports/project-doc-governance/audit.md

@@ -1,0 +1,21 @@
+id: continuous-governance-skills-changed
+event: governance.changed.skills
+description: Run skill library governance when skill files change.
+feature: skill-library-governance
+groups:
+  - static
+  - evidence
+mode: event
+strict_audit: true
+debounce_seconds: 120
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+human_escalation:
+  - governance_status_needs_human
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - destructive_cleanup_requested

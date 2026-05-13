@@ -1,0 +1,20 @@
+id: v-continuous-governance-code-changed
+event: v.governance.changed.code
+description: Run v-project-code-health-governance when V workspace governance event
+  fires.
+feature: v-project-code-health-governance
+groups:
+- evidence
+mode: event
+strict_audit: true
+debounce_seconds: 120
+allowed_sources:
+- local
+- git-hook
+- ci-webhook
+- hermes-webhook
+- cron
+human_escalation:
+- governance_status_needs_human
+- verifier_failure_after_retry
+- destructive_cleanup_requested

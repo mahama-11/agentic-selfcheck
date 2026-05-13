@@ -1,0 +1,10 @@
+id: frontend-prototype-freeze-gate
+kind: static
+description: Validate frontend prototype freeze templates, strict payload checks, and smoke workflow fail-closed behavior.
+command: scripts/frontend_prototype_freeze_smoke.py --root . --format json
+evidence:
+- templates/frontend/prototype-freeze/
+- schemas/frontend-prototype-freeze.schema.json
+- scripts/frontend_prototype_freeze_gate.py
+- scripts/frontend_prototype_freeze_smoke.py
+- .hermes/workflows/frontend-prototype-freeze-smoke/

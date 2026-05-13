@@ -1,0 +1,125 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "case": "base",
+      "expected": "PASS",
+      "actual": "PASS",
+      "returncode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"scope\": \"base\",\n  \"findings\": []\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "good-c",
+      "expected": "PASS",
+      "actual": "PASS",
+      "returncode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"PASS\",\n    \"scope\": \"workflow\",\n    \"risk\": \"C\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/good-c\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/good-c/frontend-parity-report.json\",\n    \"production_screenshots\": [\n      \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/good-c/production-screenshots/home.png\"\n    ],\n    \"prototype_screens\": [\n      \"home\"\n    ],\n    \"findings\": []\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "good-d",
+      "expected": "PASS",
+      "actual": "PASS",
+      "returncode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"PASS\",\n    \"scope\": \"workflow\",\n    \"risk\": \"D\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/good-d\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/good-d/frontend-parity-report.json\",\n    \"production_screenshots\": [\n      \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/good-d/production-screenshots/home.png\"\n    ],\n    \"prototype_screens\": [\n      \"home\"\n    ],\n    \"findings\": []\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-missing-prototype-freeze",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"FAIL\",\n    \"scope\": \"workflow\",\n    \"risk\": \"C\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-missing-prototype-freeze\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-missing-prototype-freeze/frontend-parity-report.json\",\n    \"production_screenshots\": [\n      \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-missing-prototype-freeze/production-screenshots/home.png\"\n    ],\n    \"prototype_screens\": [],\n    \"findings\": [\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-missing-prototype-freeze/frontend-parity-report.json\",\n        \"message\": \"prototype_freeze_evidence.path must resolve to prototype-freeze.json under workflow\"\n      }\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-missing-production-screenshot",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"FAIL\",\n    \"scope\": \"workflow\",\n    \"risk\": \"C\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-missing-production-screenshot\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-missing-production-screenshot/frontend-parity-report.json\",\n    \"production_screenshots\": [],\n    \"prototype_screens\": [\n      \"home\"\n    ],\n    \"findings\": [\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-missing-production-screenshot/frontend-parity-report.json\",\n        \"message\": \"coverage[0].production_screenshot must be a strict valid PNG under production-screenshots/\"\n      },\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-missing-production-screenshot/frontend-parity-report.json\",\n        \"message\": \"comparisons[0].production_screenshot must be a strict valid PNG under production-screenshots/\"\n      },\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-missing-production-screenshot/production-screenshots\",\n        \"message\": \"at least one real production screenshot PNG is required\"\n      }\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-below-80-score",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"FAIL\",\n    \"scope\": \"workflow\",\n    \"risk\": \"C\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-below-80-score\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-below-80-score/frontend-parity-report.json\",\n    \"production_screenshots\": [\n      \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-below-80-score/production-screenshots/home.png\"\n    ],\n    \"prototype_screens\": [\n      \"home\"\n    ],\n    \"findings\": [\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-below-80-score/frontend-parity-report.json\",\n        \"message\": \"overall_parity_score must be between 80 and 100\"\n      },\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-below-80-score/frontend-parity-report.json\",\n        \"message\": \"comparisons[0].parity_score must be between 80 and 100\"\n      }\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-over-100-score",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"FAIL\",\n    \"scope\": \"workflow\",\n    \"risk\": \"C\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-over-100-score\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-over-100-score/frontend-parity-report.json\",\n    \"production_screenshots\": [\n      \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-over-100-score/production-screenshots/home.png\"\n    ],\n    \"prototype_screens\": [\n      \"home\"\n    ],\n    \"findings\": [\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-over-100-score/frontend-parity-report.json\",\n        \"message\": \"overall_parity_score must be between 80 and 100\"\n      },\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-over-100-score/frontend-parity-report.json\",\n        \"message\": \"comparisons[0].parity_score must be between 80 and 100\"\n      }\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-unapproved-material-deviation",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"FAIL\",\n    \"scope\": \"workflow\",\n    \"risk\": \"C\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-unapproved-material-deviation\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-unapproved-material-deviation/frontend-parity-report.json\",\n    \"production_screenshots\": [\n      \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-unapproved-material-deviation/production-screenshots/home.png\"\n    ],\n    \"prototype_screens\": [\n      \"home\"\n    ],\n    \"findings\": [\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-unapproved-material-deviation/frontend-parity-report.json\",\n        \"message\": \"deviations[0] material deviation requires approved or human_approved approval_status\"\n      }\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-d-material-not-human-approved",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"FAIL\",\n    \"scope\": \"workflow\",\n    \"risk\": \"D\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-d-material-not-human-approved\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-d-material-not-human-approved/frontend-parity-report.json\",\n    \"production_screenshots\": [\n      \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-d-material-not-human-approved/production-screenshots/home.png\"\n    ],\n    \"prototype_screens\": [\n      \"home\"\n    ],\n    \"findings\": [\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-d-material-not-human-approved/frontend-parity-report.json\",\n        \"message\": \"deviations[0] D-risk material deviation requires human_approved\"\n      }\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-route-coverage-gap",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"FAIL\",\n    \"scope\": \"workflow\",\n    \"risk\": \"C\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-route-coverage-gap\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-route-coverage-gap/frontend-parity-report.json\",\n    \"production_screenshots\": [\n      \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-route-coverage-gap/production-screenshots/home.png\"\n    ],\n    \"prototype_screens\": [\n      \"home\",\n      \"settings\"\n    ],\n    \"findings\": [\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-route-coverage-gap/frontend-parity-report.json\",\n        \"message\": \"coverage missing frozen prototype screens: settings\"\n      },\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-route-coverage-gap/frontend-parity-report.json\",\n        \"message\": \"comparisons missing frozen prototype screens: settings\"\n      }\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-malformed-extra-top-field",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"FAIL\",\n    \"scope\": \"workflow\",\n    \"risk\": \"C\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-malformed-extra-top-field\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-malformed-extra-top-field/frontend-parity-report.json\",\n    \"production_screenshots\": [\n      \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-malformed-extra-top-field/production-screenshots/home.png\"\n    ],\n    \"prototype_screens\": [\n      \"home\"\n    ],\n    \"findings\": [\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-malformed-extra-top-field/frontend-parity-report.json\",\n        \"message\": \"unexpected top-level fields: unexpected\"\n      }\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-malformed-nested-extra-field",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"FAIL\",\n    \"scope\": \"workflow\",\n    \"risk\": \"C\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-malformed-nested-extra-field\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-malformed-nested-extra-field/frontend-parity-report.json\",\n    \"production_screenshots\": [\n      \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-malformed-nested-extra-field/production-screenshots/home.png\"\n    ],\n    \"prototype_screens\": [\n      \"home\"\n    ],\n    \"findings\": [\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-malformed-nested-extra-field/frontend-parity-report.json\",\n        \"message\": \"threshold has unexpected fields: extra\"\n      }\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-fake-png-header-only",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"FAIL\",\n    \"scope\": \"workflow\",\n    \"risk\": \"C\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-fake-png-header-only\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-fake-png-header-only/frontend-parity-report.json\",\n    \"production_screenshots\": [],\n    \"prototype_screens\": [\n      \"home\"\n    ],\n    \"findings\": [\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-fake-png-header-only/frontend-parity-report.json\",\n        \"message\": \"coverage[0].production_screenshot must be a strict valid PNG under production-screenshots/\"\n      },\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-fake-png-header-only/frontend-parity-report.json\",\n        \"message\": \"comparisons[0].production_screenshot must be a strict valid PNG under production-screenshots/\"\n      },\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-fake-png-header-only/production-screenshots\",\n        \"message\": \"at least one real production screenshot PNG is required\"\n      }\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-path-traversal-production",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"FAIL\",\n    \"scope\": \"workflow\",\n    \"risk\": \"C\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-path-traversal-production\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-path-traversal-production/frontend-parity-report.json\",\n    \"production_screenshots\": [],\n    \"prototype_screens\": [\n      \"home\"\n    ],\n    \"findings\": [\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-path-traversal-production/frontend-parity-report.json\",\n        \"message\": \"coverage[0].production_screenshot must be a strict valid PNG under production-screenshots/\"\n      },\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-path-traversal-production/frontend-parity-report.json\",\n        \"message\": \"comparisons[0].production_screenshot must be a strict valid PNG under production-screenshots/\"\n      },\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-path-traversal-production/production-screenshots\",\n        \"message\": \"at least one real production screenshot PNG is required\"\n      }\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-contract-needed-visual-bypass",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"base\": {\n    \"status\": \"PASS\",\n    \"scope\": \"base\",\n    \"findings\": []\n  },\n  \"workflow\": {\n    \"status\": \"FAIL\",\n    \"scope\": \"workflow\",\n    \"risk\": \"C\",\n    \"workflow\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-contract-needed-visual-bypass\",\n    \"payload\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-contract-needed-visual-bypass/frontend-parity-report.json\",\n    \"production_screenshots\": [\n      \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-contract-needed-visual-bypass/production-screenshots/home.png\"\n    ],\n    \"prototype_screens\": [\n      \"home\"\n    ],\n    \"findings\": [\n      {\n        \"severity\": \"error\",\n        \"path\": \"/root/work/agentic-selfcheck/.hermes/workflows/frontend-prototype-parity-smoke/bad-contract-needed-visual-bypass/frontend-parity-report.json\",\n        \"message\": \"contract_needed_exceptions[0] cannot bypass visual parity; visual_parity_scope must be false\"\n      }\n    ]\n  }\n}\n",
+      "stderr": ""
+    }
+  ]
+}

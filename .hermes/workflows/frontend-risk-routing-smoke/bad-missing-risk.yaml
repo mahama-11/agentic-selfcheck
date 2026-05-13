@@ -1,0 +1,13 @@
+id: bad-production-frontend-missing-risk
+project: agentic-selfcheck
+description: Production frontend page implementation with no explicit risk.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on: [review-gates]
+must_pass:
+  static: []
+reviewer_gates: [architect, spec-review, quality-review, qa, final-verification]
+human_required: [Human visual acceptance before implementation]
+risk_dimensions: [frontend]
+governance:
+  frontend_route_policy: production-implementation

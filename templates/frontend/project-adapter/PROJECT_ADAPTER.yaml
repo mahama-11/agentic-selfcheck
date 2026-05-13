@@ -1,0 +1,29 @@
+schema_version: '1.0'
+project:
+  name: frontend-project
+  root: .
+  risk_policy: C/D frontend work must use design quality pack, lane generation, reference-aware critique, prototype freeze, and later parity gates.
+frontend_adapter:
+  rule_files:
+    cursor_rule: .cursor/rules/frontend-design.mdc
+    claude_frontend_section: CLAUDE_FRONTEND_SECTION.md
+    command_registry: PLAYWRIGHT_COMMANDS.md
+  commands:
+    install: npm install
+    dev: npm run dev
+    build: npm run build
+    typecheck: npm run typecheck
+    lint: npm run lint
+    test: npm test
+    storybook: npm run storybook
+    playwright: npx playwright test
+  evidence_paths:
+    - .hermes/workflows
+    - test-results
+    - playwright-report
+    - screenshots
+  policies:
+    no_overwrite_without_force: true
+    require_frozen_prototype_before_implementation: true
+    require_reference_aware_visual_critique: true
+    require_command_registry: true

@@ -1,0 +1,15 @@
+id: pit-20260512-pitfall-id-contract
+pitfall_id: pit-20260512-pitfall-id-contract
+scope: verifier
+symptom: Pitfall schema used id but architecture/spec expected pitfall_id.
+evidence_path: .hermes/workflows/continuous-governance-engineering/05-spec-review-report.md
+root_cause: Registry reused generic object id field and did not encode explicit pitfall_id
+  contract.
+prevention_action: verifier
+updated_artifact: schemas/pitfall.schema.json;selfcheck/__main__.py pitfall add
+rerun_evidence: .hermes/workflows/continuous-governance-engineering/07-qa-report.md
+status: prevented
+created_at: '2026-05-12T05:15:13Z'
+tags:
+- schema
+notes: ''

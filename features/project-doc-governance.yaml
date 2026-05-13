@@ -1,0 +1,31 @@
+id: project-doc-governance
+project: agentic-selfcheck
+description: "Project documentation freshness, accuracy, standardization, and evidence-link governance."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - continuous-governance
+must_pass:
+  static:
+    - project-doc-governance-audit
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - spec-review
+  - quality-review
+  - final-verification
+human_required:
+  - "destructive cleanup requires human approval"
+  - "policy/product decisions require human approval"
+  - "documentation deletion"
+  - "public contract wording changes"
+  - "architecture decision changes"
+evidence_required:
+  - reports/project-doc-governance/audit.json
+  - reports/project-doc-governance/audit.md
+risk_dimensions:
+  - project
+governance:
+  cadence: weekly
+  output_contract: compact-json-and-markdown
+  destructive_actions: human-required

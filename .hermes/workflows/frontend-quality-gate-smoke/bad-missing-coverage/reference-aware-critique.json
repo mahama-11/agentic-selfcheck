@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "risk": "C",
+  "workflow": "bad-missing-coverage",
+  "critique_source": "visual-critique.json",
+  "design_quality_pack": {
+    "reference_pack": "REFERENCE_PACK.md",
+    "aesthetic_direction": "AESTHETIC_DIRECTION.md",
+    "anti_patterns": "ANTI_PATTERNS.md",
+    "design_tokens_map": "DESIGN_TOKENS_MAP.md",
+    "component_inventory": "COMPONENT_INVENTORY.md",
+    "project_frontend_rules": "PROJECT_FRONTEND_RULES.md"
+  },
+  "reference_alignment": {
+    "references_used": [
+      "Linear workflow clarity",
+      "Shopify Admin commercial density"
+    ],
+    "borrowed_principles": [
+      "clear hierarchy",
+      "task-first navigation"
+    ],
+    "not_copied_elements": [
+      "brand-specific assets"
+    ],
+    "score": 4.2
+  },
+  "aesthetic_alignment": {
+    "score": 4.2,
+    "matches": [
+      "consistent high-fidelity SaaS prototype"
+    ],
+    "gaps": []
+  },
+  "anti_pattern_check": {
+    "violations": [],
+    "avoided": [
+      "single hero-only prototype",
+      "generic gradient dashboard"
+    ],
+    "score": 4.2
+  },
+  "token_component_fit": {
+    "status": "aligned",
+    "score": 4.1,
+    "notes": [
+      "uses declared token/component direction"
+    ]
+  },
+  "project_rules_alignment": {
+    "score": 4.2,
+    "matched_rules": [
+      "prototype-first before implementation"
+    ],
+    "violated_rules": []
+  },
+  "verdict": "PASS",
+  "required_changes": [],
+  "average_context_score": 4.18
+}

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-selfcheck.local/schemas/frontend-design-quality-pack.schema.json",
+  "title": "Frontend Design Quality Pack",
+  "type": "object",
+  "required": [
+    "risk",
+    "references",
+    "anti_patterns",
+    "tokens_status",
+    "components_status",
+    "human_review_boundary"
+  ],
+  "properties": {
+    "risk": {
+      "type": "string",
+      "enum": [
+        "C",
+        "D"
+      ]
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "source",
+          "borrow"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "borrow": {
+            "type": "string"
+          },
+          "avoid": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "anti_patterns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tokens_status": {
+      "type": "string",
+      "enum": [
+        "declared",
+        "contract_needed"
+      ]
+    },
+    "components_status": {
+      "type": "string",
+      "enum": [
+        "declared",
+        "contract_needed"
+      ]
+    },
+    "human_review_boundary": {
+      "type": "string"
+    },
+    "external_reference_only": {
+      "type": "boolean"
+    }
+  }
+}

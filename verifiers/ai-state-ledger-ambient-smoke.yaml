@@ -1,0 +1,7 @@
+id: ai-state-ledger-ambient-smoke
+kind: api
+description: "Low-frequency/manual ambient UX smoke: normal chat should not pollute ledger; natural continuation resolves to human-readable TASK/LEDGER records instead of raw SESSION IDs. Do not include this verifier in high-frequency watchdog groups."
+command: "scripts/state_ledger_ambient_smoke.py"
+requires: [feishu_base, lark_cli, hermes_cli]
+evidence:
+  - ambient_ux_smoke_json

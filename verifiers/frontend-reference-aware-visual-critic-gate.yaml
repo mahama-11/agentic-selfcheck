@@ -1,0 +1,9 @@
+id: frontend-reference-aware-visual-critic-gate
+kind: static
+description: Validate reference-aware visual critic schema/script and smoke workflow fail-closed behavior.
+command: scripts/frontend_reference_aware_critic_smoke.py --root . --format json
+evidence:
+- schemas/frontend-reference-aware-critique.schema.json
+- scripts/frontend_reference_aware_critic.py
+- scripts/frontend_reference_aware_critic_smoke.py
+- .hermes/workflows/frontend-reference-aware-critic-smoke/

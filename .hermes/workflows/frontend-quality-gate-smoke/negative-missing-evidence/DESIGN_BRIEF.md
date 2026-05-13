@@ -1,0 +1,42 @@
+# Design Brief
+
+## Risk classification
+
+- Risk level: C | D
+- Why high-fidelity prototype is required:
+
+## Product goal
+
+## Target users and jobs-to-be-done
+
+## Routes / surfaces affected
+
+## Visual direction
+
+- Tone:
+- Density:
+- Reference products or screenshots:
+- Forbidden directions:
+
+## Existing design system constraints
+
+- Tokens:
+- Components:
+- Storybook/component lab:
+- Accessibility constraints:
+
+## Data and backend constraints
+
+- Real APIs available:
+- Contract-needed areas:
+- Fake/prototype data allowed only in prototype:
+
+## Acceptance bar
+
+- Prototype must be accepted before production implementation.
+- Production implementation must provide prototype parity evidence.
+
+
+## Smoke filled content
+
+This is a synthetic negative-missing-evidence workflow artifact used only to validate the generic frontend quality gate.

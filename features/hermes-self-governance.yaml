@@ -1,0 +1,31 @@
+id: hermes-self-governance
+project: agentic-selfcheck
+description: "Hermes/SelfCheck workflow, report, Harness projection, and state-ledger projection governance."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - continuous-governance
+must_pass:
+  static:
+    - hermes-self-governance-audit
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - spec-review
+  - quality-review
+  - final-verification
+human_required:
+  - "destructive cleanup requires human approval"
+  - "policy/product decisions require human approval"
+  - "historical evidence deletion"
+  - "Feishu/Base writes"
+  - "governance policy changes"
+evidence_required:
+  - reports/hermes-self-governance/audit.json
+  - reports/hermes-self-governance/audit.md
+risk_dimensions:
+  - hermes
+governance:
+  cadence: weekly
+  output_contract: compact-json-and-markdown
+  destructive_actions: human-required

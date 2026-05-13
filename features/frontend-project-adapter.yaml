@@ -1,0 +1,44 @@
+id: frontend-project-adapter
+project: agentic-selfcheck
+description: Generic frontend project adapter bootstrap for persistent local rules and command registry initialization.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+- frontend-runtime
+- ai-generation
+must_pass:
+  static:
+  - frontend-project-adapter-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- Project-specific command values and product exceptions require the owning human/team; bootstrap must not invent unavailable credentials or destructive migrations.
+evidence_required:
+- scripts/frontend_project_adapter_init.py
+- scripts/frontend_project_adapter_smoke.py
+- schemas/frontend-project-adapter.schema.json
+- templates/frontend/project-adapter/PROJECT_ADAPTER.yaml
+- templates/frontend/project-adapter/frontend-design.mdc
+- templates/frontend/project-adapter/CLAUDE_FRONTEND_SECTION.md
+- templates/frontend/project-adapter/PLAYWRIGHT_COMMANDS.md
+- .hermes/workflows/frontend-project-adapter-bootstrap/
+risk_dimensions:
+- frontend
+- adapter-bootstrap
+- persistent-rules
+- overwrite-safety
+governance:
+  generic: true
+  not_mvp: true
+  fail_closed:
+  - overwrite_without_force
+  - malformed_adapter_config
+  - missing_required_commands
+  - missing_required_rules
+  - path_traversal
+  - force_semantics

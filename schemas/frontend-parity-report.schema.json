@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-selfcheck.local/schemas/frontend-parity-report.schema.json",
+  "title": "Frontend Prototype-to-Production Parity Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "risk",
+    "workflow",
+    "prototype_freeze_evidence",
+    "threshold",
+    "overall_parity_score",
+    "verdict",
+    "coverage",
+    "comparisons",
+    "deviations",
+    "contract_needed_exceptions",
+    "approval"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "risk": {"enum": ["C", "D"]},
+    "workflow": {"type": "string", "minLength": 1},
+    "prototype_freeze_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "status"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "gate_result_path": {"type": "string", "minLength": 1},
+        "status": {"enum": ["PASS", "FROZEN", "human_approved"]}
+      }
+    },
+    "threshold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum_score", "scoring_basis"],
+      "properties": {
+        "minimum_score": {"type": "number", "minimum": 80},
+        "scoring_basis": {"type": "string", "minLength": 1}
+      }
+    },
+    "overall_parity_score": {"type": "number", "minimum": 0, "maximum": 100},
+    "verdict": {"enum": ["PASS", "PASS_WITH_APPROVED_DEVIATIONS"]},
+    "coverage": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["route", "surface", "prototype_screen", "production_screenshot", "status"],
+        "properties": {
+          "route": {"type": "string", "minLength": 1},
+          "surface": {"type": "string", "minLength": 1},
+          "prototype_screen": {"type": "string", "minLength": 1},
+          "production_screenshot": {"type": "string", "minLength": 1},
+          "status": {"enum": ["covered", "contract_needed"]}
+        }
+      }
+    },
+    "comparisons": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["route", "surface", "prototype_screen", "prototype_screenshot", "production_screenshot", "parity_score", "status"],
+        "properties": {
+          "route": {"type": "string", "minLength": 1},
+          "surface": {"type": "string", "minLength": 1},
+          "prototype_screen": {"type": "string", "minLength": 1},
+          "prototype_screenshot": {"type": "string", "minLength": 1},
+          "production_screenshot": {"type": "string", "minLength": 1},
+          "parity_score": {"type": "number", "minimum": 0, "maximum": 100},
+          "status": {"enum": ["pass", "approved_deviation"]},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "deviations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description", "material", "approval_status", "rationale"],
+        "properties": {
+          "description": {"type": "string", "minLength": 1},
+          "material": {"type": "boolean"},
+          "approval_status": {"enum": ["none", "pending", "approved", "human_approved"]},
+          "rationale": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "contract_needed_exceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scope", "visual_parity_scope", "owner", "approval_status", "rationale"],
+        "properties": {
+          "scope": {"type": "string", "minLength": 1},
+          "visual_parity_scope": {"const": false},
+          "owner": {"type": "string", "minLength": 1},
+          "approval_status": {"enum": ["approved", "human_approved"]},
+          "rationale": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "status", "rationale"],
+      "properties": {
+        "owner": {"type": "string", "minLength": 1},
+        "status": {"enum": ["accepted", "human_approved"]},
+        "rationale": {"type": "string", "minLength": 1},
+        "date": {"type": "string", "minLength": 1},
+        "approved_at": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+# Prototype Artifact
+
+- artifact_type: html|figma|storybook|v0|lovable|image|other
+- artifact_path_or_url:
+- generated_at:
+- source_prompt_path:
+
+## What was produced
+
+## Known limitations
+
+## Screenshot evidence
+
+Add real screenshots under `screenshots/`. Placeholder files do not count.

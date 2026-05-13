@@ -1,0 +1,58 @@
+id: frontend-prototype-gate
+project: agentic-selfcheck
+description: Generic high-fidelity prototype acceptance gate before production implementation.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+must_pass:
+  static:
+  - frontend-high-fidelity-prototype-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- Human/product acceptance required for D risk and recommended for C risk.
+evidence_required:
+- templates/frontend/high-fidelity-prototype-gate/DESIGN_CRITIQUE.md
+- templates/frontend/high-fidelity-prototype-gate/PROTOTYPE_SCORECARD.md
+- templates/frontend/high-fidelity-prototype-gate/PROTOTYPE_ACCEPTANCE.md
+- templates/frontend/high-fidelity-prototype-gate/PROTOTYPE_COVERAGE.md
+- templates/frontend/high-fidelity-prototype-gate/VISUAL_ACCEPTANCE_CHECKLIST.md
+- templates/frontend/high-fidelity-prototype-gate/AI_DESIGN_AGENT_PLAYBOOK.md
+- templates/frontend/high-fidelity-prototype-gate/DESIGN_LANES.md
+- schemas/frontend-prototype-critique.schema.json
+- scripts/frontend_visual_critic.py
+- scripts/frontend_quality_gate.py
+- scripts/frontend_quality_gate_smoke.py
+- templates/frontend/high-fidelity-prototype-gate/VISUAL_CRITIQUE_JSON.md
+risk_dimensions:
+- frontend
+- prototype
+- visual-quality
+- human-boundary
+governance:
+  risk_levels:
+  - C
+  - D
+  generic: true
+  repair_policy_note: do not enter production implementation until prototype is accepted
+  prototype_quality_hardened: true
+  not_mvp: true
+  quality_thresholds:
+    C:
+      average: 3.8
+      min_dimension: 3.0
+    D:
+      average: 4.2
+      min_dimension: 3.5
+      min_lanes: 2
+  required_design_roles:
+  - product-ux-decomposer
+  - design-lane-agent
+  - design-critic
+  - frontend-architect
+  - human-acceptance-boundary

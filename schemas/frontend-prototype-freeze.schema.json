@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-selfcheck.local/schemas/frontend-prototype-freeze.schema.json",
+  "title": "Frontend Prototype Freeze / Implementation Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "risk", "workflow", "selected_lane", "accepted_prototype", "frozen_screenshots", "component_mapping", "api_state_mapping", "implementation_contract", "deviations", "approval"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "risk": {"type": "string", "enum": ["C", "D"]},
+    "workflow": {"type": "string", "minLength": 1},
+    "selected_lane": {"type": "string", "minLength": 1},
+    "accepted_prototype": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_path", "acceptance_doc"],
+      "properties": {
+        "artifact_path": {"type": "string", "minLength": 1},
+        "acceptance_doc": {"type": "string", "minLength": 1},
+        "notes": {"type": "string"}
+      }
+    },
+    "frozen_screenshots": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "screen"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "screen": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "component_mapping": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["prototype_element", "status"],
+        "properties": {
+          "prototype_element": {"type": "string", "minLength": 1},
+          "production_component": {"type": "string"},
+          "status": {"type": "string", "enum": ["mapped", "contract_needed"]},
+          "rationale": {"type": "string"}
+        }
+      }
+    },
+    "api_state_mapping": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["prototype_state", "status"],
+        "properties": {
+          "prototype_state": {"type": "string", "minLength": 1},
+          "production_source": {"type": "string"},
+          "status": {"type": "string", "enum": ["mapped", "contract_needed"]},
+          "rationale": {"type": "string"}
+        }
+      }
+    },
+    "implementation_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "readiness", "scope", "handoff_artifacts", "open_questions"],
+      "properties": {
+        "owner": {"type": "string", "minLength": 1},
+        "readiness": {"type": "string", "minLength": 1},
+        "scope": {"type": "string", "minLength": 1},
+        "handoff_artifacts": {"type": "array", "items": {"type": "string"}},
+        "open_questions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "deviations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description", "material", "approval_status", "rationale"],
+        "properties": {
+          "description": {"type": "string", "minLength": 1},
+          "material": {"type": "boolean"},
+          "approval_status": {"type": "string", "enum": ["none", "pending", "approved"]},
+          "rationale": {"type": "string"}
+        }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "status", "rationale"],
+      "anyOf": [
+        {"required": ["date"]},
+        {"required": ["approved_at"]}
+      ],
+      "properties": {
+        "owner": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "enum": ["accepted", "human_approved"]},
+        "rationale": {"type": "string", "minLength": 1},
+        "date": {"type": "string", "minLength": 1},
+        "approved_at": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

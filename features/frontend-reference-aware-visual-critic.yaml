@@ -1,0 +1,42 @@
+id: frontend-reference-aware-visual-critic
+project: agentic-selfcheck
+description: Validate prototype visual critique against upstream Design Quality Pack references, aesthetics, anti-patterns, tokens/components, and project rules.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+must_pass:
+  static:
+  - frontend-reference-aware-visual-critic-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- D-risk accepted prototype still requires human/product sign-off before production implementation.
+evidence_required:
+- schemas/frontend-reference-aware-critique.schema.json
+- scripts/frontend_reference_aware_critic.py
+- scripts/frontend_reference_aware_critic_smoke.py
+risk_dimensions:
+- frontend
+- visual-quality
+- reference-alignment
+- ai-generation-context
+governance:
+  generic: true
+  not_mvp: true
+  applies_to_risks:
+  - C
+  - D
+  thresholds:
+    C:
+      min_references_used: 2
+      average_context_score: 3.8
+      min_context_dimension: 3.0
+    D:
+      min_references_used: 3
+      average_context_score: 4.2
+      min_context_dimension: 3.5

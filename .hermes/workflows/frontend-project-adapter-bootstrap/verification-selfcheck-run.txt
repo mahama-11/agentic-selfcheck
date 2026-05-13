@@ -1,0 +1,1 @@
+PASS: frontend-project-adapter-gate -> reports/frontend-project-adapter/frontend-project-adapter-gate.json

@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "risk": "C",
+  "workflow": "/root/work/agentic-selfcheck/.hermes/workflows/frontend-reference-aware-critic-smoke/bad-visual-source",
+  "critique_source": "visual-critique.json",
+  "design_quality_pack": {
+    "reference_pack": "REFERENCE_PACK.md",
+    "aesthetic_direction": "AESTHETIC_DIRECTION.md",
+    "anti_patterns": "ANTI_PATTERNS.md",
+    "design_tokens_map": "DESIGN_TOKENS_MAP.md",
+    "component_inventory": "COMPONENT_INVENTORY.md",
+    "project_frontend_rules": "PROJECT_FRONTEND_RULES.md"
+  },
+  "reference_alignment": {
+    "references_used": [
+      "ref1",
+      "ref2"
+    ],
+    "borrowed_principles": [
+      "workflow clarity"
+    ],
+    "not_copied_elements": [
+      "brand"
+    ],
+    "score": 4.0
+  },
+  "aesthetic_alignment": {
+    "score": 4.0,
+    "matches": [
+      "direction"
+    ],
+    "gaps": []
+  },
+  "anti_pattern_check": {
+    "violations": [],
+    "avoided": [
+      "generic dashboard"
+    ],
+    "score": 4.0
+  },
+  "token_component_fit": {
+    "status": "contract_needed",
+    "score": 4.0,
+    "notes": [
+      "synthetic"
+    ]
+  },
+  "project_rules_alignment": {
+    "score": 4.0,
+    "matched_rules": [
+      "workflow IA"
+    ],
+    "violated_rules": []
+  },
+  "verdict": "PASS_WITH_NOTES",
+  "required_changes": []
+}

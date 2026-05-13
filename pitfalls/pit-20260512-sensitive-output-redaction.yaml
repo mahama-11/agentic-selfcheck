@@ -1,0 +1,15 @@
+id: pit-20260512-sensitive-output-redaction
+pitfall_id: pit-20260512-sensitive-output-redaction
+scope: hermes
+symptom: Verifier stdout/stderr tails could persist secrets in SelfCheck reports.
+evidence_path: .hermes/workflows/continuous-governance-engineering/06-quality-review-report.md
+root_cause: run_verifier stored subprocess stdout/stderr tails without comprehensive
+  redaction for bearer/GitHub/OpenAI-token-like values.
+prevention_action: rule
+updated_artifact: selfcheck/__main__.py:redact_sensitive_text
+rerun_evidence: .hermes/workflows/continuous-governance-engineering/07-qa-report.md
+status: prevented
+created_at: '2026-05-12T05:19:49Z'
+tags:
+- security
+notes: ''

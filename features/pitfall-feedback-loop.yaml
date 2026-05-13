@@ -1,0 +1,30 @@
+id: pitfall-feedback-loop
+project: agentic-selfcheck
+description: "Pitfall registry and recurrence-prevention governance loop."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - continuous-governance
+must_pass:
+  static:
+    - pitfall-feedback-gate
+  evidence:
+    - evidence-gate
+reviewer_gates:
+  - spec-review
+  - quality-review
+  - final-verification
+human_required:
+  - "destructive cleanup requires human approval"
+  - "policy/product decisions require human approval"
+  - "accepted risk decision"
+  - "closing repeated pitfall without prevention action"
+evidence_required:
+  - reports/pitfall-feedback-loop/audit.json
+  - reports/pitfall-feedback-loop/audit.md
+risk_dimensions:
+  - pitfall
+governance:
+  cadence: weekly
+  output_contract: compact-json-and-markdown
+  destructive_actions: human-required

@@ -1,0 +1,49 @@
+id: frontend-design-quality-pack
+project: agentic-selfcheck
+description: Generic upstream design-quality context gate for C/D-risk AI frontend
+  prototype generation.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+must_pass:
+  static:
+  - frontend-design-quality-pack-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- Human/product review boundary required for D-risk frontend work.
+evidence_required:
+- templates/frontend/design-quality-pack/REFERENCE_PACK.md
+- templates/frontend/design-quality-pack/AESTHETIC_DIRECTION.md
+- templates/frontend/design-quality-pack/ANTI_PATTERNS.md
+- templates/frontend/design-quality-pack/DESIGN_TOKENS_MAP.md
+- templates/frontend/design-quality-pack/COMPONENT_INVENTORY.md
+- templates/frontend/design-quality-pack/REFERENCE_SCREENSHOTS.md
+- templates/frontend/design-quality-pack/PROJECT_FRONTEND_RULES.md
+- schemas/frontend-design-quality-pack.schema.json
+- scripts/frontend_design_quality_pack_gate.py
+risk_dimensions:
+- frontend
+- design-quality
+- ai-generation-context
+- visual-quality
+governance:
+  generic: true
+  not_mvp: true
+  applies_to_risks:
+  - C
+  - D
+  purpose: Constrain AI prototype generation before design lanes start.
+  thresholds:
+    C:
+      min_references: 2
+      min_anti_patterns: 1
+    D:
+      min_references: 3
+      min_anti_patterns: 3
+      min_reference_images_or_waiver: 2

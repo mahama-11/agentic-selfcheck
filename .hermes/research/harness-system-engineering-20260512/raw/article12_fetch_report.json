@@ -1,0 +1,27 @@
+{
+  "outdir": "/Users/bytedance/Downloads/hermes_wechat_agent_longrun_20260508_132421",
+  "results": [
+    {
+      "idx": 1,
+      "url": "https://mp.weixin.qq.com/s/rlIyIIZOXFObNIXbPI7gDg",
+      "path": "/Users/bytedance/Downloads/hermes_wechat_agent_longrun_20260508_132421/article1.html",
+      "bytes": 3531081,
+      "block": false,
+      "has_js_content": true,
+      "meta": {
+        "msg_title": "Harness Engineeringï¼èæ¶ä¸å¨ï¼ææ¯å¦ä½å°åºç¨çAI Codingçæåè³90%ç"
+      }
+    },
+    {
+      "idx": 2,
+      "url": "https://mp.weixin.qq.com/s/VJgVPeJ5GZhVwbRtneEk_Q",
+      "path": "/Users/bytedance/Downloads/hermes_wechat_agent_longrun_20260508_132421/article2.html",
+      "bytes": 4376144,
+      "block": false,
+      "has_js_content": true,
+      "meta": {
+        "msg_title": "Harness Engineeringï¼AI è½å¨çæ­£\"åºäºä¼ç¸\"çåç«¯ç³»ç»éåä»£ç åï¼"
+      }
+    }
+  ]
+}

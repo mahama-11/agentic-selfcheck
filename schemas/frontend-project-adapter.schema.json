@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FrontendProjectAdapter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project", "frontend_adapter"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "root", "risk_policy"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "root": {"type": "string", "minLength": 1},
+        "risk_policy": {"type": "string", "minLength": 20}
+      }
+    },
+    "frontend_adapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule_files", "commands", "evidence_paths", "policies"],
+      "properties": {
+        "rule_files": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cursor_rule", "claude_frontend_section", "command_registry"],
+          "properties": {
+            "cursor_rule": {"type": "string", "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$)).+"},
+            "claude_frontend_section": {"type": "string", "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$)).+"},
+            "command_registry": {"type": "string", "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$)).+"}
+          }
+        },
+        "commands": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["install", "dev", "build", "typecheck", "lint", "test", "storybook", "playwright"],
+          "properties": {
+            "install": {"type": "string", "minLength": 3},
+            "dev": {"type": "string", "minLength": 3},
+            "build": {"type": "string", "minLength": 3},
+            "typecheck": {"type": "string", "minLength": 3},
+            "lint": {"type": "string", "minLength": 3},
+            "test": {"type": "string", "minLength": 3},
+            "storybook": {"type": "string", "minLength": 3},
+            "playwright": {"type": "string", "minLength": 3}
+          }
+        },
+        "evidence_paths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$)).+"}
+        },
+        "policies": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["no_overwrite_without_force", "require_frozen_prototype_before_implementation", "require_command_registry"],
+          "properties": {
+            "no_overwrite_without_force": {"const": true},
+            "require_frozen_prototype_before_implementation": {"const": true},
+            "require_reference_aware_visual_critique": {"type": "boolean"},
+            "require_command_registry": {"const": true}
+          }
+        }
+      }
+    }
+  }
+}

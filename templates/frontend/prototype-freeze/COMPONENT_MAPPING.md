@@ -1,0 +1,11 @@
+# Component Mapping
+
+Map every material prototype element to a production component or explicitly mark that a component contract is needed.
+
+| Prototype element | Production component | Status (`mapped`/`contract_needed`) | Rationale |
+| --- | --- | --- | --- |
+| `<header nav>` | `<AppHeader>` | `mapped` | `<why this is the right production component>` |
+
+Rules:
+- Do not leave material prototype elements unmapped.
+- Use `contract_needed` only with a concrete rationale and owner in `IMPLEMENTATION_CONTRACT.md`.

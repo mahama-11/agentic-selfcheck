@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-selfcheck.local/schemas/frontend-prototype-critique.schema.json",
+  "title": "Frontend Prototype Visual Critique",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "risk",
+    "workflow",
+    "image_evidence",
+    "verdict",
+    "scores",
+    "findings",
+    "required_changes",
+    "acceptance_decision"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "risk": {"type": "string", "enum": ["C", "D"]},
+    "workflow": {"type": "string", "minLength": 1},
+    "image_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["path", "kind"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "kind": {"type": "string", "enum": ["prototype", "variant", "production", "comparison", "browser"]},
+          "viewport": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "verdict": {"type": "string", "enum": ["PASS", "PASS_WITH_NOTES", "REQUEST_CHANGES", "REJECT_DIRECTION"]},
+    "scores": {
+      "type": "object",
+      "required": [
+        "product_comprehension",
+        "information_architecture",
+        "visual_hierarchy",
+        "interaction_clarity",
+        "state_coverage",
+        "design_system_fit",
+        "feasibility_against_real_apis_components",
+        "accessibility_responsiveness_baseline",
+        "distinctiveness_non_generic_quality",
+        "implementation_parity_readiness"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "product_comprehension": {"type": "number", "minimum": 1, "maximum": 5},
+        "information_architecture": {"type": "number", "minimum": 1, "maximum": 5},
+        "visual_hierarchy": {"type": "number", "minimum": 1, "maximum": 5},
+        "interaction_clarity": {"type": "number", "minimum": 1, "maximum": 5},
+        "state_coverage": {"type": "number", "minimum": 1, "maximum": 5},
+        "design_system_fit": {"type": "number", "minimum": 1, "maximum": 5},
+        "feasibility_against_real_apis_components": {"type": "number", "minimum": 1, "maximum": 5},
+        "accessibility_responsiveness_baseline": {"type": "number", "minimum": 1, "maximum": 5},
+        "distinctiveness_non_generic_quality": {"type": "number", "minimum": 1, "maximum": 5},
+        "implementation_parity_readiness": {"type": "number", "minimum": 1, "maximum": 5}
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "dimension", "message"],
+        "properties": {
+          "severity": {"type": "string", "enum": ["info", "note", "warning", "blocker"]},
+          "dimension": {"type": "string"},
+          "message": {"type": "string", "minLength": 1},
+          "recommendation": {"type": "string"}
+        }
+      }
+    },
+    "required_changes": {"type": "array", "items": {"type": "string"}},
+    "acceptance_decision": {"type": "string", "enum": ["ACCEPTED", "ACCEPTED_WITH_NOTES", "REQUEST_CHANGES", "REJECTED_DIRECTION"]},
+    "human_review_required": {"type": "boolean"},
+    "average_score": {"type": "number", "minimum": 1, "maximum": 5},
+    "min_score": {"type": "number", "minimum": 1, "maximum": 5}
+  }
+}

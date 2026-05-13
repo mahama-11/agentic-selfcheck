@@ -1,0 +1,19 @@
+id: shared-content-intake
+description: "Land the first version of the user-shared article intake flow: link in chat -> text/metadata/evidence -> ready for idea/doc/task routing."
+project: agentic-selfcheck
+level_target: L3
+repair_policy: default-repair-policy
+depends_on:
+  - shared-content-intake
+must_pass:
+  static:
+    - shared-content-intake-smoke
+reviewer_gates:
+  - spec-review
+  - qa
+  - final-verification
+human_required:
+  - "Decide whether a processed article should create a new idea, update an existing idea, create a Feishu Doc, or trigger an executable task."
+  - "Approve any future use of private exports, cookies, or logged-in browser state."
+evidence_required:
+  - reports/shared-content-intake/content-intake-smoke.json

@@ -1,0 +1,43 @@
+id: frontend-risk-routing
+project: agentic-selfcheck
+description: Risk router that sends C/D frontend work into the prototype-first design-quality, lane, coverage, freeze, and parity gates before production acceptance.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+must_pass:
+  static:
+  - frontend-risk-routing-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- Human/product signoff remains required for D-risk direction and final acceptance.
+evidence_required:
+- scripts/frontend_risk_router.py
+- scripts/frontend_risk_routing_smoke.py
+- verifiers/frontend-risk-routing-gate.yaml
+- reports/frontend-risk-routing/latest.json
+risk_dimensions:
+- frontend
+- orchestration
+- visual-quality
+- human-boundary
+governance:
+  generic: true
+  not_mvp: true
+  purpose: Stop C/D frontend implementation from bypassing prototype-first gates.
+  routes:
+    A: non_frontend_default
+    B: lightweight_frontend_review
+    C: prototype_first_required
+    D: prototype_first_required_with_human_signoff
+  required_gates_for_cd_production:
+  - frontend-design-quality-pack-gate
+  - frontend-design-lane-generation-gate
+  - frontend-high-fidelity-prototype-gate
+  - frontend-prototype-freeze-gate
+  - frontend-prototype-parity-gate

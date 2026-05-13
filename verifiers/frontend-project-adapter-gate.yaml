@@ -1,0 +1,10 @@
+id: frontend-project-adapter-gate
+kind: static
+description: Validate frontend project adapter templates, schema, initializer, and fail-closed smoke behavior.
+command: scripts/frontend_project_adapter_smoke.py --root . --format json
+evidence:
+- scripts/frontend_project_adapter_init.py
+- scripts/frontend_project_adapter_smoke.py
+- schemas/frontend-project-adapter.schema.json
+- templates/frontend/project-adapter/
+- .hermes/workflows/frontend-project-adapter-bootstrap/

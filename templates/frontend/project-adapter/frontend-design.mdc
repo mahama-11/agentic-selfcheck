@@ -1,0 +1,14 @@
+---
+description: Persistent frontend design quality guardrails for C/D-risk implementation work.
+globs:
+  - '**/*.{tsx,jsx,ts,js,css,scss,md,mdx}'
+alwaysApply: false
+---
+
+# Frontend Design Rules
+
+- Do not implement C/D-risk frontend screens directly from a prompt. Require a design quality pack, generated design lanes, reference-aware critique, and prototype freeze before production implementation.
+- Treat the accepted prototype freeze as the implementation contract. Do not reinterpret layout, hierarchy, copy, motion, state behavior, or core visual direction without recording an approved deviation.
+- Before final QA, capture browser evidence and compare production screenshots against the frozen prototype/parity contract.
+- Use the local `PROJECT_ADAPTER.yaml` command registry for build, typecheck, lint, Storybook, and Playwright commands instead of inventing project-specific commands.
+- Fail closed when screenshots, component mappings, API/state mappings, or command registry entries are missing.

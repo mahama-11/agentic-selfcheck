@@ -1,0 +1,10 @@
+id: frontend-design-lane-generation-gate
+kind: static
+description: Validate generic frontend design lane generation templates and smoke workflow fail-closed behavior.
+command: scripts/frontend_design_lane_smoke.py --root . --format json
+evidence:
+- templates/frontend/design-lane-generation/
+- schemas/frontend-design-lane.schema.json
+- scripts/frontend_design_lane_gate.py
+- scripts/frontend_design_lane_smoke.py
+- .hermes/workflows/frontend-design-lane-generation-smoke/

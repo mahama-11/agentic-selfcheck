@@ -1,0 +1,8 @@
+id: project-doc-governance-audit
+kind: static
+description: "Project documentation freshness, accuracy, and evidence standard governance audit."
+command: "scripts/governance_audit.py --root . --feature project-doc-governance --format json --fail-on-needs"
+requires: [continuous-governance]
+evidence:
+  - reports/project-doc-governance/audit.json
+  - reports/project-doc-governance/audit.md

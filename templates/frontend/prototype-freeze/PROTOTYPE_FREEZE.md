@@ -1,0 +1,20 @@
+# Prototype Freeze
+
+Record the accepted prototype lane that is frozen for implementation handoff. This document must not contain secrets.
+
+- schema payload: `prototype-freeze.json`
+- selected_lane: `<lane-a|lane-b|path under this workflow/repo>`
+- accepted_prototype: object with `artifact_path` and `acceptance_doc` resolving under this workflow/repo
+- frozen_screenshots: non-empty explicit list of `{screen, path}` entries; paths must be strict valid PNG files under `prototype-screenshots/` or `frozen-prototype/`
+- approval: include `owner`, `status`, `rationale`, and deterministic `date` or `approved_at`
+
+## Freeze decision
+
+- Decision: `<accepted|human_approved>`
+- Owner: `<responsible person/team>`
+- Date: `<YYYY-MM-DD>`
+- Risk: `<C|D>`
+
+## Non-negotiable implementation constraints
+
+List the visible prototype attributes that production must preserve: layout, hierarchy, density, states, motion/interaction behavior, accessibility baseline, and responsive breakpoints.

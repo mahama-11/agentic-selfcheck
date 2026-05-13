@@ -1,0 +1,8 @@
+id: skill-library-governance-audit
+kind: static
+description: "Hermes skill library standardization and stale-procedure governance audit."
+command: "scripts/governance_audit.py --root . --feature skill-library-governance --format json --fail-on-needs"
+requires: [continuous-governance]
+evidence:
+  - reports/skill-library-governance/audit.json
+  - reports/skill-library-governance/audit.md

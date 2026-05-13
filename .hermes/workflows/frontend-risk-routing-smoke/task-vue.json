@@ -1,0 +1,1 @@
+{"id": "profile-view-redesign", "title": "Redesign profile settings view", "description": "Complex frontend view redesign with new interaction flow.", "changed_files": ["web/src/views/Profile.vue"]}

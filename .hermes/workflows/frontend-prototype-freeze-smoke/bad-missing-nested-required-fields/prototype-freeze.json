@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "risk": "C",
+  "workflow": "bad-missing-nested-required-fields",
+  "selected_lane": "lane-a",
+  "accepted_prototype": {
+    "artifact_path": "design-lanes/lane-a/prototype.html",
+    "acceptance_doc": "PROTOTYPE_ACCEPTANCE.md",
+    "notes": "Accepted by smoke fixture."
+  },
+  "frozen_screenshots": [
+    {
+      "path": "prototype-screenshots/home.png",
+      "screen": "home"
+    }
+  ],
+  "component_mapping": [
+    {
+      "prototype_element": "Hero CTA card",
+      "production_component": "HeroCtaCard",
+      "rationale": "Status omitted to prove it is required."
+    }
+  ],
+  "api_state_mapping": [
+    {
+      "prototype_state": "Dashboard success with empty secondary list",
+      "production_source": "GET /api/dashboard + DashboardViewModel",
+      "rationale": "Status omitted to prove it is required."
+    }
+  ],
+  "implementation_contract": {
+    "owner": "frontend-platform",
+    "readiness": "ready_for_implementation",
+    "scope": "Build frozen home/dashboard screen to screenshot parity.",
+    "handoff_artifacts": [
+      "prototype-freeze.json",
+      "PROTOTYPE_FREEZE.md"
+    ],
+    "open_questions": []
+  },
+  "deviations": [
+    {}
+  ],
+  "approval": {
+    "owner": "product-design",
+    "status": "accepted",
+    "rationale": "Smoke fixture approval.",
+    "date": "2026-01-01"
+  }
+}

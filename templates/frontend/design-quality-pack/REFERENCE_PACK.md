@@ -1,0 +1,25 @@
+# Reference Pack
+
+## Purpose
+
+Define the aesthetic and product quality references for this frontend task before any AI prototype generation.
+
+## Reference entries
+
+| ID | Product / Source | URL / Screenshot | What to borrow | What not to borrow |
+|---|---|---|---|---|
+| REF-1 | | | | |
+| REF-2 | | | | |
+
+## Reference rationale
+
+Explain why these references are relevant to the target users, product category, information density, and interaction model.
+
+## External reference waiver
+
+Set only when screenshots cannot be stored locally.
+
+```yaml
+external_reference_only: false
+rationale: ""
+```

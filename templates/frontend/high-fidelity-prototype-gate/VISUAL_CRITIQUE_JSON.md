@@ -1,0 +1,29 @@
+# Visual Critique JSON
+
+The independent visual critic must produce structured JSON matching:
+
+```text
+schemas/frontend-prototype-critique.schema.json
+```
+
+Recommended file in concrete workflows:
+
+```text
+visual-critique.json
+```
+
+Generate a critic prompt with:
+
+```bash
+python3 scripts/frontend_visual_critic.py --workflow <workflow> --risk C --print-prompt
+```
+
+Materialize critique artifacts with:
+
+```bash
+python3 scripts/frontend_visual_critic.py \
+  --workflow <workflow> \
+  --risk C \
+  --input-json <workflow>/visual-critique.json \
+  --write-artifacts
+```

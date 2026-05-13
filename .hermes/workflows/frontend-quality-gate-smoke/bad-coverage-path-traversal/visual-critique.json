@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "risk": "C",
+  "workflow": "bad-coverage-path-traversal",
+  "image_evidence": [
+    {
+      "path": "prototype-screenshots/home.png",
+      "kind": "prototype",
+      "viewport": "desktop"
+    }
+  ],
+  "verdict": "PASS",
+  "scores": {
+    "product_comprehension": 4.1,
+    "information_architecture": 4.1,
+    "visual_hierarchy": 4.1,
+    "interaction_clarity": 4.1,
+    "state_coverage": 4.1,
+    "design_system_fit": 4.1,
+    "feasibility_against_real_apis_components": 4.1,
+    "accessibility_responsiveness_baseline": 4.1,
+    "distinctiveness_non_generic_quality": 4.1,
+    "implementation_parity_readiness": 4.1
+  },
+  "findings": [],
+  "required_changes": [],
+  "acceptance_decision": "ACCEPTED",
+  "human_review_required": false,
+  "average_score": 4.1,
+  "min_score": 4.1
+}

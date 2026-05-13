@@ -1,0 +1,19 @@
+id: continuous-governance
+description: "Continuous governance contract for project documentation, code health, Hermes outputs, skills, and pitfall reuse."
+contracts:
+  - Governance loops must produce machine-readable JSON and compact Markdown evidence.
+  - Safe auto-fix is allowed only for non-destructive changes; deletions, policy changes, and skill removals require human approval.
+  - Pitfalls must be converted into a rule, verifier, skill, document update, or explicit accepted risk.
+  - Feishu ledger is a human status projection, not a source of truth or AI session dump.
+verifiers:
+  - project-doc-governance-audit
+  - project-code-health-governance-audit
+  - hermes-self-governance-audit
+  - skill-library-governance-audit
+  - pitfall-feedback-gate
+human_boundaries:
+  - destructive cleanup
+  - source module deletion or broad refactor
+  - skill deletion or merge
+  - Feishu/Base writes
+  - policy change or accepted risk

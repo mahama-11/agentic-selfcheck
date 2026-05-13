@@ -1,0 +1,117 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "case": "base-check",
+      "expected": "PASS",
+      "actual": "PASS",
+      "returncode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"findings\": []\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "good-init",
+      "expected": "PASS",
+      "actual": "PASS",
+      "returncode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"findings\": [],\n  \"written\": [\n    \"PROJECT_ADAPTER.yaml\",\n    \".cursor/rules/frontend-design.mdc\",\n    \"CLAUDE_FRONTEND_SECTION.md\",\n    \"PLAYWRIGHT_COMMANDS.md\",\n    \"CLAUDE.md\"\n  ],\n  \"skipped\": [],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/good-project\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "good-check",
+      "expected": "PASS",
+      "actual": "PASS",
+      "returncode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"findings\": [],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/good-project\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-overwrite-without-force",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"findings\": [\n    {\n      \"severity\": \"error\",\n      \"path\": \"/tmp/frontend-adapter-smoke-vw04ljx9/conflict-project/PLAYWRIGHT_COMMANDS.md\",\n      \"message\": \"target exists; refusing to overwrite without --force\"\n    }\n  ],\n  \"written\": [],\n  \"skipped\": [],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/conflict-project\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "good-force-replaces-generated-targets",
+      "expected": "PASS",
+      "actual": "PASS",
+      "returncode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"findings\": [],\n  \"written\": [\n    \"PROJECT_ADAPTER.yaml\",\n    \".cursor/rules/frontend-design.mdc\",\n    \"CLAUDE_FRONTEND_SECTION.md\",\n    \"PLAYWRIGHT_COMMANDS.md\",\n    \"CLAUDE.md\"\n  ],\n  \"skipped\": [],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/conflict-project\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-existing-claude-without-force",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"findings\": [\n    {\n      \"severity\": \"error\",\n      \"path\": \"/tmp/frontend-adapter-smoke-vw04ljx9/claude-existing/CLAUDE.md\",\n      \"message\": \"CLAUDE.md exists; refusing to modify human-authored file without --force\"\n    }\n  ],\n  \"written\": [],\n  \"skipped\": [],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/claude-existing\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "good-force-claude-managed-section",
+      "expected": "PASS",
+      "actual": "PASS",
+      "returncode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"findings\": [],\n  \"written\": [\n    \"PROJECT_ADAPTER.yaml\",\n    \".cursor/rules/frontend-design.mdc\",\n    \"CLAUDE_FRONTEND_SECTION.md\",\n    \"PLAYWRIGHT_COMMANDS.md\",\n    \"CLAUDE.md\"\n  ],\n  \"skipped\": [],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/claude-existing\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-malformed-config-redacted",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"findings\": [\n    {\n      \"severity\": \"error\",\n      \"path\": \"/tmp/frontend-adapter-smoke-vw04ljx9/malformed/PROJECT_ADAPTER.yaml\",\n      \"message\": \"malformed adapter config: YAML parse error at line 2 column 8\"\n    }\n  ],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/malformed\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-schema-version",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"findings\": [\n    {\n      \"severity\": \"error\",\n      \"path\": \"/tmp/frontend-adapter-smoke-vw04ljx9/bad-schema-version/PROJECT_ADAPTER.yaml\",\n      \"message\": \"schema violation: schema_version: '1.0' was expected\"\n    }\n  ],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/bad-schema-version\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-required-policy-value",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"findings\": [\n    {\n      \"severity\": \"error\",\n      \"path\": \"/tmp/frontend-adapter-smoke-vw04ljx9/bad-policy/PROJECT_ADAPTER.yaml\",\n      \"message\": \"schema violation: frontend_adapter.policies.no_overwrite_without_force: True was expected\"\n    }\n  ],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/bad-policy\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-corrupt-template-no-partial-writes",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"findings\": [\n    {\n      \"severity\": \"error\",\n      \"path\": \"/root/work/agentic-selfcheck/templates/frontend/project-adapter/PROJECT_ADAPTER.yaml\",\n      \"message\": \"template schema violation: schema_version: '1.0' was expected\"\n    }\n  ],\n  \"written\": [],\n  \"skipped\": [],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/corrupt-template-project\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-missing-required-command",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"findings\": [\n    {\n      \"severity\": \"error\",\n      \"path\": \"/tmp/frontend-adapter-smoke-vw04ljx9/missing-command/PROJECT_ADAPTER.yaml\",\n      \"message\": \"schema violation: frontend_adapter.commands: 'playwright' is a required property\"\n    },\n    {\n      \"severity\": \"error\",\n      \"path\": \"/tmp/frontend-adapter-smoke-vw04ljx9/missing-command/PROJECT_ADAPTER.yaml\",\n      \"message\": \"missing required commands: playwright\"\n    }\n  ],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/missing-command\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-missing-required-rule-file",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"findings\": [\n    {\n      \"severity\": \"error\",\n      \"path\": \"/tmp/frontend-adapter-smoke-vw04ljx9/missing-rule/.cursor/rules/frontend-design.mdc\",\n      \"message\": \"required rule file cursor_rule is missing or too small\"\n    }\n  ],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/missing-rule\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "case": "bad-path-traversal",
+      "expected": "FAIL",
+      "actual": "FAIL",
+      "returncode": 1,
+      "stdout": "{\n  \"status\": \"FAIL\",\n  \"findings\": [\n    {\n      \"severity\": \"error\",\n      \"path\": \"/tmp/frontend-adapter-smoke-vw04ljx9/path-traversal/PROJECT_ADAPTER.yaml\",\n      \"message\": \"schema violation: frontend_adapter.rule_files.command_registry: '../PLAYWRIGHT_COMMANDS.md' does not match '^(?!/)(?!.*(^|/)\\\\\\\\.\\\\\\\\.(/|$)).+'\"\n    },\n    {\n      \"severity\": \"error\",\n      \"path\": \"/tmp/frontend-adapter-smoke-vw04ljx9/path-traversal/PROJECT_ADAPTER.yaml\",\n      \"message\": \"rule_files.command_registry must not be absolute or contain path traversal\"\n    }\n  ],\n  \"project_root\": \"/tmp/frontend-adapter-smoke-vw04ljx9/path-traversal\"\n}\n",
+      "stderr": ""
+    }
+  ]
+}

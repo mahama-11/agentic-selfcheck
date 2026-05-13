@@ -1,0 +1,21 @@
+id: continuous-governance-daily-hermes
+event: governance.watchdog.daily
+description: Daily fallback for Hermes/SelfCheck self-governance.
+feature: hermes-self-governance
+groups:
+  - static
+  - evidence
+mode: watchdog
+strict_audit: true
+debounce_seconds: 3600
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+human_escalation:
+  - governance_status_needs_human
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - destructive_cleanup_requested

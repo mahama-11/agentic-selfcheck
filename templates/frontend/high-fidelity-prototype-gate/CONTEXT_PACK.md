@@ -1,0 +1,26 @@
+# Frontend Prototype Context Pack
+
+## Product / business context
+
+## Target users and jobs-to-be-done
+
+## Existing product screenshots / URLs
+
+## Existing design system
+
+- Tokens:
+- Components:
+- Storybook / component lab:
+- Tailwind/theme files:
+
+## Data/API constraints
+
+- Available APIs:
+- Contract-needed areas:
+- Forbidden fake capabilities:
+
+## Reference products / design posture
+
+## Non-negotiables
+
+## Open questions

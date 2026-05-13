@@ -1,0 +1,10 @@
+id: shared-content-intake-smoke
+kind: static
+description: "Verify that a user-provided article link can be converted into structured text artifacts and a JSON evidence report."
+command: "scripts/wechat_official_account_extract.py --url https://mp.weixin.qq.com/s/a3PXFruUYTyD3EhzU30ZhA --out-dir reports/shared-content-intake/artifacts --summary-json reports/shared-content-intake/content-intake-smoke.json"
+requires:
+  - user_provided_public_article_url
+  - network_access
+evidence:
+  - reports/shared-content-intake/content-intake-smoke.json
+  - reports/shared-content-intake/artifacts/*.txt

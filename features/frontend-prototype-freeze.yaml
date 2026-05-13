@@ -1,0 +1,50 @@
+id: frontend-prototype-freeze
+project: agentic-selfcheck
+description: Generic frontend prototype freeze and implementation-contract gate for C/D-risk prototype handoff.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+- frontend-runtime
+- ai-generation
+must_pass:
+  static:
+  - frontend-prototype-freeze-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- D-risk prototype freeze requires human_approved approval before implementation.
+evidence_required:
+- templates/frontend/prototype-freeze/PROTOTYPE_FREEZE.md
+- templates/frontend/prototype-freeze/COMPONENT_MAPPING.md
+- templates/frontend/prototype-freeze/API_STATE_MAPPING.md
+- templates/frontend/prototype-freeze/IMPLEMENTATION_CONTRACT.md
+- schemas/frontend-prototype-freeze.schema.json
+- scripts/frontend_prototype_freeze_gate.py
+- scripts/frontend_prototype_freeze_smoke.py
+risk_dimensions:
+- frontend
+- visual-quality
+- implementation-contract
+- prototype-parity
+governance:
+  generic: true
+  not_mvp: true
+  applies_to_risks:
+  - C
+  - D
+  thresholds:
+    C:
+      approval_status:
+      - accepted
+      - human_approved
+      min_frozen_screenshots: 1
+    D:
+      approval_status:
+      - human_approved
+      min_frozen_screenshots: 1
+      material_deviation_approval_required: true

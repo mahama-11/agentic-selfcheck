@@ -1,0 +1,1 @@
+{"id": "button-copy", "title": "Adjust button copy", "description": "Small copy-only change in a React component.", "changed_files": ["ecommerce-frontend/src/components/Button.tsx"]}

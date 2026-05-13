@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Frontend Design Lane",
+  "type": "object",
+  "required": ["lane_id", "direction", "artifact", "screenshots", "decision"],
+  "properties": {
+    "lane_id": {"type": "string", "pattern": "^lane-[a-z0-9-]+$"},
+    "direction": {"type": "string", "enum": ["conservative", "strong-fit", "divergent", "custom"]},
+    "tool_or_model": {"type": "string"},
+    "artifact": {"type": "string", "minLength": 1},
+    "screenshots": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "decision": {"type": "string", "enum": ["keep", "discard", "needs_iteration"]},
+    "rationale": {"type": "string", "minLength": 20}
+  },
+  "additionalProperties": true
+}

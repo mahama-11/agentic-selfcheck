@@ -1,0 +1,9 @@
+id: frontend-design-quality-pack-gate
+kind: static
+description: Validate generic frontend design quality pack templates before AI prototype
+  generation.
+command: scripts/frontend_design_quality_pack_gate.py --root . --format json
+evidence:
+- templates/frontend/design-quality-pack/
+- schemas/frontend-design-quality-pack.schema.json
+- scripts/frontend_design_quality_pack_gate.py

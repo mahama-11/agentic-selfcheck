@@ -1,0 +1,14 @@
+# Design Lanes
+
+Required for D-risk work; recommended for C-risk work when taste is uncertain.
+
+| Lane | Tool / model | Direction | Artifact | Screenshot | Decision |
+|---|---|---|---|---|---|
+| A | | conservative / strong-fit / divergent | | | |
+| B | | conservative / strong-fit / divergent | | | |
+
+## Shared prompt / context used by all lanes
+
+## Lane-specific constraints
+
+## Discarded lanes and why

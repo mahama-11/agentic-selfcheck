@@ -1,0 +1,20 @@
+id: v-continuous-governance-daily-code
+event: v.governance.watchdog.daily
+description: Run v-project-code-health-governance when V workspace governance event
+  fires.
+feature: v-project-code-health-governance
+groups:
+- evidence
+mode: watchdog
+strict_audit: true
+debounce_seconds: 3600
+allowed_sources:
+- local
+- git-hook
+- ci-webhook
+- hermes-webhook
+- cron
+human_escalation:
+- governance_status_needs_human
+- verifier_failure_after_retry
+- destructive_cleanup_requested

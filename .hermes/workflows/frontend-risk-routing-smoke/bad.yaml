@@ -1,0 +1,15 @@
+id: bad-production-frontend
+project: agentic-selfcheck
+description: Production C-risk frontend page implementation missing prototype-first gates.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on: [review-gates]
+must_pass:
+  static:
+    - frontend-high-fidelity-prototype-gate
+reviewer_gates: [architect, spec-review, quality-review, qa, final-verification]
+human_required: [Human visual acceptance before implementation]
+risk_dimensions: [frontend, visual-quality]
+governance:
+  frontend_route_policy: production-implementation
+  risk_level: C

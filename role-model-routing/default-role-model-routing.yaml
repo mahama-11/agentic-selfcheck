@@ -20,6 +20,12 @@ models:
     tier: low_cost_fast
     intended_for: [deterministic-review, formatting, summarization, report-writing, qa-checklist, status-routing]
     notes: API key is stored outside repo in Hermes env; never commit credentials.
+  codex_spark_patch:
+    provider: openai-codex
+    model: gpt-5.3-codex-spark
+    tier: low_cost_fast
+    intended_for: [small-patch, lint-fix, typecheck-fix, i18n-fill, fixture-transform, report-normalization, reviewer-requested-repair]
+    notes: Small ultra-fast coding specialist. Use only for narrow, short, strongly constrained, strongly verified tasks; never for architecture, security review, billing/auth/payment logic, production data, deploy, QA final, or final verification.
 
 roles:
   orchestrator:
@@ -70,3 +76,9 @@ roles:
     determinism: high
     allowed_task_classes: [github-comment, check-run-summary, feishu-summary, label-summary]
     must_escalate_if: [contains-secret, human-decision-needed]
+  spark-patch-worker:
+    primary_model: codex_spark_patch
+    fallback_model: high_capability_default
+    determinism: high
+    allowed_task_classes: [small-patch, lint-fix, typecheck-fix, i18n-fill, fixture-transform, report-normalization, reviewer-requested-repair, test-scaffold]
+    must_escalate_if: [architecture, ambiguous-requirement, cross-service-contract, auth, rbac, security-sensitive, billing, wallet, payment, order, subscription, quota, database-migration, production-data, prod-deploy, browser-ambiguity, final-verdict]

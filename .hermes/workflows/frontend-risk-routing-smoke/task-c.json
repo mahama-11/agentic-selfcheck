@@ -1,0 +1,1 @@
+{"id": "frontend-risk-routing-product-center-redesign", "title": "Redesign ecommerce Product Center workbench page", "description": "Complex frontend page redesign with new interaction flow and visual hierarchy.", "changed_files": ["ecommerce-frontend/src/pages/ProductCenter.tsx"]}

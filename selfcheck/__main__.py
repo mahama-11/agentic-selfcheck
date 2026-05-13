@@ -25,6 +25,7 @@ KINDS = {
     "repair_policy": ("repair-policies", "schemas/repair-policy.schema.json"),
     "pr_autonomy_policy": ("pr-autonomy-policies", "schemas/pr-autonomy-policy.schema.json"),
     "role_model_routing": ("role-model-routing", "schemas/role-model-routing.schema.json"),
+    "pitfall": ("pitfalls", "schemas/pitfall.schema.json"),
 }
 
 SAFE_EXECUTABLE_KINDS = {"static", "unit", "evidence", "api", "browser"}
@@ -210,6 +211,27 @@ def lookup(ctx: dict[str, Any], expr: str) -> Any:
     return cur
 
 
+
+SENSITIVE_TEXT_PATTERNS = [
+    # Header-style credentials must run before generic key/value patterns so the
+    # token after `Bearer` is not left behind.
+    (re.compile(r"(?i)(Authorization\s*[:=]\s*Bearer\s+)[A-Za-z0-9._~+\-/=]{8,}"), r"\1[REDACTED]"),
+    (re.compile(r"(?i)(Bearer\s+)[A-Za-z0-9._~+\-/=]{8,}"), r"\1[REDACTED]"),
+    (re.compile(r"(?i)(api[_-]?key|secret|password|passwd|token|jwt|authorization)(\s*[:=]\s*)([^\s'\"`]{6,}|['\"][^'\"]{6,}['\"])") , r"\1\2[REDACTED]"),
+    (re.compile(r"(?i)(postgres|mysql|redis|mongodb)://[^\s'\"`]+"), "[REDACTED]"),
+    (re.compile(r"\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}\b"), "[REDACTED]"),
+    (re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"), "[REDACTED]"),
+]
+
+
+def redact_sensitive_text(value: str) -> str:
+    if not value:
+        return value
+    redacted = value
+    for pattern, replacement in SENSITIVE_TEXT_PATTERNS:
+        redacted = pattern.sub(replacement, redacted)
+    return redacted
+
 def render_template(template: str, ctx: dict[str, Any]) -> str:
     def repl(match: re.Match[str]) -> str:
         return str(lookup(ctx, match.group(1)))
@@ -313,16 +335,16 @@ def run_verifier(root: Path, feature: dict[str, Any], verifier: dict[str, Any], 
             "status": "PASS" if proc.returncode == 0 else "FAIL",
             "exit_code": proc.returncode,
             "duration_seconds": round(time.time() - started, 3),
-            "stdout_tail": proc.stdout[-4000:],
-            "stderr_tail": proc.stderr[-4000:],
+            "stdout_tail": redact_sensitive_text(proc.stdout[-4000:]),
+            "stderr_tail": redact_sensitive_text(proc.stderr[-4000:]),
         })
     except subprocess.TimeoutExpired as e:
         report.update({
             "status": "FAIL",
             "exit_code": None,
             "duration_seconds": round(time.time() - started, 3),
-            "stdout_tail": (e.stdout or "")[-4000:] if isinstance(e.stdout, str) else "",
-            "stderr_tail": (e.stderr or "")[-4000:] if isinstance(e.stderr, str) else "",
+            "stdout_tail": redact_sensitive_text((e.stdout or "")[-4000:]) if isinstance(e.stdout, str) else "",
+            "stderr_tail": redact_sensitive_text((e.stderr or "")[-4000:]) if isinstance(e.stderr, str) else "",
             "error": f"timeout after {timeout}s",
         })
     except Exception as e:
@@ -755,8 +777,8 @@ def run_external_executor(root: Path, item: dict[str, Any], prompt_path: Path, e
             "argv": argv,
             "exit_code": proc.returncode,
             "duration_seconds": round(time.time() - started, 3),
-            "stdout_tail": proc.stdout[-4000:],
-            "stderr_tail": proc.stderr[-4000:],
+            "stdout_tail": redact_sensitive_text(proc.stdout[-4000:]),
+            "stderr_tail": redact_sensitive_text(proc.stderr[-4000:]),
         }
     except Exception as e:
         return {
@@ -986,6 +1008,284 @@ def cmd_trigger(args):
     if failures:
         raise SystemExit(1)
 
+
+def _relpath(root: Path, path: str) -> str:
+    try:
+        pp = Path(path)
+        if pp.is_absolute():
+            return str(pp.relative_to(root))
+    except Exception:
+        pass
+    return path
+
+
+def _evidence_status(root: Path, rel: str) -> dict[str, Any]:
+    p = Path(rel)
+    if not p.is_absolute():
+        p = root / p
+    exists = p.exists()
+    info = {"path": rel, "exists": exists}
+    if exists:
+        try:
+            st = p.stat()
+            info.update({"bytes": st.st_size, "mtime_epoch": st.st_mtime})
+        except OSError:
+            pass
+    return info
+
+
+def _latest_report_for(root: Path, feature_id: str, verifier_id: str) -> dict[str, Any]:
+    d = root / "reports" / feature_id
+    candidates = []
+    if d.exists():
+        candidates.extend(sorted(d.glob(f"{verifier_id}.json")))
+        candidates.extend(sorted(d.glob(f"{verifier_id}-*.json")))
+    if not candidates:
+        return {"verifier": verifier_id, "exists": False}
+    latest = max(candidates, key=lambda x: x.stat().st_mtime)
+    status = None
+    try:
+        data = json.loads(latest.read_text(encoding="utf-8"))
+        status = data.get("status")
+    except Exception:
+        status = "UNREADABLE"
+    return {"verifier": verifier_id, "exists": True, "path": _relpath(root, str(latest)), "status": status}
+
+
+def build_harness_report(root: Path, feature_id: str) -> dict[str, Any]:
+    features = load_index(root, "feature")
+    projects = load_index(root, "project")
+    capabilities = load_index(root, "capability")
+    verifiers = load_index(root, "verifier")
+    loops = load_index(root, "loop")
+    events = load_index(root, "event")
+    repairs = load_index(root, "repair_policy")
+    if feature_id not in features:
+        raise SystemExit(f"Unknown feature: {feature_id}")
+    feature = features[feature_id]
+    project = projects.get(feature["project"], {})
+    cap_items = []
+    for cid in feature.get("depends_on", []):
+        cap = capabilities.get(cid, {"id": cid, "missing": True})
+        cap_items.append({
+            "id": cid,
+            "description": cap.get("description"),
+            "contracts": cap.get("contracts", []),
+            "verifiers": cap.get("verifiers", []),
+            "human_boundaries": cap.get("human_boundaries", []),
+            "path": _relpath(root, cap.get("__path", "")) if cap.get("__path") else None,
+            "missing": bool(cap.get("missing")),
+        })
+    gate_items = []
+    for group, vids in feature.get("must_pass", {}).items():
+        for vid in vids:
+            v = verifiers.get(vid, {"id": vid, "missing": True})
+            item = {
+                "group": group,
+                "id": vid,
+                "kind": v.get("kind"),
+                "description": v.get("description"),
+                "status_label": "MISSING_OR_STALE" if v.get("missing") else "ENFORCED_MACHINE_GATE",
+                "command": v.get("command") or v.get("service_command"),
+                "evidence": v.get("evidence", []),
+                "path": _relpath(root, v.get("__path", "")) if v.get("__path") else None,
+                "latest_report": _latest_report_for(root, feature_id, vid),
+            }
+            gate_items.append(item)
+    evidence = [_evidence_status(root, rel) for rel in feature.get("evidence_required", [])]
+    related_events = [
+        {"id": eid, "event": e.get("event"), "groups": e.get("groups", []), "mode": e.get("mode"), "path": _relpath(root, e.get("__path", ""))}
+        for eid, e in events.items() if e.get("feature") == feature_id
+    ]
+    related_loops = [
+        {"id": lid, "schedule": l.get("schedule"), "groups": l.get("groups", []), "path": _relpath(root, l.get("__path", ""))}
+        for lid, l in loops.items() if l.get("feature") == feature_id
+    ]
+    repair = repairs.get(feature.get("repair_policy", ""), {}) if feature.get("repair_policy") else {}
+    workflow_dir = root / ".hermes" / "workflows" / feature_id
+    required_phase_files = [
+        "01-requirement.md", "02-architecture-review.md", "03-implementation-plan.md", "04-implementation-report.md",
+        "05-spec-review-report.md", "06-quality-review-report.md", "07-qa-report.md", "08-final-verification.md", "09-harness-report.md",
+    ]
+    phases = [_evidence_status(root, str(Path(".hermes/workflows") / feature_id / name)) for name in required_phase_files]
+    coverage = {
+        "machine_gates": len(gate_items),
+        "role_gates": len(feature.get("reviewer_gates", [])),
+        "evidence_required": len(evidence),
+        "evidence_present": sum(1 for e in evidence if e.get("exists")),
+        "workflow_phase_present": sum(1 for e in phases if e.get("exists")),
+        "workflow_phase_total": len(phases),
+        "events": len(related_events),
+        "loops": len(related_loops),
+    }
+    missing = [e["path"] for e in evidence if not e.get("exists")] + [e["path"] for e in phases if not e.get("exists")]
+    return {
+        "feature": {k: feature.get(k) for k in ["id", "description", "level_target", "project", "repair_policy", "human_required", "reviewer_gates"]},
+        "project": {"id": project.get("id"), "description": project.get("description"), "root": project.get("root"), "services": project.get("services", {}), "path": _relpath(root, project.get("__path", "")) if project.get("__path") else None},
+        "capabilities": cap_items,
+        "machine_gates": gate_items,
+        "role_gates": [{"id": g, "status_label": "ROLE_GATE"} for g in feature.get("reviewer_gates", [])],
+        "human_boundaries": [{"text": h, "status_label": "HUMAN_BOUNDARY"} for h in feature.get("human_required", [])],
+        "evidence": [{**e, "status_label": "EVIDENCE_REQUIRED" if e.get("exists") else "MISSING_OR_STALE"} for e in evidence],
+        "workflow_phases": [{**e, "status_label": "EVIDENCE_REQUIRED" if e.get("exists") else "MISSING_OR_STALE"} for e in phases],
+        "events": related_events,
+        "loops": related_loops,
+        "repair_policy": {"id": repair.get("id"), "path": _relpath(root, repair.get("__path", "")) if repair.get("__path") else None, "data": {k: v for k, v in repair.items() if not k.startswith("__")}},
+        "coverage": coverage,
+        "missing_or_stale": missing,
+    }
+
+
+def render_harness_markdown(report: dict[str, Any]) -> str:
+    f = report["feature"]
+    lines = [f"# Harness Report: {f['id']}", "", f"- Feature: `{f['id']}`", f"- Project: `{f.get('project')}`", f"- Level target: `{f.get('level_target')}`", f"- Repair policy: `{f.get('repair_policy')}`", ""]
+    cov = report["coverage"]
+    lines += ["## Coverage", "", f"- Machine gates: {cov['machine_gates']}", f"- Role gates: {cov['role_gates']}", f"- Evidence present: {cov['evidence_present']}/{cov['evidence_required']}", f"- Workflow phases present: {cov['workflow_phase_present']}/{cov['workflow_phase_total']}", f"- Events / loops: {cov['events']} / {cov['loops']}", ""]
+    lines += ["## Capabilities", ""]
+    for c in report["capabilities"]:
+        lines.append(f"- `{c['id']}` — {c.get('description') or ''} ({c.get('path') or 'missing'})")
+    lines += ["", "## Machine Gates", ""]
+    for g in report["machine_gates"]:
+        latest = g.get("latest_report") or {}
+        lines.append(f"- [{g['status_label']}] `{g['group']}` / `{g['id']}` ({g.get('kind')}) — latest `{latest.get('status') or 'missing'}` {latest.get('path') or ''}")
+    lines += ["", "## Role Gates", ""]
+    for g in report["role_gates"]:
+        lines.append(f"- [ROLE_GATE] `{g['id']}`")
+    lines += ["", "## Human Boundaries", ""]
+    for h in report["human_boundaries"]:
+        lines.append(f"- [HUMAN_BOUNDARY] {h['text']}")
+    lines += ["", "## Evidence", ""]
+    for e in report["evidence"]:
+        lines.append(f"- [{e['status_label']}] `{e['path']}`")
+    lines += ["", "## Workflow Phases", ""]
+    for e in report["workflow_phases"]:
+        lines.append(f"- [{e['status_label']}] `{e['path']}`")
+    lines += ["", "## Events and Loops", ""]
+    if not report["events"] and not report["loops"]:
+        lines.append("- none")
+    for e in report["events"]:
+        lines.append(f"- event `{e['id']}` groups={','.join(e.get('groups') or [])} mode={e.get('mode')}")
+    for l in report["loops"]:
+        lines.append(f"- loop `{l['id']}` schedule={l.get('schedule')} groups={','.join(l.get('groups') or [])}")
+    lines += ["", "## Missing or Stale", ""]
+    if report["missing_or_stale"]:
+        for m in report["missing_or_stale"]:
+            lines.append(f"- {m}")
+    else:
+        lines.append("- none")
+    lines += ["", "## Legend", "", "- ENFORCED_MACHINE_GATE: verifier is connected to `must_pass`.", "- ROLE_GATE: reviewer/QA/final-verifier handoff is required.", "- HUMAN_BOUNDARY: product/human decision boundary is explicit.", "- EVIDENCE_REQUIRED: evidence path exists or is declared.", "- MISSING_OR_STALE: declared object/evidence is absent or unreadable.", ""]
+    return "\n".join(lines)
+
+
+
+def iter_pitfall_records(root: Path) -> list[dict[str, Any]]:
+    schema = load_schema(root, "schemas/pitfall.schema.json")
+    records: list[dict[str, Any]] = []
+    pdir = root / "pitfalls"
+    if not pdir.exists():
+        return records
+    for p in sorted(pdir.glob("*.yaml")):
+        data = load_yaml(p)
+        jsonschema.validate(instance=data, schema=schema)
+        records.append(data | {"__path": str(p)})
+    return records
+
+
+def cmd_pitfall(args):
+    root = Path(args.root)
+    (root / "pitfalls").mkdir(parents=True, exist_ok=True)
+    if args.pitfall_action == "list":
+        records = iter_pitfall_records(root)
+        if args.format == "json":
+            print(json.dumps([{k: v for k, v in r.items() if k != "__path"} | {"path": _relpath(root, r["__path"])} for r in records], ensure_ascii=False, indent=2))
+        else:
+            if not records:
+                print("NO_PITFALLS")
+            for r in records:
+                print(f"{r['id']} status={r['status']} scope={r['scope']} action={r['prevention_action']} path={_relpath(root, r['__path'])}")
+        return
+    if args.pitfall_action == "audit":
+        proc = subprocess.run([str(root / "scripts" / "governance_audit.py"), "--root", str(root), "--feature", "pitfall-feedback-loop", "--format", "json"], cwd=root, capture_output=True, text=True, timeout=120)
+        print(proc.stdout.strip())
+        if proc.returncode != 0:
+            raise SystemExit(proc.returncode)
+        return
+    if args.pitfall_action == "add":
+        required = ["scope", "symptom", "evidence_path", "root_cause", "prevention_action", "updated_artifact", "rerun_evidence", "status"]
+        missing = [name for name in required if not getattr(args, name, None)]
+        if missing:
+            raise SystemExit(f"missing required fields for pitfall add: {', '.join(missing)}")
+        pid = args.id
+        if not pid:
+            base = re.sub(r"[^a-z0-9]+", "-", args.symptom.lower()).strip("-")[:48] or "pitfall"
+            pid = f"pit-{time.strftime('%Y%m%d')}-{base}"
+        data = {
+            "id": pid,
+            "pitfall_id": pid,
+            "scope": args.scope,
+            "symptom": args.symptom,
+            "evidence_path": args.evidence_path,
+            "root_cause": args.root_cause,
+            "prevention_action": args.prevention_action,
+            "updated_artifact": args.updated_artifact,
+            "rerun_evidence": args.rerun_evidence,
+            "status": args.status,
+            "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "tags": args.tag or [],
+            "notes": args.notes or "",
+        }
+        schema = load_schema(root, "schemas/pitfall.schema.json")
+        jsonschema.validate(instance=data, schema=schema)
+        path = root / "pitfalls" / f"{pid}.yaml"
+        if path.exists() and not args.force:
+            raise SystemExit(f"pitfall already exists: {path}; pass --force to overwrite")
+        path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        print(json.dumps({"created": _relpath(root, str(path)), "id": pid}, ensure_ascii=False, indent=2))
+        return
+    raise SystemExit(f"unknown pitfall action: {args.pitfall_action}")
+
+def cmd_harness(args):
+    root = Path(args.root)
+    report = build_harness_report(root, args.feature)
+    out_dir = root / "reports" / args.feature
+    out_dir.mkdir(parents=True, exist_ok=True)
+    json_path = out_dir / "harness.json"
+    md_path = out_dir / "harness.md"
+    json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    md_path.write_text(render_harness_markdown(report), encoding="utf-8")
+    wf = root / ".hermes" / "workflows" / args.feature
+    if wf.exists():
+        (wf / "09-harness-report.md").write_text(md_path.read_text(encoding="utf-8"), encoding="utf-8")
+    if args.format == "json":
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    else:
+        print(md_path.read_text(encoding="utf-8"))
+
+
+def cmd_init_workflow(args):
+    root = Path(args.root)
+    feature = args.feature
+    wf = root / ".hermes" / "workflows" / feature
+    wf.mkdir(parents=True, exist_ok=True)
+    templates = {
+        "01-requirement.md": f"# Requirement: {feature}\n\n## User Intent\n\nTODO\n",
+        "02-architecture-review.md": f"# Architecture Review: {feature}\n\n## Decision\n\nTODO\n",
+        "03-implementation-plan.md": f"# Implementation Plan: {feature}\n\n## Tasks\n\nTODO\n",
+        "04-implementation-report.md": f"# Implementation Report: {feature}\n\n## Changes\n\nTODO\n",
+        "05-spec-review-report.md": f"# Spec Review Report: {feature}\n\n## Conclusion\n\nTODO: APPROVE / REQUEST_CHANGES / BLOCK\n",
+        "06-quality-review-report.md": f"# Quality Review Report: {feature}\n\n## Conclusion\n\nTODO: APPROVE / REQUEST_CHANGES / BLOCK\n",
+        "07-qa-report.md": f"# QA Report: {feature}\n\n## Conclusion\n\nTODO: PASS / PASS_WITH_NOTES / PARTIAL_PASS / FAIL / BLOCKED\n",
+        "08-final-verification.md": f"# Final Verification: {feature}\n\n## Verdict\n\nTODO: PASS / PASS_WITH_NOTES / FAIL / BLOCKED\n",
+        "09-harness-report.md": f"# Harness Report: {feature}\n\nRun `python3 -m selfcheck harness --root . --feature {feature}` to populate this file.\n",
+    }
+    created=[]
+    for name, content in templates.items():
+        path=wf/name
+        if not path.exists():
+            path.write_text(content, encoding="utf-8")
+            created.append(str(path.relative_to(root)))
+    print(json.dumps({"workflow": str(wf.relative_to(root)), "created": created}, ensure_ascii=False, indent=2))
+
 def cmd_validate(args):
     raise SystemExit(print_issues(validate(Path(args.root))))
 
@@ -1043,11 +1343,11 @@ def cmd_run(args):
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="selfcheck")
     sub = ap.add_subparsers(required=True)
-    for name, fn in [("validate", cmd_validate), ("audit", cmd_audit), ("plan", cmd_plan), ("run", cmd_run), ("trigger", cmd_trigger), ("loop", cmd_loop), ("dispatch", cmd_dispatch)]:
+    for name, fn in [("validate", cmd_validate), ("audit", cmd_audit), ("plan", cmd_plan), ("run", cmd_run), ("trigger", cmd_trigger), ("loop", cmd_loop), ("dispatch", cmd_dispatch), ("harness", cmd_harness), ("init-workflow", cmd_init_workflow), ("pitfall", cmd_pitfall)]:
         p = sub.add_parser(name)
         p.add_argument("--root", default=".")
         p.set_defaults(func=fn)
-        if name in {"audit", "plan", "run", "loop"}:
+        if name in {"audit", "plan", "run", "loop", "harness", "init-workflow"}:
             p.add_argument("--feature")
         if name == "trigger":
             p.add_argument("--event", required=True)
@@ -1069,6 +1369,21 @@ def main(argv=None):
             p.add_argument("--executor-timeout", type=int, default=600)
             p.add_argument("--loop-timeout", type=int, default=300)
             p.add_argument("--allow-no-executor", action="store_true", help="test-only: allow consume to verify without owner executor")
+        if name == "pitfall":
+            p.add_argument("pitfall_action", choices=["list", "audit", "add"])
+            p.add_argument("--format", choices=["text", "json"], default="text")
+            p.add_argument("--id")
+            p.add_argument("--scope", choices=["project", "hermes", "skill", "verifier", "docs"])
+            p.add_argument("--symptom")
+            p.add_argument("--evidence-path", dest="evidence_path")
+            p.add_argument("--root-cause", dest="root_cause")
+            p.add_argument("--prevention-action", dest="prevention_action", choices=["rule", "verifier", "skill", "doc", "accepted_risk"])
+            p.add_argument("--updated-artifact", dest="updated_artifact")
+            p.add_argument("--rerun-evidence", dest="rerun_evidence")
+            p.add_argument("--status", choices=["open", "prevented", "accepted_risk", "obsolete"], default="open")
+            p.add_argument("--tag", action="append")
+            p.add_argument("--notes")
+            p.add_argument("--force", action="store_true")
         if name == "audit":
             p.add_argument("--strict-missing", action="store_true")
         if name in {"run", "trigger"}:
@@ -1084,8 +1399,10 @@ def main(argv=None):
             p.add_argument("--inject-failure", action="append", help="test-only injected failure as group:verifier")
         if name == "run":
             p.add_argument("--groups", help="comma-separated must_pass groups to run, e.g. static,evidence")
+        if name == "harness":
+            p.add_argument("--format", choices=["markdown", "json"], default="markdown")
     args = ap.parse_args(argv)
-    if getattr(args, "feature", None) is None and args.func in {cmd_plan, cmd_run, cmd_loop}:
+    if getattr(args, "feature", None) is None and args.func in {cmd_plan, cmd_run, cmd_loop, cmd_harness, cmd_init_workflow}:
         ap.error("--feature is required")
     args.func(args)
 

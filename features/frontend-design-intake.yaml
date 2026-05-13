@@ -1,0 +1,37 @@
+id: frontend-design-intake
+project: agentic-selfcheck
+description: Generic frontend risk classification and design brief gate for C/D frontend
+  work.
+level_target: L3
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+must_pass:
+  static:
+  - frontend-high-fidelity-prototype-gate
+reviewer_gates:
+- spec-review
+- quality-review
+- final-verification
+human_required:
+- C/D frontend work needs explicit visual/interaction acceptance before production
+  implementation.
+evidence_required:
+- templates/frontend/high-fidelity-prototype-gate/CONTEXT_PACK.md
+- templates/frontend/high-fidelity-prototype-gate/DESIGN_BRIEF.md
+- templates/frontend/high-fidelity-prototype-gate/INTERACTION_MODEL.md
+- templates/frontend/high-fidelity-prototype-gate/STATE_MATRIX.md
+- templates/frontend/high-fidelity-prototype-gate/VISUAL_ACCEPTANCE_CHECKLIST.md
+risk_dimensions:
+- frontend
+- design
+- ux
+- visual-quality
+governance:
+  risk_levels:
+  - C
+  - D
+  generic: true
+  repair_policy_note: fail-closed for C/D work missing design intake artifacts
+  prototype_quality_hardened: true
+  not_mvp: true

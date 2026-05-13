@@ -1,0 +1,27 @@
+# Reference Screenshots
+
+## Local screenshot evidence
+
+Place images under:
+
+```text
+reference-screenshots/
+```
+
+Supported extensions:
+
+```text
+.png .jpg .jpeg .webp
+```
+
+## Screenshot index
+
+| File | Reference ID | Viewport | Notes |
+|---|---|---|---|
+
+## External-only references
+
+If screenshots cannot be stored locally, list links and rationale.
+
+| Reference ID | URL | Rationale |
+|---|---|---|
