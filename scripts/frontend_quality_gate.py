@@ -43,16 +43,16 @@ def finding(severity: str, path: str, message: str) -> dict:
     return {'severity': severity, 'path': path, 'message': message}
 
 
-def check_base(root: Path) -> dict:
+def check_base(base_root: Path) -> dict:
     findings=[]
     for rel in DOC_REQUIRED:
-        if not nonempty(root/rel):
-            findings.append(finding('error', rel, 'required generic frontend quality doc missing or empty'))
+        if not nonempty(base_root/rel):
+            findings.append(finding('error', str(base_root/rel), 'required generic frontend quality doc missing or empty'))
     for name in BASE_REQUIRED + D_REQUIRED:
         rel=f'{TEMPLATE_DIR}/{name}'
-        if not nonempty(root/rel):
-            findings.append(finding('error', rel, 'required high-fidelity prototype template missing or empty'))
-    return {'status':'PASS' if not findings else 'FAIL','scope':'base','findings':findings}
+        if not nonempty(base_root/rel):
+            findings.append(finding('error', str(base_root/rel), 'required high-fidelity prototype template missing or empty'))
+    return {'status':'PASS' if not findings else 'FAIL','scope':'base','base_root':str(base_root),'findings':findings}
 
 
 def parse_scorecard(path: Path) -> tuple[list[dict], float | None, list[dict]]:
@@ -103,7 +103,10 @@ def is_within(path: Path, base: Path) -> bool:
 def resolve_workflow_file(wf: Path, raw: str) -> Path | None:
     if not isinstance(raw, str) or not raw.strip():
         return None
-    raw=raw.strip()
+    raw=raw.strip().strip('`')
+    if '#' in raw and not raw.startswith(('http://','https://')):
+        raw=raw.split('#', 1)[0]
+    if not raw: return None
     if raw.startswith(('http://','https://')):
         return None
     p=Path(raw)
@@ -206,8 +209,9 @@ def image_count(items: list[dict]) -> int:
     return sum(1 for x in items if x.get('is_image'))
 
 
-def check_workflow(root: Path, workflow: Path, risk: str) -> dict:
+def check_workflow(root: Path, workflow: Path, risk: str, control_root: Path | None = None) -> dict:
     wf = workflow if workflow.is_absolute() else root/workflow
+    control_root = control_root or root
     risk=risk.upper()
     findings=[]
     if not wf.exists():
@@ -244,7 +248,7 @@ def check_workflow(root: Path, workflow: Path, risk: str) -> dict:
         try:
             from frontend_reference_aware_critic import validate_payload, load_json
             reference_aware_result={'status':'PASS','errors':[]}
-            ra_errors=validate_payload(root, wf, risk, load_json(reference_aware_json))
+            ra_errors=validate_payload(control_root, wf, risk, load_json(reference_aware_json))
             if ra_errors:
                 reference_aware_result={'status':'FAIL','errors':ra_errors}
                 findings.append(finding('error', str(reference_aware_json), 'reference-aware critique must PASS before prototype acceptance'))
@@ -327,15 +331,17 @@ def check_workflow(root: Path, workflow: Path, risk: str) -> dict:
 
 def main() -> int:
     ap=argparse.ArgumentParser(description='Validate generic high-fidelity frontend prototype gate artifacts and quality thresholds.')
-    ap.add_argument('--root', default='.', help='SelfCheck/control-plane root')
+    ap.add_argument('--root', default='.', help='Project root containing the concrete workflow')
+    ap.add_argument('--base-root', default=None, help='Control-plane root containing generic frontend quality docs/templates; defaults to --root')
     ap.add_argument('--workflow', help='Workflow directory to validate for a concrete frontend task')
     ap.add_argument('--risk', choices=['C','D'], default='C')
     ap.add_argument('--format', choices=['json','text'], default='json')
     args=ap.parse_args()
     root=Path(args.root).resolve()
-    result=check_base(root)
+    base_root=Path(args.base_root).resolve() if args.base_root else root
+    result=check_base(base_root)
     if args.workflow:
-        wf_result=check_workflow(root, Path(args.workflow), args.risk)
+        wf_result=check_workflow(root, Path(args.workflow), args.risk, control_root=base_root)
         result={'status':'PASS' if result['status']=='PASS' and wf_result['status']=='PASS' else 'FAIL','base':result,'workflow':wf_result}
     if args.format=='json':
         print(json.dumps(result, ensure_ascii=False, indent=2))

@@ -121,7 +121,7 @@ def write_good_fixture(root: Path, name: str, risk: str) -> Path:
     (wf/'INTERACTION_MODEL.md').write_text('# Interaction Model\n\nUser enters the workbench, opens detail drawer, reviews states, and takes primary action.\n', encoding='utf-8')
     (wf/'STATE_MATRIX.md').write_text('# State Matrix\n\n| Surface | Default | Loading | Empty | Error | Permission | Long content | Mobile | Notes |\n|---|---|---|---|---|---|---|---|---|\n| Main page | shown | shown | shown | shown | n/a | shown | shown | covered |\n', encoding='utf-8')
     (wf/'VISUAL_ACCEPTANCE_CHECKLIST.md').write_text('# Visual Acceptance Checklist\n\n- [x] Information architecture is clear.\n- [x] Critical states are visible.\n- [x] Desktop and mobile are reviewed.\n', encoding='utf-8')
-    (wf/'PROTOTYPE_COVERAGE.md').write_text('# Prototype Coverage\n\n| Surface / route | User job covered | Prototype artifact / URL | Screenshot path | Core interactions shown | States shown | Status |\n|---|---|---|---|---|---|---|\n| /home | Understand task and act | design-lanes/lane-a/prototype.html | prototype-screenshots/home.png | drawer, tabs, selected state | default/loading/empty/error/mobile | COMPLETE |\n\n| Interaction | Where shown | Evidence path | Status |\n|---|---|---|---|\n| Detail drawer | /home | prototype-screenshots/home.png | COMPLETE |\n', encoding='utf-8')
+    (wf/'PROTOTYPE_COVERAGE.md').write_text('# Prototype Coverage\n\n| Surface / route | User job covered | Prototype artifact / URL | Screenshot path | Core interactions shown | States shown | Status |\n|---|---|---|---|---|---|---|\n| /home | Understand task and act | `design-lanes/lane-a/prototype.html#home` | `prototype-screenshots/home.png` | drawer, tabs, selected state | default/loading/empty/error/mobile | COMPLETE |\n\n| Interaction | Where shown | Evidence path | Status |\n|---|---|---|---|\n| Detail drawer | /home | prototype-screenshots/home.png | COMPLETE |\n', encoding='utf-8')
     (wf/'DESIGN_CRITIQUE.md').write_text('# Design Critique\n\nPASS\n\nThe prototype is complete enough for smoke validation and avoids core anti-patterns.\n', encoding='utf-8')
     (wf/'PROTOTYPE_SCORECARD.md').write_text(scorecard(), encoding='utf-8')
     (wf/'PROTOTYPE_ACCEPTANCE.md').write_text('# Prototype Acceptance\n\nACCEPTED\n\nSmoke accepted.\n', encoding='utf-8')
@@ -166,19 +166,29 @@ def main() -> int:
     for name, risk, _ in CASES:
         write_fixture(root, name, risk)
     results=[]; ok=True
-    base=subprocess.run(['scripts/frontend_quality_gate.py','--root','.','--format','json'], cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    gate_script=Path('scripts/frontend_quality_gate.py').resolve()
+    base=subprocess.run([str(gate_script),'--root','.','--format','json'], cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     base_pass=base.returncode == 0
     if not base_pass: ok=False
     results.append({'case':'base','expected':'PASS','actual':'PASS' if base_pass else 'FAIL','returncode':base.returncode,'stdout':base.stdout[-1600:],'stderr':base.stderr[-1600:]})
     for name, risk, should_pass in CASES:
         wf=f'.hermes/workflows/frontend-quality-gate-smoke/{name}'
-        cp=subprocess.run(['scripts/frontend_quality_gate.py','--root','.','--workflow',wf,'--risk',risk,'--format','json'], cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cp=subprocess.run([str(gate_script),'--root','.','--workflow',wf,'--risk',risk,'--format','json'], cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         passed=cp.returncode == 0
         if passed != should_pass: ok=False
         results.append({'case':name,'expected':'PASS' if should_pass else 'FAIL','actual':'PASS' if passed else 'FAIL','returncode':cp.returncode,'stdout':cp.stdout[-1800:],'stderr':cp.stderr[-1800:]})
+    external_root=Path('/tmp/frontend-quality-gate-adapter-project')
+    if external_root.exists(): shutil.rmtree(external_root)
+    write_good_fixture(external_root, 'external-project-good', 'C')
+    external_wf='.hermes/workflows/frontend-quality-gate-smoke/external-project-good'
+    cp=subprocess.run([str(gate_script),'--root',str(external_root),'--base-root',str(root),'--workflow',external_wf,'--risk','C','--format','json'], cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    passed=cp.returncode == 0
+    if not passed:
+        ok=False
+    results.append({'case':'external-project-base-root-adapter','expected':'PASS','actual':'PASS' if passed else 'FAIL','returncode':cp.returncode,'stdout':cp.stdout[-1800:],'stderr':cp.stderr[-1800:]})
     outside=Path('/tmp/frontend-quality-gate-outside-root')
     outside.mkdir(parents=True, exist_ok=True)
-    cp=subprocess.run(['scripts/frontend_quality_gate.py','--root','.','--workflow',str(outside),'--risk','C','--format','json'], cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cp=subprocess.run([str(gate_script),'--root','.','--workflow',str(outside),'--risk','C','--format','json'], cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     passed=cp.returncode == 0
     if passed:
         ok=False
