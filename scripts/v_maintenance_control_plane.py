@@ -412,7 +412,7 @@ def expected_verifiers_for(f: dict[str, Any], projects_by_id: dict[str, dict[str
     commands = project.get("commands") or {}
     verifiers: list[dict[str, str]] = []
     if f.get("type") in {"evidence_gap", "docs_standards", "docs_staleness", "docs_redundancy"}:
-        verifiers.append({"name": "selfcheck-doc-governance", "command": "python3 -m selfcheck audit --root . --feature v-project-doc-governance --strict-missing"})
+        verifiers.append({"name": "v-doc-governance", "command": "python3 scripts/governance_audit.py --root /root/work/v --feature project-doc-governance --format json"})
     if str(project.get("kind") or "").endswith("backend"):
         cmd = str(commands.get("test") or commands.get("build") or "go test ./...")
         verifiers.append({"name": "project-backend-tests", "command": cmd})
