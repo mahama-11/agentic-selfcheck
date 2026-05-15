@@ -4,6 +4,8 @@ import argparse, json, re
 from pathlib import Path
 
 REQUIRED = [
+    'PROJECT_CONTEXT.md',
+    'REQUIREMENT_ORIGIN_TRACE.md',
     'REFERENCE_PACK.md',
     'AESTHETIC_DIRECTION.md',
     'ANTI_PATTERNS.md',
@@ -124,8 +126,59 @@ def check_workflow(root: Path, workflow: Path, risk: str) -> dict:
     if risk=='D' and len(imgs) < 2 and not waiver:
         findings.append(finding('error', wf/'reference-screenshots', 'D-risk requires at least 2 local reference images or external_reference_only waiver with >=2 URLs'))
     rules=read(wf/'PROJECT_FRONTEND_RULES.md')
+    context=read(wf/'PROJECT_CONTEXT.md')
+    required_context_markers=[
+        'Existing product background',
+        'Current implementation state',
+        'Current visual and interaction baseline',
+        'Prototype maturity goal and assessment',
+        'Target increment goal',
+        'Business logic and interaction backbone',
+        'System feasibility map',
+        'User-facing product UI boundary',
+        'Prototype grounding rule',
+    ]
+    for marker in required_context_markers:
+        if marker not in context:
+            findings.append(finding('error', wf/'PROJECT_CONTEXT.md', f'project context must include section: {marker}'))
+    if re.search(r'(Fill if|Product purpose:\s*$|Existing routes/pages affected:\s*$|Theme / color / typography / spacing direction:\s*$|New user job:\s*$)', context, re.M):
+        findings.append(finding('error', wf/'PROJECT_CONTEXT.md', 'project context contains unfilled placeholders'))
+    if risk=='D':
+        backbone_terms=['Core business objects involved', 'End-to-end user flow', 'Step-by-step interaction model', 'Critical states']
+        for term in backbone_terms:
+            if term not in context:
+                findings.append(finding('error', wf/'PROJECT_CONTEXT.md', f'D-risk requires business backbone field: {term}'))
+        feasibility_terms=['Existing frontend route/component/state support', 'Existing backend/API/data support', 'contract-needed']
+        for term in feasibility_terms:
+            if term not in context:
+                findings.append(finding('error', wf/'PROJECT_CONTEXT.md', f'D-risk requires feasibility mapping field: {term}'))
+        boundary_terms=['Forbidden in user-facing prototype UI', 'Translate internal state into user language']
+        for term in boundary_terms:
+            if term not in context:
+                findings.append(finding('error', wf/'PROJECT_CONTEXT.md', f'D-risk requires user-facing UI boundary field: {term}'))
+    goal=re.search(r'prototype_maturity_goal\s*:\s*(stage_[1-4])', context)
+    current=re.search(r'current_maturity_assessment\s*:\s*(stage_[1-4])', context)
+    if not goal:
+        findings.append(finding('error', wf/'PROJECT_CONTEXT.md', 'prototype_maturity_goal must be declared as stage_1..stage_4'))
+    elif risk=='D' and goal.group(1) != 'stage_4':
+        findings.append(finding('error', wf/'PROJECT_CONTEXT.md', 'D-risk prototype maturity goal should be stage_4; ladder is diagnostic, not staged delivery'))
+    if not current:
+        findings.append(finding('error', wf/'PROJECT_CONTEXT.md', 'current_maturity_assessment must be declared as stage_1..stage_4'))
     if risk=='D' and 'human_review_boundary' not in rules:
         findings.append(finding('error', wf/'PROJECT_FRONTEND_RULES.md', 'D-risk requires human_review_boundary declaration'))
+    trace=read(wf/'REQUIREMENT_ORIGIN_TRACE.md')
+    trace_markers=['Source-of-truth documents','Requirement sections / anchors','Multi-surface target map','Loss prevention rule','Coverage delta log']
+    for marker in trace_markers:
+        if marker not in trace:
+            findings.append(finding('error', wf/'REQUIREMENT_ORIGIN_TRACE.md', f'requirement trace must include section: {marker}'))
+    if re.search(r'(Fill source|Fill path|Fill section|Fill requirement|Fill user job|Fill skeleton|Fill previous|pending\s*\|?\s*$)', trace, re.M):
+        findings.append(finding('error', wf/'REQUIREMENT_ORIGIN_TRACE.md', 'requirement trace contains unfilled placeholders'))
+    anchor_rows=count_markdown_table_rows(trace, 5)
+    min_anchor_rows=5 if risk=='D' else 3
+    if anchor_rows < min_anchor_rows:
+        findings.append(finding('error', wf/'REQUIREMENT_ORIGIN_TRACE.md', f'{risk}-risk requires at least {min_anchor_rows} traced requirement/surface/delta rows; found {anchor_rows}'))
+    if risk=='D' and not re.search(r'(do not regress|must not regress|不回退|不得回退|不能丢)', trace, re.I):
+        findings.append(finding('error', wf/'REQUIREMENT_ORIGIN_TRACE.md', 'D-risk requires explicit non-regression rule for previously good prototype parts'))
     return {'status':'PASS' if not findings else 'FAIL','scope':'workflow','risk':risk,'workflow':str(wf),'reference_count':refs,'anti_pattern_count':anti,'reference_images':imgs,'external_reference_waiver':waiver,'findings':findings}
 
 

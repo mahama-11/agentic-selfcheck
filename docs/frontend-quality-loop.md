@@ -13,7 +13,8 @@ Complex frontend work should not go directly from requirement to production impl
 The default loop should be:
 
 ```text
-Product / UX brief
+Project context / current-state audit
+-> Product / UX brief grounded in existing constraints
 -> High-fidelity prototype or Storybook/component workshop
 -> Visual / interaction acceptance
 -> Production implementation
@@ -81,6 +82,34 @@ Even if the UI is consistent and functional, is it pleasant, clear, and convinci
 
 The second class cannot be solved by lint/build/typecheck. It needs a design gate.
 
+## Prototype maturity ladder
+
+Use this ladder when judging frontend prototype output quality:
+
+```text
+Stage 1: produce a prototype
+- A reviewable visual/interaction artifact exists.
+- It may still be detached from the real product.
+
+Stage 2: produce a business-related prototype
+- The prototype is grounded in the product/business context.
+- It reflects existing routes, shell, visual baseline, target workflow, and user job.
+- It is no longer “虚空打靶”, but may still be incomplete in interaction closure and system-contract reasoning.
+
+Stage 3: produce a business-related prototype with interaction closure
+- The prototype covers the business flow end-to-end.
+- It includes route choreography, states, validation, drawers/modals, transitions, selection/active states, empty/loading/error states, and screenshot-backed coverage.
+- It can be reviewed as a coherent user journey, not isolated screens.
+
+Stage 4: produce a business-understanding prototype with system feasibility
+- The prototype understands the business model and implementation reality.
+- Every major function maps to existing or required backend/API/data contracts.
+- Missing capabilities are explicitly marked `contract-needed` with required backend/frontend adaptations.
+- It includes feasibility notes, API/state mapping, data ownership, integration risks, and implementation implications.
+```
+
+Important: this ladder is a diagnostic/evaluation model, not a staged delivery plan. Do not plan four separate prototype outputs. For serious C/D frontend work, the expected attempt should aim for Stage 4 in one pass: business-grounded, interaction-closed, and mapped to API/backend/data feasibility. If the output only reaches Stage 2 or Stage 3, report that honestly as a gap and improve toward Stage 4.
+
 ## Recommended process
 
 ### Gate 0: classify the frontend work
@@ -102,7 +131,30 @@ Rules:
 - C requires UX brief + state matrix + browser screenshots.
 - D/E require high-fidelity prototype or design-only lane before production code.
 
-### Gate 1: product / UX brief
+### Gate 1: project context / current-state audit
+
+For an existing product, prototype generation must not start from a blank canvas. Produce:
+
+```text
+REQUIREMENT_ORIGIN_TRACE.md
+PROJECT_CONTEXT.md
+```
+
+Must specify:
+
+- source-of-truth requirement documents and anchor screenshots/sections;
+- section/image -> surface traceability and non-regression rules, so later prototype versions cannot regain one good part while silently dropping another;
+- existing product background and business workflow;
+- current implementation state: routes, shells, components, APIs, state already present;
+- current visual and interaction baseline: theme, tokens, navigation chrome, screenshots;
+- target increment goal and where it fits in the current workflow;
+- business logic and interaction backbone before any visual layout generation;
+- system feasibility map for every major visible function: existing support vs required frontend/backend/API/data adaptation;
+- user-facing product UI boundary: internal evaluation/version/gate/contract terminology must not appear in the customer-facing prototype;
+- known unavailable capabilities, marked `contract-needed`;
+- what must be preserved so the prototype does not become a detached “虚空打靶” demo.
+
+### Gate 2: product / UX brief
 
 Before coding, produce:
 
@@ -113,7 +165,7 @@ STATE_MATRIX.md
 VISUAL_ACCEPTANCE_CHECKLIST.md
 ```
 
-Must specify:
+Must be grounded in `PROJECT_CONTEXT.md` and specify:
 
 - target user and task;
 - route/page IA;
@@ -126,7 +178,7 @@ Must specify:
 - what must be preserved if implementation differs;
 - what is explicitly forbidden.
 
-### Gate 2: high-fidelity prototype / design-only phase
+### Gate 3: high-fidelity prototype / design-only phase
 
 For page/flow/product-critical work, build a high-fidelity prototype before production implementation.
 
@@ -141,6 +193,12 @@ local design artifact
 Prototype requirements:
 
 ```text
+- be explicitly grounded in REQUIREMENT_ORIGIN_TRACE.md and PROJECT_CONTEXT.md for existing-product iterations;
+- every new prototype version must publish a coverage delta: what it added, what it removed/weakened, and what previous strengths must not regress;
+- preserve the business logic and interaction backbone; progressive disclosure may hide complexity, but must not delete it;
+- map every major visible function to existing frontend/backend/API/data support or `contract-needed` in internal docs before presenting it as product UI;
+- keep internal review language out of customer-facing screens: no V1/V2/Stage/contract-needed/backend gap/gate/verifier/maturity/model/GPU wording in product UI;
+- preserve existing route shell/navigation/context unless the accepted goal is to replace it;
 - show real route/page structure, not just one hero screen;
 - include main interactions: drawers, modals, tabs, hover/selected states, command/search if relevant;
 - cover critical states;
@@ -156,7 +214,7 @@ PROTOTYPE_COVERAGE.md is mandatory. It maps every required route/surface and cor
 ```
 
 The prototype is not throwaway decoration. It is the visual contract.
-### Gate 3: user / design acceptance
+### Gate 4: user / design acceptance
 
 The user or design reviewer accepts one of:
 
@@ -169,7 +227,7 @@ REJECTED_DIRECTION
 
 If REQUEST_CHANGES/REJECTED_DIRECTION, do not start production implementation. Iterate prototype first.
 
-### Gate 4: implementation plan from prototype
+### Gate 5: implementation plan from prototype
 
 After prototype acceptance, produce a parity plan:
 
@@ -188,7 +246,7 @@ prototype fake data -> real API or contract-needed
 accepted compromise -> explicit note
 ```
 
-### Gate 5: production implementation
+### Gate 6: production implementation
 
 Now implement in the real project.
 
@@ -201,7 +259,7 @@ Rules:
 - mark missing backend as `contract-needed` honestly;
 - do not reinterpret the accepted prototype into a visually different existing admin shell.
 
-### Gate 6: prototype parity review
+### Gate 7: prototype parity review
 
 Before PR/final review, compare implementation against accepted prototype.
 
@@ -222,7 +280,7 @@ Suggested threshold:
 
 The remaining 20% must be explained by real production constraints, not developer convenience.
 
-### Gate 7: runtime verification
+### Gate 8: runtime verification
 
 Run:
 
@@ -235,7 +293,7 @@ accessibility smoke
 real backend/API check where applicable
 ```
 
-### Gate 8: visual regression baseline
+### Gate 9: visual regression baseline
 
 Add or refresh baseline evidence:
 
@@ -245,7 +303,7 @@ Playwright screenshot baseline fallback
 before/after screenshots for affected routes
 ```
 
-### Gate 9: final verification
+### Gate 10: final verification
 
 Final verifier cannot pass product-critical frontend work without:
 

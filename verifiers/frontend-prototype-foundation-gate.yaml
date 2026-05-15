@@ -1,0 +1,8 @@
+id: frontend-prototype-foundation-gate
+kind: static
+description: Validate fail-closed foundation/non-regression gate for existing-product high-fidelity prototypes.
+command: scripts/prototype_foundation_gate_smoke.py --root . --format json
+evidence:
+- scripts/prototype_foundation_gate.py
+- scripts/prototype_foundation_gate_smoke.py
+- docs/frontend-quality-loop.md

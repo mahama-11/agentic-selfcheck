@@ -1,0 +1,199 @@
+# V workspace maintenance project registry
+# Canonical control-plane root: /root/work/agentic-selfcheck
+# Target workspace root: /root/work/v
+version: 1
+workspace:
+  id: v-workspace
+  root: /root/work/v
+  reports_dir: /root/work/v/reports/maintenance-control-plane
+  default_owner: Hermes/工程代理
+  maintenance_cadence:
+    event_driven:
+      trigger: git hooks / SelfCheck events
+      purpose: changed files only; quickest feedback for docs/code edits
+      expected_noise: silent unless failure or high-risk finding
+    high_frequency_light:
+      schedule: every 2h
+      purpose: scan changed/high-risk signals, evaluate every finding, immediately repair deterministic issues or dispatch actionable repairs
+      max_runtime_seconds: 900
+    daily_deep:
+      schedule: 35 10 * * *
+      purpose: full V doc/code governance audit, evaluate all findings, immediately repair/dispatch actionable work, record explicit reasons for non-repair
+      max_runtime_seconds: 1800
+    weekly_digest_and_repair:
+      schedule: 20 11 * * 1
+      purpose: trend summary, aged debt review, safe repair/dispatch planning
+      max_runtime_seconds: 900
+  repair_policy:
+    direct_auto_fix_allowed:
+      - generated_report_index_refresh
+      - deterministic_evidence_link_backfill
+      - low_risk_doc_metadata_normalization
+    delegate_required:
+      - code_redundancy_refactor
+      - code_logic_risk_fix
+      - contract_drift_fix
+      - doc_semantic_rewrite
+    human_required:
+      - destructive_cleanup
+      - source_module_deletion
+      - broad_refactor
+      - schema_or_contract_change
+      - product_or_architecture_tradeoff
+      - missing_secret_or_permission
+  agent_task_control:
+    canonical_object: RepairTask
+    source_ledger_json: /root/work/v/reports/maintenance-control-plane/repair-tasks.json
+    source_ledger_markdown: /root/work/v/reports/maintenance-control-plane/repair-tasks.md
+    lifecycle_ledger_json: /root/work/v/reports/maintenance-control-plane/repair-task-ledger.json
+    lifecycle_status_markdown: /root/work/v/reports/maintenance-control-plane/repair-task-status.md
+    lifecycle_events_jsonl: /root/work/v/reports/maintenance-control-plane/repair-task-events.jsonl
+    dispatch_dir: /root/work/agentic-selfcheck/.hermes/dispatch/v-maintenance-tasks
+    controller: /root/work/agentic-selfcheck/scripts/v_repair_task_control.py
+    controller_actions: [sync, plan, lease, update, verify, status]
+    task_id_prefix: RT
+    lanes:
+      - doc-agent
+      - backend-agent
+      - frontend-agent
+      - contract-agent
+      - maintenance-agent
+    closure_rule: parent_control_plane_must_rerun_expected_verifiers_before_resolved
+    sandbox_policy: isolated_worktree_required_for_code_or_contract_changes
+    subagent_self_report_policy: evidence_only_not_closure
+  notification_policy:
+    high_frequency: silent_unless_new_high_risk_reopened_or_human_required
+    daily: silent_unless_new_high_risk_or_human_required
+    weekly: concise_digest
+    human_decision_required_for:
+      - destructive_cleanup
+      - source_module_deletion
+      - broad_refactor
+      - schema_or_contract_change
+      - product_or_architecture_tradeoff
+      - missing_secret_or_permission
+projects:
+  - id: platform-backend
+    name: Platform Backend
+    path: /root/work/v/platform-backend
+    kind: go-backend
+    active: true
+    code_paths: [internal, cmd, pkg, scripts]
+    doc_paths: [README.md, AGENTS.md, docs]
+    commands:
+      test: go test ./...
+      build: go test ./...
+    risk_boundaries:
+      source_deletion_requires_human: true
+      contract_change_requires_review: true
+      destructive_requires_human: true
+  - id: platform-frontend
+    name: Platform Frontend
+    path: /root/work/v/platform-frontend
+    kind: react-frontend
+    active: true
+    code_paths: [src]
+    doc_paths: [README.md, docs]
+    commands:
+      typecheck: npm run typecheck
+      build: npm run build
+    risk_boundaries:
+      source_deletion_requires_human: true
+      contract_change_requires_review: true
+      destructive_requires_human: true
+  - id: ecommerce-backend
+    name: Agent Ecommerce Backend
+    path: /root/work/v/ecommerce-backend
+    kind: go-backend
+    active: true
+    code_paths: [internal, cmd, pkg, scripts]
+    doc_paths: [README.md, AGENTS.md, docs]
+    commands:
+      test: go test ./...
+      build: go test ./...
+    risk_boundaries:
+      source_deletion_requires_human: true
+      contract_change_requires_review: true
+      destructive_requires_human: true
+  - id: ecommerce-frontend
+    name: Agent Ecommerce Frontend
+    path: /root/work/v/ecommerce-frontend
+    kind: react-frontend
+    active: true
+    code_paths: [src]
+    doc_paths: [README.md, docs]
+    commands:
+      typecheck: npm run typecheck
+      build: npm run build
+    risk_boundaries:
+      source_deletion_requires_human: true
+      contract_change_requires_review: true
+      destructive_requires_human: true
+  - id: menu-backend
+    name: Menu Backend
+    path: /root/work/v/menu-backend
+    kind: go-backend
+    active: true
+    code_paths: [internal, cmd, pkg, scripts]
+    doc_paths: [README.md, AGENTS.md, docs]
+    commands:
+      test: go test ./...
+      build: go test ./...
+    risk_boundaries:
+      source_deletion_requires_human: true
+      contract_change_requires_review: true
+      destructive_requires_human: true
+  - id: menu-frontend
+    name: Menu Frontend
+    path: /root/work/v/menu-frontend
+    kind: react-frontend
+    active: true
+    code_paths: [src]
+    doc_paths: [README.md, AGENTS.md, docs]
+    commands:
+      typecheck: npm run typecheck
+      build: npm run build
+    risk_boundaries:
+      source_deletion_requires_human: true
+      contract_change_requires_review: true
+      destructive_requires_human: true
+  - id: kyc-backend
+    name: KYC Backend
+    path: /root/work/v/kyc-backend
+    kind: go-backend
+    active: true
+    code_paths: [internal, cmd, pkg, scripts]
+    doc_paths: [README.md, AGENTS.md, docs]
+    commands:
+      test: go test ./...
+      build: go test ./...
+    risk_boundaries:
+      source_deletion_requires_human: true
+      contract_change_requires_review: true
+      destructive_requires_human: true
+  - id: kyc-frontend
+    name: KYC Frontend
+    path: /root/work/v/kyc-frontend
+    kind: react-frontend
+    active: true
+    code_paths: [src]
+    doc_paths: [README.md, AGENTS.md, docs]
+    commands:
+      typecheck: npm run typecheck
+      build: npm run build
+    risk_boundaries:
+      source_deletion_requires_human: true
+      contract_change_requires_review: true
+      destructive_requires_human: true
+  - id: workspace-docs
+    name: V Workspace Docs
+    path: /root/work/v/docs
+    kind: docs
+    active: true
+    code_paths: []
+    doc_paths: [.]
+    commands: {}
+    risk_boundaries:
+      doc_deletion_requires_human: true
+      product_commitment_rewrite_requires_human: true
+      destructive_requires_human: true

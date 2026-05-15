@@ -5,6 +5,7 @@
   "type": "object",
   "required": [
     "risk",
+    "project_context",
     "references",
     "anti_patterns",
     "tokens_status",
@@ -18,6 +19,23 @@
         "C",
         "D"
       ]
+    },
+    "project_context": {
+      "type": "object",
+      "required": [
+        "existing_product_background",
+        "current_implementation_state",
+        "current_visual_baseline",
+        "target_increment_goal",
+        "prototype_grounding_rule"
+      ],
+      "properties": {
+        "existing_product_background": { "type": "string", "minLength": 20 },
+        "current_implementation_state": { "type": "string", "minLength": 20 },
+        "current_visual_baseline": { "type": "string", "minLength": 20 },
+        "target_increment_goal": { "type": "string", "minLength": 20 },
+        "prototype_grounding_rule": { "type": "string", "minLength": 20 }
+      }
     },
     "references": {
       "type": "array",
