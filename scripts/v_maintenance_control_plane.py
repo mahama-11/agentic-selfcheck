@@ -441,7 +441,12 @@ def build_repair_tasks(
     self-reports without parent verification.
     """
     task_items: list[dict[str, Any]] = []
-    task_source = list(queue.get("direct_safe_repair") or []) + list(queue.get("delegate_repair") or [])
+    # RepairTask source is the durable universe of actionable work. It must not
+    # shrink just because a light run decides not to execute low-urgency tasks in
+    # this cadence; otherwise the lifecycle controller will incorrectly treat
+    # existing tasks as missing-from-scan and move them to pending_verification.
+    delegated_source = queue.get("all_delegate_repair") or queue.get("delegate_repair") or []
+    task_source = list(queue.get("direct_safe_repair") or []) + list(delegated_source)
     for f in task_source:
         project = projects_by_id.get(str(f.get("project_id") or ""), {})
         decision = str(f.get("repair_decision") or "")

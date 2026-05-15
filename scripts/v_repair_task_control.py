@@ -149,6 +149,13 @@ def merge_source_into_ledger(v_root: Path) -> dict[str, Any]:
                 task.setdefault("events", []).append({"ts": ts, "event": "reopened_from_verified_resolved"})
                 task.pop("resolution", None)
                 event(v_root, "task_reopened", tid, previous_status=old_status, lane=task.get("lane"), project_id=task.get("project_id"))
+            elif old_status == "pending_verification":
+                # The task is present in the latest source again, so it was not actually
+                # resolved. Return it to the executable ready queue instead of leaving it
+                # in verifier limbo.
+                task["status"] = "ready"
+                task.setdefault("events", []).append({"ts": ts, "event": "returned_to_ready_from_pending_verification"})
+                event(v_root, "task_returned_to_ready", tid, previous_status=old_status, lane=task.get("lane"), project_id=task.get("project_id"))
             refreshed_count += 1
         else:
             task["status"] = "ready"
