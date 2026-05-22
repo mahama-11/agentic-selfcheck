@@ -93,6 +93,19 @@ def repair_task_status(selfcheck_root: Path, v_root: Path) -> dict[str, Any]:
     data['ok'] = True
     return data
 
+def product_worktree_batches(selfcheck_root: Path) -> dict[str, Any]:
+    script = selfcheck_root / 'scripts' / 'v_product_worktree_batch_status.py'
+    if not script.exists():
+        return {'ok': False, 'error': f'missing {script}'}
+    cp = run([sys.executable, str(script), '--format', 'json'], cwd=selfcheck_root, timeout=120)
+    if cp.returncode != 0:
+        return {'ok': False, 'error': cp.stderr.strip() or cp.stdout.strip(), 'exit_code': cp.returncode}
+    try:
+        data = json.loads(cp.stdout)
+    except json.JSONDecodeError as exc:
+        return {'ok': False, 'error': f'invalid json: {exc}', 'stdout_tail': cp.stdout[-1000:]}
+    data['ok'] = True
+    return data
 
 def parse_cron_list(text: str) -> list[dict[str, Any]]:
     jobs: list[dict[str, Any]] = []
@@ -174,13 +187,16 @@ def overall_status(payload: dict[str, Any]) -> str:
     repair = payload.get('repair_tasks', {})
     cron = payload.get('cron', {})
     dirty = payload.get('dirty_tree', {})
-    if not dirty.get('ok', False) or not repair.get('ok', False) or not cron.get('ok', False):
+    product_batches = payload.get('product_worktree_batches', {})
+    if not dirty.get('ok', False) or not repair.get('ok', False) or not cron.get('ok', False) or not product_batches.get('ok', False):
         return 'NEEDS_REPAIR'
     if repair.get('summary', {}).get('by_status', {}).get('verification_failed'):
         return 'NEEDS_REPAIR'
     if any(j.get('delivery_error') for j in cron.get('jobs', [])):
         return 'PASS_WITH_NOTES'
     if dirty.get('total', 0) > 0:
+        return 'PASS_WITH_NOTES'
+    if any(batch.get('status') == 'QUARANTINED' for batch in product_batches.get('batches', [])):
         return 'PASS_WITH_NOTES'
     return 'PASS'
 
@@ -196,6 +212,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     repair_summary = payload.get('repair_tasks', {}).get('summary', {})
     dirty = payload.get('dirty_tree', {})
     cron = payload.get('cron', {})
+    product_batches = payload.get('product_worktree_batches', {})
     delivery_errors = cron.get('delivery_errors') or []
     lines = [
         '# V Control Plane Status',
@@ -219,6 +236,12 @@ def render_markdown(payload: dict[str, Any]) -> str:
     ]
     for job in delivery_errors[:5]:
         lines.append(f"- {job.get('job_id')} {job.get('name')}: {job.get('delivery_error')}")
+    lines.extend(['', '## Product worktree batches'])
+    for batch in product_batches.get('batches', []):
+        lines.append(
+            f"- {batch.get('batch')}: {batch.get('status')} "
+            f"dirty_total={batch.get('dirty_total')} action={batch.get('action')}"
+        )
     lines.extend(['', '## Evidence', f"JSON: `{payload.get('evidence', {}).get('json')}`"])
     return '\n'.join(lines) + '\n'
 
@@ -242,6 +265,7 @@ def main() -> int:
         'dirty_tree': dirty_tree(selfcheck_root),
         'repair_tasks': repair_task_status(selfcheck_root, v_root),
         'cron': cron_status(hermes_home),
+        'product_worktree_batches': product_worktree_batches(selfcheck_root),
     }
     payload['status'] = overall_status(payload)
     payload['evidence'] = {
@@ -259,3 +283,4 @@ def main() -> int:
 
 if __name__ == '__main__':
     raise SystemExit(main())
+

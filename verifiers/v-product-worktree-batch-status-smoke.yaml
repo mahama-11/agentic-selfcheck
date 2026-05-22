@@ -1,0 +1,8 @@
+id: v-product-worktree-batch-status-smoke
+kind: static
+description: Validate V product worktree batch classifier emits clean Batch B and quarantined Batch C/D states with explicit actions.
+command: scripts/v_product_worktree_batch_status_smoke.py
+evidence:
+  - scripts/v_product_worktree_batch_status.py
+  - scripts/v_product_worktree_batch_status_smoke.py
+  - docs/v-product-worktree-batch-status.md

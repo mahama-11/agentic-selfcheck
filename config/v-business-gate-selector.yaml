@@ -17,6 +17,12 @@ features:
     command: scripts/requirement-gate.sh ecommerce-critical-journey-release-gate static,api,browser,evidence release.v.ecommerce
     blocking: true
     reason: Ecommerce release-wide critical journey gate
+  ecommerce-v1-listing-export-gate:
+    event: requirement.changed.v.ecommerce-v1-listing-export
+    groups: static
+    command: scripts/requirement-gate.sh ecommerce-v1-listing-export-gate static requirement.changed.v.ecommerce-v1-listing-export
+    blocking: true
+    reason: Ecommerce listing/export active-slice quarantine/readiness gate
 rules:
   - id: ecommerce-production-frontend-lowlevel
     description: Ecommerce production pages can affect Prep/Sandbox/Workshop prompt and generation flow.
@@ -61,3 +67,18 @@ rules:
       - events/release-v-ecommerce.yaml
     gates:
       - ecommerce-critical-journey-release-gate
+  - id: ecommerce-listing-export-surfaces
+    description: ProductCore/listing/export/image-runtime and product detail UI changes require the dedicated listing/export quarantine/readiness gate until full same-run evidence exists.
+    patterns:
+      - ecommerce-backend/internal/modules/productcore/**
+      - ecommerce-backend/internal/modules/imageruntime/**
+      - ecommerce-backend/internal/modules/templatecenter/**
+      - ecommerce-backend/internal/repository/productcenter_repository.go
+      - ecommerce-backend/internal/models/productcenter.go
+      - ecommerce-backend/internal/migration/**
+      - ecommerce-frontend/src/pages/product/**
+      - ecommerce-frontend/src/services/product.ts
+      - ecommerce-frontend/src/services/imageRuntime.ts
+      - ecommerce-frontend/src/types/product.ts
+    gates:
+      - ecommerce-v1-listing-export-gate

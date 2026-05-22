@@ -1,0 +1,33 @@
+id: crossplanet-listing-strategy-gate-repair
+project: v-workspace
+description: Quarantine gate for CrossPlanet/List Strategy worktrees and archived gate drafts. Ensures immature hardcoded-root gates are not registered as blocking gates until repaired.
+level_target: L3
+repair_policy: default-repair-policy
+depends_on:
+  - continuous-governance
+target_services:
+  frontend: ecommerce-frontend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - crossplanet-listing-strategy-gate-repair-static
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Human approval is required before promoting archived CrossPlanet gate drafts or merging quarantined CrossPlanet worktrees.
+evidence_required:
+  - docs/plans/2026-05-22-v-automation-gap-closure.md
+  - docs/v-product-worktree-batch-status.md
+  - scripts/crossplanet_gate_repair_quarantine.py
+risk_dimensions:
+  - mixed-root-evidence
+  - stale-report-false-pass
+  - brittle-browser-copy-checks
+  - product-worktree-quarantine
+governance:
+  quarantine_gate: true
+  merge_policy: "Do not merge CrossPlanet product worktrees until repaired adapter-root-aware gates pass in the same run."

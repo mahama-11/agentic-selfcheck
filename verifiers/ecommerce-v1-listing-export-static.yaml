@@ -1,0 +1,7 @@
+id: ecommerce-v1-listing-export-static
+kind: static
+description: Validate V1 listing/export active slice is explicitly quarantined and has required roots/files before a full gate is built.
+command: scripts/ecommerce_v1_listing_export_gate.py --format json
+evidence:
+  - docs/plans/2026-05-22-v-automation-gap-closure.md
+  - scripts/ecommerce_v1_listing_export_gate.py

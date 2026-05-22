@@ -38,6 +38,7 @@ def main() -> int:
         print(json.dumps({'status': 'FAIL', 'step': 'parse_json', 'error': str(exc), 'stdout': cp.stdout[-1000:]}, ensure_ascii=False, indent=2))
         return 1
     cron_jobs = payload.get('cron', {}).get('jobs') or []
+    product_batches = payload.get('product_worktree_batches', {}).get('batches') or []
     previews = [str((job.get('latest_output') or {}).get('preview') or '') for job in cron_jobs]
     sensitive_markers = ('api_key', 'secret', 'password', 'token', 'authorization', 'bearer ')
     checks = {
@@ -45,6 +46,9 @@ def main() -> int:
         'dirty_tree_present': isinstance(payload.get('dirty_tree'), dict) and 'total' in payload['dirty_tree'],
         'repair_tasks_present': isinstance(payload.get('repair_tasks'), dict) and 'summary' in payload['repair_tasks'],
         'cron_present': isinstance(payload.get('cron'), dict) and 'jobs' in payload['cron'],
+        'product_worktree_batches_present': isinstance(payload.get('product_worktree_batches'), dict) and bool(product_batches),
+        'product_worktree_batches_have_actions': all(batch.get('action') for batch in product_batches),
+        'quarantine_surfaces_as_notes': payload.get('status') != 'PASS' or not any(batch.get('status') == 'QUARANTINED' for batch in product_batches),
         'personal_cron_excluded': all(job.get('job_id') != '4d0eca6a6eac' for job in cron_jobs),
         'cron_preview_redacted': not any(marker in preview.lower() for preview in previews for marker in sensitive_markers),
         'degraded_status_fail_closed': payload.get('status') != 'PASS' or payload.get('dirty_tree', {}).get('total', 0) == 0,
@@ -61,6 +65,7 @@ def main() -> int:
         'dirty_total': payload.get('dirty_tree', {}).get('total'),
         'repair_active': payload.get('repair_tasks', {}).get('summary', {}).get('active'),
         'cron_delivery_errors': len(payload.get('cron', {}).get('delivery_errors') or []),
+        'product_worktree_batches': [(batch.get('batch'), batch.get('status'), batch.get('dirty_total')) for batch in product_batches],
         'evidence': payload.get('evidence'),
     }
     print(json.dumps(result, ensure_ascii=False, indent=2) if args.format == 'json' else result)

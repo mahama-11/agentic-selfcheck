@@ -1,0 +1,8 @@
+id: crossplanet-listing-strategy-gate-repair-static
+kind: static
+description: Verify archived CrossPlanet gate drafts remain quarantined and current worktrees are visible until root/evidence/report issues are repaired.
+command: scripts/crossplanet_gate_repair_quarantine.py --selfcheck-root . --format json
+evidence:
+  - docs/plans/2026-05-22-v-automation-gap-closure.md
+  - docs/v-product-worktree-batch-status.md
+  - scripts/crossplanet_gate_repair_quarantine.py

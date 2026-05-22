@@ -8,3 +8,5 @@ evidence:
   - scripts/v_control_plane_status.py
   - scripts/v_control_plane_status_smoke.py
   - scripts/v_control_plane_dirty_inventory.py
+  - scripts/v_product_worktree_batch_status.py
+  - docs/v-product-worktree-batch-status.md
