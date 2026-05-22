@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FrontendWorkflowState",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "workflow_id",
+    "risk",
+    "state",
+    "allowed_transitions"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "workflow_id": {"type": "string", "minLength": 1},
+    "risk": {"enum": ["A", "B", "C", "D", "E"]},
+    "state": {
+      "enum": [
+        "INTAKE",
+        "CONTEXT_READY",
+        "DESIGN_PACK_READY",
+        "LANES_READY",
+        "CRITIQUE_READY",
+        "HUMAN_DECISION_REQUIRED",
+        "ACCEPTED_FOR_FREEZE",
+        "FROZEN",
+        "IMPLEMENTATION_READY",
+        "IMPLEMENTED",
+        "PARITY_REVIEWED",
+        "RUNTIME_VERIFIED",
+        "FINAL_PASS",
+        "BLOCKED"
+      ]
+    },
+    "allowed_transitions": {"type": "array", "items": {"type": "string"}},
+    "project_adapter": {"type": ["string", "null"]},
+    "design_pack": {"type": ["string", "null"]},
+    "prototype_coverage": {"type": ["string", "null"]},
+    "human_decision": {
+      "type": "object",
+      "properties": {
+        "decision": {"enum": ["ACCEPTED", "ACCEPTED_WITH_NOTES", "REQUEST_CHANGES", "REJECTED_DIRECTION", null]},
+        "artifact": {"type": ["string", "null"]},
+        "notes": {"type": ["string", "null"]},
+        "signer": {"type": ["string", "null"]},
+        "signer_role": {"type": ["string", "null"]},
+        "decided_at": {"type": ["string", "null"]},
+        "decision_source": {"type": ["string", "null"]},
+        "notes_closure": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "freeze": {
+      "type": "object",
+      "properties": {
+        "document": {"type": ["string", "null"]},
+        "payload": {"type": ["string", "null"]},
+        "frozen_screenshots": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "parity_plan": {"type": ["string", "null"]},
+    "parity_report": {"type": ["string", "null"]},
+    "runtime_evidence": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

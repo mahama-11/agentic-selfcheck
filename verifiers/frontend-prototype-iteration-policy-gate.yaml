@@ -1,0 +1,8 @@
+id: frontend-prototype-iteration-policy-gate
+kind: static
+description: Validate prototype iteration policy decisions, constraint carry-forward, preserve/change lists, reusable lessons, and regression checklist before generating the next prototype candidate.
+command: scripts/frontend_prototype_iteration_policy_smoke.py --root . --format json
+evidence:
+- scripts/frontend_prototype_iteration_policy_gate.py
+- scripts/frontend_prototype_iteration_policy_smoke.py
+- templates/frontend/prototype-iteration-policy/PROTOTYPE_ITERATION_POLICY.md

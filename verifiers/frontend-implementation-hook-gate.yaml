@@ -1,0 +1,10 @@
+id: frontend-implementation-hook-gate
+kind: static
+description: Validate V frontend implementation governance trigger auto-bootstraps missing frontend workflows and enforces before-implementation readiness for frontend implementation file changes.
+command: scripts/frontend_implementation_hook_smoke.py --root . --format json
+evidence:
+- scripts/v_continuous_governance_trigger.py
+- scripts/frontend_implementation_hook_smoke.py
+- scripts/frontend_before_implementation_gate.py
+- scripts/frontend_risk_router.py
+- scripts/frontend_workflow_bootstrap.py

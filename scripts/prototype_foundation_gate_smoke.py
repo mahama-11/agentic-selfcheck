@@ -93,12 +93,13 @@ def main() -> int:
     failures: list[str] = []
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
-        good_delta, good_proto = write_case(root / "good", True)
-        bad_delta, bad_proto = write_case(root / "bad", False)
-        good = run([sys.executable, str(SCRIPT), "--workflow", str(root / "good"), "--delta", good_delta.name, "--prototype", good_proto.name, "--format", "text"])
+        workflows = root / ".hermes" / "workflows"
+        good_delta, good_proto = write_case(workflows / "good", True)
+        bad_delta, bad_proto = write_case(workflows / "bad", False)
+        good = run([sys.executable, str(SCRIPT), "--root", str(root), "--workflow", ".hermes/workflows/good", "--delta", good_delta.name, "--prototype", good_proto.name, "--format", "text"])
         if good.returncode != 0:
             failures.append("good case should pass:\n" + good.stdout)
-        bad = run([sys.executable, str(SCRIPT), "--workflow", str(root / "bad"), "--delta", bad_delta.name, "--prototype", bad_proto.name, "--format", "text"])
+        bad = run([sys.executable, str(SCRIPT), "--root", str(root), "--workflow", ".hermes/workflows/bad", "--delta", bad_delta.name, "--prototype", bad_proto.name, "--format", "text"])
         if bad.returncode == 0:
             failures.append("bad case should fail:\n" + bad.stdout)
     status = "PASS" if not failures else "FAIL"

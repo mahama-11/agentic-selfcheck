@@ -6,6 +6,31 @@ import re
 from pathlib import Path
 from prototype_path_utils import resolve_under
 
+
+def path_has_symlink(path: Path, stop: Path) -> bool:
+    stop = stop.resolve()
+    cur = path
+    chain = [cur]
+    while cur != stop and cur != cur.parent:
+        cur = cur.parent
+        chain.append(cur)
+    return any(p.is_symlink() for p in chain)
+
+
+def resolve_workflow(root: Path, raw: str) -> Path:
+    wf = Path(raw)
+    if not wf.is_absolute():
+        wf = root / wf
+    governed = (root / ".hermes/workflows").resolve()
+    resolved = wf.resolve()
+    try:
+        resolved.relative_to(governed)
+    except Exception as exc:
+        raise ValueError("workflow must stay under governed .hermes/workflows") from exc
+    if path_has_symlink(wf, governed):
+        raise ValueError("workflow path components must not be symlinked")
+    return resolved
+
 FOUNDATION_REQUIRED = [
     "DOCUMENT_REQUIREMENT_COVERAGE.md",
     "PROJECT_CONTEXT.md",
@@ -180,6 +205,7 @@ def check_prototype(proto_path: Path, min_bytes: int, min_controls: int, min_vis
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Fail-closed foundation/non-regression gate for existing-product high-fidelity prototypes.")
+    parser.add_argument("--root", default=".")
     parser.add_argument("--workflow", required=True, help="Workflow directory containing foundation artifacts")
     parser.add_argument("--prototype", help="Candidate prototype HTML path, relative to workflow or absolute")
     parser.add_argument("--delta", help="Iteration delta file path, relative to workflow or absolute")
@@ -191,19 +217,25 @@ def main() -> int:
     parser.add_argument("--min-interaction-markers", type=int, default=8)
     args = parser.parse_args()
 
-    workflow = Path(args.workflow).resolve()
-    findings = check_foundation(workflow)
+    workflow_valid = True
+    try:
+        workflow = resolve_workflow(Path(args.root).resolve(), args.workflow)
+        findings = check_foundation(workflow)
+    except ValueError as exc:
+        workflow = Path(args.workflow).resolve()
+        findings = [finding("error", str(workflow), str(exc))]
+        workflow_valid = False
     metrics: dict = {}
     delta_data: dict = {}
 
-    if args.delta:
+    if workflow_valid and args.delta:
         try:
             delta_path = resolve_under(workflow, args.delta, "delta")
             delta_findings, delta_data = check_delta(delta_path)
         except ValueError as exc:
             delta_findings, delta_data = [finding("error", str(workflow), str(exc))], {}
         findings.extend(delta_findings)
-    if args.prototype:
+    if workflow_valid and args.prototype:
         try:
             proto_path = resolve_under(workflow, args.prototype, "prototype")
             proto_findings, metrics = check_prototype(proto_path, args.min_bytes, args.min_controls, args.min_visible_chars, args.min_pages, args.min_interaction_markers)

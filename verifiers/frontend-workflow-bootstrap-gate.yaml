@@ -1,0 +1,7 @@
+id: frontend-workflow-bootstrap-gate
+kind: static
+description: Validate frontend workflow bootstrap creates state, manifest, adapter, prototype workflow templates, and fails closed on unsafe inputs.
+command: scripts/frontend_workflow_bootstrap_smoke.py --root . --format json
+evidence:
+- scripts/frontend_workflow_bootstrap.py
+- scripts/frontend_workflow_bootstrap_smoke.py

@@ -138,6 +138,10 @@ For an existing product, prototype generation must not start from a blank canvas
 ```text
 REQUIREMENT_ORIGIN_TRACE.md
 PROJECT_CONTEXT.md
+EXISTING_PRODUCT_BASELINE.md
+API_BACKEND_FEASIBILITY_MAP.md
+PRODUCT_SURFACE_LANGUAGE_RULES.md
+PROTOTYPE_REQUIREMENT_TRACE.md
 ```
 
 Must specify:
@@ -210,6 +214,12 @@ Prototype requirements:
 Completeness mechanism:
 
 ```text
+frontend_existing_product_intake_gate.py must pass before design lanes/prototype generation for existing-product C/D work. It checks project baseline, route/surface inventory, backend/API feasibility, requirement trace, and user-facing language boundaries.
+
+frontend_prototype_foundation_ledger_gate.py must pass before/after prototype iteration. It treats the prototype foundation as the origin: product context, target user, current baseline, API/backend constraints, route/page skeleton, accepted strengths, rejected patterns, reusable lessons, and regression checklist. Every feedback loop must strengthen this ledger instead of losing prior constraints. `PROTOTYPE_FOUNDATION_LEDGER.md` is the canonical foundation artifact; legacy `FOUNDATION_LEDGER.md` should not be introduced in new workflows.
+
+frontend_prototype_iteration_policy_gate.py must pass before each next prototype candidate after feedback. It decides optimize_existing vs fresh_lane vs restart_from_foundation, requires foundation constraints to carry forward, previous strengths to preserve, concrete changes, reusable constraints learned, and regression checks. Restarting from foundation requires a structural trigger such as changed product goal, target user, IA/core flow, baseline, or backend/API feasibility, and the foundation ledger must be updated/restarted accordingly.
+
 PROTOTYPE_COVERAGE.md is mandatory. It maps every required route/surface and core interaction to a prototype artifact and screenshot. The frontend quality gate fails if this matrix is missing, still contains placeholders, or marks core coverage as missing/blocked.
 ```
 
@@ -226,6 +236,8 @@ REJECTED_DIRECTION
 ```
 
 If REQUEST_CHANGES/REJECTED_DIRECTION, do not start production implementation. Iterate prototype first.
+
+For `ACCEPTED_WITH_NOTES`, the notes must be closed before implementation: record signer, role, timestamp, decision source, accepted artifact path/hash, notes that block freeze, notes that must be resolved during implementation, approved deviations, closure owner, and closure evidence. A bare `ACCEPTED_WITH_NOTES` without closure evidence is not implementation-ready.
 
 ### Gate 5: implementation plan from prototype
 

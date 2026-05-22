@@ -1,0 +1,33 @@
+id: frontend-prototype-foundation-ledger
+project: agentic-selfcheck
+description: Maintain the prototype foundation/origin so every feedback loop strengthens product context, skeleton, constraints, accepted strengths, rejected patterns, and reusable lessons instead of restarting from scratch or losing prior learning.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+must_pass:
+  static:
+  - frontend-prototype-foundation-ledger-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- Human feedback may change direction, but the agent must update the foundation ledger so later prototypes inherit the stable skeleton and reusable constraints.
+evidence_required:
+- scripts/frontend_prototype_foundation_ledger_gate.py
+- scripts/frontend_prototype_foundation_ledger_smoke.py
+- templates/frontend/prototype-foundation-ledger/PROTOTYPE_FOUNDATION_LEDGER.md
+risk_dimensions:
+- frontend
+- prototype-foundation
+- regression-prevention
+- constraint-accumulation
+governance:
+  generic: true
+  blocks_before:
+  - design-lane-generation
+  - high-fidelity-prototype-generation
+  required_artifact: PROTOTYPE_FOUNDATION_LEDGER.md

@@ -1,0 +1,8 @@
+id: frontend-prototype-foundation-ledger-gate
+kind: static
+description: Verify that prototype iterations preserve a growing foundation ledger of product context, skeleton, constraints, accepted strengths, rejected patterns, and reusable lessons.
+command: scripts/frontend_prototype_foundation_ledger_smoke.py --root . --format json
+evidence:
+- scripts/frontend_prototype_foundation_ledger_gate.py
+- scripts/frontend_prototype_foundation_ledger_smoke.py
+- templates/frontend/prototype-foundation-ledger/PROTOTYPE_FOUNDATION_LEDGER.md

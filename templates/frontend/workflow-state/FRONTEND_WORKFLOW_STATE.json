@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "workflow_id": "replace-with-workflow-id",
+  "risk": "D",
+  "state": "INTAKE",
+  "allowed_transitions": ["CONTEXT_READY", "BLOCKED"],
+  "project_adapter": "PROJECT_ADAPTER.yaml",
+  "design_pack": null,
+  "prototype_coverage": null,
+  "human_decision": {
+    "decision": null,
+    "artifact": null,
+    "signer": null,
+    "signer_role": null,
+    "decided_at": null,
+    "decision_source": null,
+    "notes": null,
+    "notes_closure": null
+  },
+  "freeze": {
+    "document": null,
+    "payload": null,
+    "frozen_screenshots": []
+  },
+  "parity_plan": null,
+  "parity_report": null,
+  "runtime_evidence": []
+}
