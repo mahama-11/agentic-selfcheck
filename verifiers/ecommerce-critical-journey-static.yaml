@@ -1,0 +1,6 @@
+id: ecommerce-critical-journey-static
+kind: static
+description: Run the V/Ecommerce critical SKU production journey static contract checks through the generic journey runner.
+command: "scripts/critical_journey_gate.py --journey v-ecommerce-critical-sku-production --phase static"
+evidence:
+  - reports/critical-journeys/v-ecommerce-critical-sku-production/static.json

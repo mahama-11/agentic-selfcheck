@@ -1,0 +1,6 @@
+id: ecommerce-critical-journey-adapter-live-smoke
+kind: static
+description: Validate the V/Ecommerce critical journey adapter live API flow against a local fake server with redaction and cleanup checks.
+command: "scripts/v_ecommerce_critical_journey_adapter_smoke.py"
+evidence:
+  - reports/ecommerce-critical-journey-release-gate/ecommerce-critical-journey-adapter-live-smoke.json

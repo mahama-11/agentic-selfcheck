@@ -1,0 +1,6 @@
+id: ecommerce-v2-prep-sandbox-lowlevel-static
+kind: static
+description: "Guard Ecommerce V2 Prep/Sandbox low-level source regressions: stale copy, fixed-four-question gate, slot-count guard, and mock/skeleton labels."
+command: "scripts/ecommerce_v2_prep_sandbox_lowlevel_gate.py --kind static"
+evidence:
+  - reports/ecommerce-v2-prep-sandbox-lowlevel/static.json

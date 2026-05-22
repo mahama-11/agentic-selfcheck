@@ -1,0 +1,23 @@
+id: release-v-ecommerce
+event: release.v.ecommerce
+description: Release-wide gate for Ecommerce critical SKU and production journey health, independent of changed file paths.
+feature: ecommerce-critical-journey-release-gate
+groups:
+  - static
+  - api
+  - browser
+  - evidence
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+  - release
+human_escalation:
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - live_auth_or_permission_failure
+  - cleanup_failure_on_non_test_data

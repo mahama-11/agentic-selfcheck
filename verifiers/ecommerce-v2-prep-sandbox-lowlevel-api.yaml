@@ -1,0 +1,6 @@
+id: ecommerce-v2-prep-sandbox-lowlevel-api
+kind: api
+description: "Verify backend prompt/image-analysis guard symbols and regression tests exist for low-level Prep/Sandbox contracts."
+command: "scripts/ecommerce_v2_prep_sandbox_lowlevel_gate.py --kind api"
+evidence:
+  - reports/ecommerce-v2-prep-sandbox-lowlevel/api.json

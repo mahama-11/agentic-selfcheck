@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CriticalJourney",
+  "type": "object",
+  "required": ["id", "project", "description", "phases", "adapter"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "project": {"type": "string"},
+    "description": {"type": "string"},
+    "release_blocking": {"type": "boolean"},
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"enum": ["static", "api", "browser", "evidence"]}
+    },
+    "adapter": {
+      "type": "object",
+      "required": ["command"],
+      "properties": {
+        "command": {"type": "string"},
+        "description": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "secret_fixture": {
+      "type": "object",
+      "properties": {
+        "path": {"type": "string"},
+        "required": {"type": "boolean"},
+        "required_keys": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "mode_env": {"type": "string"},
+    "report_aliases": {
+      "type": "array",
+      "items": {"enum": ["project"]}
+    },
+    "notes": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

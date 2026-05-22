@@ -1,0 +1,8 @@
+id: ecommerce-v2-visualworkflow-tests
+kind: static
+description: "Run focused Ecommerce visualworkflow regression tests for prompt quality gates and fixed question selections."
+command: "scripts/ecommerce_v2_visualworkflow_tests.sh"
+evidence:
+  - command
+  - exit_code
+  - stdout_tail

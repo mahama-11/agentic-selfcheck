@@ -1,0 +1,6 @@
+id: ecommerce-v2-prep-sandbox-lowlevel-evidence
+kind: evidence
+description: "Scan local and public built bundles for required blockers and forbidden low-level copy regressions."
+command: "scripts/ecommerce_v2_prep_sandbox_lowlevel_gate.py --kind evidence"
+evidence:
+  - reports/ecommerce-v2-prep-sandbox-lowlevel/evidence.json

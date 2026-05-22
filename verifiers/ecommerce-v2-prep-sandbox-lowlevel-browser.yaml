@@ -1,0 +1,6 @@
+id: ecommerce-v2-prep-sandbox-lowlevel-browser
+kind: browser
+description: "Verify public Ecommerce routes render and protected Prep/Sandbox surfaces are login-gated without stale mock copy."
+command: "scripts/ecommerce_v2_prep_sandbox_lowlevel_gate.py --kind browser"
+evidence:
+  - reports/ecommerce-v2-prep-sandbox-lowlevel/browser.json

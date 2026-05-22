@@ -1,0 +1,22 @@
+id: changed-ecommerce-v2-prep-sandbox-lowlevel
+event: requirement.changed.v.ecommerce-v2-prep-sandbox-lowlevel
+description: Gate Ecommerce V2 Prep/Sandbox requirement changes through low-level regression SelfCheck.
+feature: ecommerce-v2-prep-sandbox-lowlevel
+groups:
+  - static
+  - api
+  - browser
+  - evidence
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - user_visible_copy_or_flow_semantics_changed

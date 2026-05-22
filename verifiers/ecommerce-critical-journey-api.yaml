@@ -1,0 +1,6 @@
+id: ecommerce-critical-journey-api
+kind: api
+description: Run the V/Ecommerce critical SKU production journey API checks through the generic journey runner.
+command: "scripts/critical_journey_gate.py --journey v-ecommerce-critical-sku-production --phase api"
+evidence:
+  - reports/critical-journeys/v-ecommerce-critical-sku-production/api.json

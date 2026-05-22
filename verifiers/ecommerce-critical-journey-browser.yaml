@@ -1,0 +1,6 @@
+id: ecommerce-critical-journey-browser
+kind: browser
+description: Run the V/Ecommerce critical SKU production journey browser/protected-path checks through the generic journey runner.
+command: "scripts/critical_journey_gate.py --journey v-ecommerce-critical-sku-production --phase browser"
+evidence:
+  - reports/critical-journeys/v-ecommerce-critical-sku-production/browser.json

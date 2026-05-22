@@ -1,0 +1,78 @@
+id: ecommerce-critical-journey-release-gate
+project: v-workspace
+description: "Release-wide Ecommerce critical journey gate: login fixture, SKU lifecycle, SKU-driven production workflow, ProductCore listing/export/download delivery, Template Center use, Commercial account smoke, browser protected-path readiness, and evidence cleanup. Runs for Ecommerce releases regardless of diff path."
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - frontend-runtime
+  - ai-generation
+  - review-gates
+target_services:
+  frontend: ecommerce-frontend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - ecommerce-critical-journey-static
+    - ecommerce-critical-journey-adapter-live-smoke
+    - frontend-typecheck
+    - frontend-build
+  api:
+    - ecommerce-critical-journey-api
+  browser:
+    - ecommerce-critical-journey-browser
+  evidence:
+    - ecommerce-critical-journey-evidence
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Product owner decides when live provider image-generation smoke must be run instead of deterministic contract mode.
+  - Product owner approves destructive cleanup policy for any non-test SKU data.
+risk_dimensions:
+  - auth
+  - sku-lifecycle
+  - product-workflow
+  - image-analysis
+  - prompt-composition
+  - generation-readiness
+  - listing-version
+  - export-delivery
+  - template-center
+  - commercial-account
+  - cleanup
+governance:
+  trigger_policy:
+    required_for:
+      - any Ecommerce release or deployment
+      - any change touching ecommerce frontend/backend release candidate
+      - any platform auth/runtime/billing change consumed by Ecommerce
+    default_command: "cd /root/work/agentic-selfcheck && scripts/requirement-gate.sh ecommerce-critical-journey-release-gate static,api,browser,evidence release.v.ecommerce"
+    live_command: "cd /root/work/agentic-selfcheck && ECOM_CRITICAL_JOURNEY_MODE=live scripts/requirement-gate.sh ecommerce-critical-journey-release-gate static,api,browser,evidence release.v.ecommerce"
+    fail_policy: "BLOCK release on FAIL/BLOCKED. PASS_WITH_NOTES requires explicit owner and non-user-visible evidence debt."
+  adapter_boundary:
+    generic_selfcheck_owns:
+      - journey schema
+      - safe adapter command execution
+      - secret redaction
+      - report routing
+    v_adapter_owns:
+      - Ecommerce routes and payloads
+      - SKU lifecycle semantics
+      - production workflow assertions
+      - ProductCore listing/export/download assertions
+      - Template Center use/favorite/copy assertions
+      - Commercial billing/promotion/commission account smoke assertions
+      - browser selectors
+  cleanup_policy:
+    test_data_prefix: SC-SKU-
+    required: true
+    fail_main_flow_on_cleanup_failure: false
+    emit_cleanup_warning: true
+evidence_required:
+  - reports/critical-journeys/v-ecommerce-critical-sku-production/static.json
+  - reports/critical-journeys/v-ecommerce-critical-sku-production/api.json
+  - reports/critical-journeys/v-ecommerce-critical-sku-production/browser.json
+  - reports/critical-journeys/v-ecommerce-critical-sku-production/evidence.json
