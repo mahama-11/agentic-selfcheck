@@ -1,0 +1,28 @@
+id: v-working-tree-governance-watchdog
+project: v-workspace
+description: Continuously scan dirty V workspace repos before commit/push and automatically run selected business SelfCheck gates after a quiet window.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+must_pass:
+  static:
+    - v-working-tree-governance-watchdog-smoke
+reviewer_gates:
+  - spec-review
+  - quality-review
+  - final-verification
+human_required:
+  - Product owner approves escalation/noise policy changes for notifications.
+evidence_required:
+  - scripts/v_working_tree_governance_watchdog.py
+  - /root/.hermes/scripts/v_working_tree_governance_watchdog.sh
+  - reports/v-working-tree-governance-watchdog/latest.json
+risk_dimensions:
+  - continuous-governance
+  - dirty-working-tree
+  - business-gate-automation
+governance:
+  cadence: every 30m cron no_agent
+  quiet_window_seconds: 900
+  notification_policy: silent on pass/noop, alert only on failure

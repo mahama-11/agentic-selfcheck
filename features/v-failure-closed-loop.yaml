@@ -1,0 +1,33 @@
+id: v-failure-closed-loop
+project: agentic-selfcheck
+description: P0/P1 control-plane loop that classifies SelfCheck/watchdog failures into bounded repair dispatches and escalates repeated same-signature failures to architecture review.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - continuous-governance
+must_pass:
+  static:
+    - v-failure-closed-loop-smoke
+reviewer_gates:
+  - spec-review
+  - quality-review
+  - architect
+  - final-verification
+human_required:
+  - Human approval is required before executing broad architecture refactors or accepting product/security/billing risk.
+evidence_required:
+  - docs/plans/2026-05-22-p0-p1-failure-closed-loop.md
+  - scripts/v_failure_closed_loop.py
+  - scripts/v_failure_closed_loop_smoke.py
+  - scripts/v_working_tree_governance_watchdog.py
+  - scripts/v_working_tree_governance_watchdog_smoke.py
+  - scripts/requirement-gate.sh
+risk_dimensions:
+  - repair-loop
+  - failure-classification
+  - architecture-escalation
+  - watchdog-governance
+governance:
+  p0: failure -> classify -> owner dispatch -> rerun gate
+  p1: repeated same-signature failures -> architecture escalation capsule
+  architecture_escalation_observations: 3

@@ -1,0 +1,63 @@
+version: 1
+project: v-workspace
+description: >-
+  V workspace changed-file to business SelfCheck feature gate selector. Generic
+  governance events are not sufficient for product-critical Ecommerce changes;
+  this selector maps touched surfaces to required business feature gates.
+features:
+  ecommerce-v2-prep-sandbox-lowlevel:
+    event: requirement.changed.v.ecommerce-v2-prep-sandbox-lowlevel
+    groups: static,api,browser,evidence
+    command: scripts/v-requirement-gate.sh ecommerce-v2-prep-sandbox-lowlevel static,api,browser,evidence requirement.changed.v.ecommerce-v2-prep-sandbox-lowlevel
+    blocking: true
+    reason: Prep/Sandbox/prompt low-level regression gate
+  ecommerce-critical-journey-release-gate:
+    event: release.v.ecommerce
+    groups: static,api,browser,evidence
+    command: scripts/requirement-gate.sh ecommerce-critical-journey-release-gate static,api,browser,evidence release.v.ecommerce
+    blocking: true
+    reason: Ecommerce release-wide critical journey gate
+rules:
+  - id: ecommerce-production-frontend-lowlevel
+    description: Ecommerce production pages can affect Prep/Sandbox/Workshop prompt and generation flow.
+    patterns:
+      - ecommerce-frontend/src/pages/production/**
+      - ecommerce-frontend/src/services/production.ts
+      - ecommerce-frontend/src/store/productionStore.ts
+      - ecommerce-frontend/src/i18n/**
+    gates:
+      - ecommerce-v2-prep-sandbox-lowlevel
+  - id: ecommerce-visualworkflow-lowlevel
+    description: Visual workflow backend owns Prep/Sandbox prompt composition, source refs, generation state, and callbacks.
+    patterns:
+      - ecommerce-backend/internal/modules/visualworkflow/**
+    gates:
+      - ecommerce-v2-prep-sandbox-lowlevel
+  - id: ecommerce-release-critical-surfaces
+    description: Ecommerce product/runtime surfaces can break auth, SKU, generation, listing/export, delivery, or commercial journeys.
+    patterns:
+      - ecommerce-frontend/src/pages/production/**
+      - ecommerce-frontend/src/services/production.ts
+      - ecommerce-frontend/src/store/productionStore.ts
+      - ecommerce-backend/internal/modules/visualworkflow/**
+      - ecommerce-backend/internal/modules/productcore/**
+      - ecommerce-backend/internal/modules/templatecenter/**
+      - ecommerce-backend/internal/modules/commercial/**
+      - ecommerce-backend/internal/modules/delivery/**
+      - platform-backend/internal/modules/runtime/**
+      - platform-backend/internal/modules/wallet/**
+      - platform-backend/internal/modules/metering/**
+      - platform-backend/internal/modules/billing/**
+      - platform-backend/internal/modules/storage/**
+      - platform-backend/internal/modules/auth/**
+    gates:
+      - ecommerce-critical-journey-release-gate
+  - id: ecommerce-prod-deploy-runbooks
+    description: Explicit Ecommerce deploy/release artifacts must prove release-wide journey evidence.
+    patterns:
+      - ecommerce-frontend/**/PROD_DEPLOY_RUNBOOK.md
+      - ecommerce-backend/**/PROD_DEPLOY_RUNBOOK.md
+      - docs/**/PROD_DEPLOY_RUNBOOK.md
+      - events/release-v-ecommerce.yaml
+    gates:
+      - ecommerce-critical-journey-release-gate

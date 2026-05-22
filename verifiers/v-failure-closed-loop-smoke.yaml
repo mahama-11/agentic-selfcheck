@@ -1,0 +1,10 @@
+id: v-failure-closed-loop-smoke
+kind: static
+description: Validate P0/P1 failure closed-loop classification, repair dispatch creation, and repeated-failure architecture escalation.
+command: scripts/v_failure_closed_loop_smoke.py --root . --format json
+evidence:
+  - docs/plans/2026-05-22-p0-p1-failure-closed-loop.md
+  - scripts/v_failure_closed_loop.py
+  - scripts/v_failure_closed_loop_smoke.py
+  - scripts/v_working_tree_governance_watchdog.py
+  - scripts/requirement-gate.sh

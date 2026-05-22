@@ -1,0 +1,8 @@
+id: v-working-tree-governance-watchdog-smoke
+kind: static
+description: Validate V dirty working-tree watchdog script compiles and fails closed when business gate selection itself fails.
+command: scripts/v_working_tree_governance_watchdog_smoke.py --root . --format json
+evidence:
+  - scripts/v_working_tree_governance_watchdog.py
+  - scripts/v_working_tree_governance_watchdog_smoke.py
+  - reports/v-working-tree-governance-watchdog/latest.json

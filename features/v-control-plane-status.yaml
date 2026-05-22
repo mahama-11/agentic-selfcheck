@@ -1,0 +1,31 @@
+id: v-control-plane-status
+project: agentic-selfcheck
+description: Unified V/SelfCheck control-plane status projection for cron responsibilities, RepairTask health, dirty-tree risk, and delivery errors.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - continuous-governance
+must_pass:
+  static:
+    - v-control-plane-status-smoke
+reviewer_gates:
+  - spec-review
+  - quality-review
+  - final-verification
+human_required:
+  - Human approval is required before deleting control-plane evidence, disabling cron jobs, or merging broad architecture changes.
+evidence_required:
+  - docs/plans/2026-05-22-control-plane-stabilization.md
+  - docs/v-cron-governance-responsibility-map.md
+  - scripts/v_control_plane_status.py
+  - scripts/v_control_plane_status_smoke.py
+  - scripts/v_control_plane_dirty_inventory.py
+risk_dimensions:
+  - control-plane-observability
+  - cron-governance
+  - repairtask-lifecycle
+  - delivery-health
+governance:
+  cron_as_trigger: true
+  repairtask_as_lifecycle: true
+  parent_verification_required: true

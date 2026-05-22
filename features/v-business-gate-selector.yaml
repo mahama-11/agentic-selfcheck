@@ -1,0 +1,29 @@
+id: v-business-gate-selector
+project: v-workspace
+description: Ensure V changed-file governance selects business-specific SelfCheck gates instead of only generic code/frontend governance.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - continuous-governance
+must_pass:
+  static:
+    - v-business-gate-selector-smoke
+reviewer_gates:
+  - spec-review
+  - quality-review
+  - final-verification
+human_required:
+  - Product owner approves adding expensive live/release gates as hard blocking in git hooks.
+evidence_required:
+  - config/v-business-gate-selector.yaml
+  - scripts/v_business_gate_selector.py
+  - scripts/v_business_gate_selector_smoke.py
+  - scripts/v_continuous_governance_trigger.py
+risk_dimensions:
+  - changed-file-routing
+  - business-gate-selection
+  - ecommerce-critical-journeys
+governance:
+  selector: config/v-business-gate-selector.yaml
+  trigger_integration: scripts/v_continuous_governance_trigger.py
+  default_behavior: report selected business gates; run gates only when --run-business-gates is supplied
