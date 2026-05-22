@@ -14,8 +14,8 @@ services:
     kind: vite-react-frontend
     dev: pnpm run dev -- --host 0.0.0.0 --port 5181
     commands:
-      typecheck: pnpm exec tsc --noEmit
-      build: pnpm run build
+      typecheck: npm run typecheck
+      build: npm run build
   platform-backend:
     path: platform-backend
     kind: go-backend

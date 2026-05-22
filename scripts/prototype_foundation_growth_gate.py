@@ -48,7 +48,10 @@ def meaningful(v: str | None) -> bool:
 
 def current_foundation_version(ledger_text: str) -> str | None:
     m = re.search(r"^current_foundation_version:\s*(\S+)\s*$", ledger_text, flags=re.M)
-    return m.group(1) if m else None
+    if m:
+        return m.group(1)
+    legacy = re.search(r"^foundation_id:\s*(\S+)\s*$", ledger_text, flags=re.M)
+    return legacy.group(1) if legacy else None
 
 
 def main() -> int:
@@ -59,9 +62,13 @@ def main() -> int:
     args = ap.parse_args()
     workflow = Path(args.workflow).resolve()
     findings: list[dict] = []
-    ledger = workflow / "FOUNDATION_LEDGER.md"
+    ledger = workflow / "PROTOTYPE_FOUNDATION_LEDGER.md"
+    if not ledger.exists():
+        legacy = workflow / "FOUNDATION_LEDGER.md"
+        if legacy.exists():
+            ledger = legacy
     if not ledger.exists() or ledger.stat().st_size < 80:
-        findings.append(finding("error", str(ledger), "FOUNDATION_LEDGER.md missing or empty"))
+        findings.append(finding("error", str(ledger), "PROTOTYPE_FOUNDATION_LEDGER.md missing or empty"))
         ledger_text = ""
     else:
         ledger_text = read(ledger)

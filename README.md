@@ -8,7 +8,9 @@ It is not another coding agent. It defines the reusable governance layer around 
 product invariants → capability contracts → feature acceptance → verifiers → evidence → gates → loops/hooks
 ```
 
-The `/root/work/v` workspace is the first validation field, not a hard-coded dependency.
+The `/root/work/v` workspace is the first validation field, not a hard-coded dependency. Project-specific rules must live in project adapters, feature contracts, and harness scripts; the SelfCheck core remains reusable for future projects.
+
+See `docs/project-adapter-framework.md` for the system architecture, project onboarding checklist, and feedback/iteration model.
 
 ## L3 / L3.5 target
 

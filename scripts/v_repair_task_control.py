@@ -321,6 +321,31 @@ def run_command(command: str, cwd: Path, timeout: int) -> dict[str, Any]:
         return {"command": command, "cwd": str(cwd), "exit_code": 124, "output_tail": out[-8000:], "timeout": timeout}
 
 
+def verifier_cwd(command: str, target: dict[str, Any], self_root: Path) -> Path:
+    """Return the directory where a verifier command must run.
+
+    Project-native verifiers such as `go test ./...` must run in the target
+    project. SelfCheck-owned controller/audit scripts live under self_root even
+    when the task's project_path is `/root/work/v/docs` or another V subdir.
+    """
+    try:
+        argv = shlex.split(command)
+    except ValueError:
+        return Path(target.get("project_path") or self_root)
+    if not argv:
+        return Path(target.get("project_path") or self_root)
+    executable = Path(argv[0]).name
+    script = argv[1] if len(argv) > 1 else ""
+    if executable.startswith("python") and (
+        (len(argv) > 2 and argv[1] == "-m" and argv[2] == "selfcheck")
+        or script.startswith("scripts/governance_audit.py")
+        or script.startswith("scripts/v_maintenance_control_plane.py")
+        or script.startswith("scripts/v_repair_task_control.py")
+    ):
+        return self_root
+    return Path(target.get("project_path") or self_root)
+
+
 def verify(v_root: Path, self_root: Path, task_id: str, timeout: int) -> dict[str, Any]:
     refresh = run_command(
         f"python3 scripts/v_maintenance_control_plane.py --selfcheck-root {self_root} --v-root {v_root} --mode daily --repair-safe --format json",
@@ -340,10 +365,7 @@ def verify(v_root: Path, self_root: Path, task_id: str, timeout: int) -> dict[st
         if not command:
             continue
         name = str(verifier.get("name") or command)
-        if command.startswith("python3 -m selfcheck"):
-            cwd = self_root
-        else:
-            cwd = Path(target.get("project_path") or self_root)
+        cwd = verifier_cwd(command, target, self_root)
         res = run_command(command, cwd, timeout)
         res["name"] = name
         results.append(res)
