@@ -1,6 +1,10 @@
 reports/
 .hermes/dispatch/
 .hermes/dispatch-runs/
+# Smoke scripts may create throwaway workflow fixtures. Canonical workflow
+# evidence can still be committed explicitly with `git add -f` when intended.
+.hermes/workflows/*-smoke*/
+.hermes/workflows/*-smoke-*/
 __pycache__/
 *.pyc
 .venv/
