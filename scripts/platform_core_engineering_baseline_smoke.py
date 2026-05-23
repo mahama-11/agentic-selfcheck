@@ -36,6 +36,9 @@ func r(g Group) { g.GET("/api/v1/runtime/jobs", h) }
         write(target / 'platform-backend/docs/INTERNAL_API_CONTRACT.md', '''# Internal API Contract
 
 GET /api/v1/runtime/jobs lists runtime jobs.
+- Handler: h
+- Request: query filters only.
+- Response: success envelope with data list.
 ''')
         ok_case = run(root, target, '--changed-file', 'platform-backend/internal/router/routes.go')
         cases.append({'case': 'route-change-with-contract-reference-passes', 'ok': ok_case['returncode'] == 0 and ok_case['payload'].get('status') == 'PASS', **ok_case})
@@ -63,9 +66,58 @@ paths:
   /api/v1/runtime/jobs:
     post:
       summary: create runtime job
+      x-handler: h
+      requestBody:
+        description: create runtime job request
+      responses:
+        '200':
+          description: success envelope response
 ''')
         openapi_case = run(root, target, '--changed-file', 'platform-backend/internal/router/routes.go')
         cases.append({'case': 'route-openapi-method-reference-passes', 'ok': openapi_case['returncode'] == 0 and openapi_case['payload'].get('status') == 'PASS', **openapi_case})
+
+    with tempfile.TemporaryDirectory() as td:
+        target = Path(td)
+        write(target / 'platform-backend/internal/router/routes.go', '''package router
+func r(g Group) { g.POST("/api/v1/runtime/jobs", runtimeHandler.CreateJob) }
+''')
+        write(target / 'platform-backend/docs/INTERNAL_API_CONTRACT.md', '''# Internal API Contract
+
+POST /api/v1/runtime/jobs creates runtime jobs.
+''')
+        path_only_case = run(root, target, '--changed-file', 'platform-backend/internal/router/routes.go')
+        messages = '\n'.join(str(f.get('message', '')) for f in path_only_case['payload'].get('findings', []))
+        cases.append({'case': 'route-method-path-only-evidence-fails-semantic-diff', 'ok': path_only_case['returncode'] != 0 and path_only_case['payload'].get('status') == 'NEEDS_REPAIR' and 'only method/path evidence' in messages, **path_only_case})
+
+    with tempfile.TemporaryDirectory() as td:
+        target = Path(td)
+        write(target / 'platform-backend/internal/router/routes.go', '''package router
+func r(g Group) { g.POST("/api/v1/runtime/jobs", runtimeHandler.CreateJob) }
+''')
+        write(target / 'platform-backend/docs/INTERNAL_API_CONTRACT.md', '''# Internal API Contract
+
+POST /api/v1/runtime/jobs creates runtime jobs.
+- Request: Runtime job create body.
+- Response: success envelope with runtime job data.
+''')
+        missing_handler_case = run(root, target, '--changed-file', 'platform-backend/internal/router/routes.go')
+        messages = '\n'.join(str(f.get('message', '')) for f in missing_handler_case['payload'].get('findings', []))
+        cases.append({'case': 'route-named-handler-missing-from-contract-fails', 'ok': missing_handler_case['returncode'] != 0 and missing_handler_case['payload'].get('status') == 'NEEDS_REPAIR' and 'does not name that handler' in messages, **missing_handler_case})
+
+    with tempfile.TemporaryDirectory() as td:
+        target = Path(td)
+        write(target / 'platform-backend/internal/router/routes.go', '''package router
+func r(g Group) { g.GET("/api/v1/runtime/jobs", func(c Context) {}) }
+''')
+        write(target / 'platform-backend/docs/INTERNAL_API_CONTRACT.md', '''# Internal API Contract
+
+GET /api/v1/runtime/jobs lists runtime jobs.
+- Request: query filters only.
+- Response: success envelope with data list.
+''')
+        inline_handler_case = run(root, target, '--changed-file', 'platform-backend/internal/router/routes.go')
+        messages = '\n'.join(str(f.get('message', '')) for f in inline_handler_case['payload'].get('findings', []))
+        cases.append({'case': 'route-inline-handler-is-pass-with-notes-not-false-fail', 'ok': inline_handler_case['returncode'] == 0 and inline_handler_case['payload'].get('status') == 'PASS_WITH_NOTES' and 'inline handler evidence' in messages, **inline_handler_case})
 
     with tempfile.TemporaryDirectory() as td:
         target = Path(td)

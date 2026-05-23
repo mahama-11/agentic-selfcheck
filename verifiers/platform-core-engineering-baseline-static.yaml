@@ -1,6 +1,6 @@
 id: platform-core-engineering-baseline-static
 kind: static
-description: "Deterministic Platform Phase-1 hardening scanners for raw status writes, idempotency scope, product hardcodes, service raw DB expansion, and route/OpenAPI drift placeholder."
+description: "Deterministic Platform hardening scanners for raw status writes, idempotency scope, product hardcodes, service raw DB expansion, and semantic route/OpenAPI drift (method/path plus handler and request/response/envelope evidence where parseable)."
 command: "scripts/platform_core_engineering_baseline.py --target-root /root/work/v --report /root/work/v/reports/platform-core-engineering-baseline/platform-core-engineering-baseline.json"
 evidence:
   - reports/platform-core-engineering-baseline/platform-core-engineering-baseline.json

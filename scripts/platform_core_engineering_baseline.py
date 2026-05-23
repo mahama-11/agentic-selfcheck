@@ -66,6 +66,10 @@ RUNTIME_JOB_STATUS_ASSIGN_RE = re.compile(r'\b(?:job|locked|runtimeJob|runtime_j
 IDEMPOTENCY_RE = re.compile(r'(?i)(idempotency[-_ ]?key|IdempotencyKey|idempotency_key)')
 RAW_DB_RE = re.compile(r'\b(db|tx|conn)\.(Exec|Raw|Table|Where|Create|Save|Updates?|Delete)\s*\(')
 ROUTE_RE = re.compile(r'\.(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD|Group)\s*\(\s*["\']([^"\']+)')
+NAMED_HANDLER_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)?$')
+SEMANTIC_CONTRACT_RE = re.compile(
+    r'(?i)(@Param|@Success|@Failure|request\b|response\b|responses\b|response\.SuccessResponse|envelope|body\b|query\b|path\s+param|returns?\b|data\b|schema\b)'
+)
 ROUTE_FILE_RE = re.compile(r'(?i)(platform-backend/internal/(?:router|routes)/|/handler|handler\.go|router|routes)')
 SPEC_PATTERNS = [
     'platform-backend/docs/openapi*',
@@ -171,6 +175,79 @@ def enclosing_go_func(lines: list[str], idx: int) -> str:
         if match:
             return match.group(1)
     return ''
+
+
+def split_go_call_args(arg_text: str) -> list[str]:
+    args: list[str] = []
+    current: list[str] = []
+    depth = 0
+    quote = ''
+    escaped = False
+    for ch in arg_text:
+        current.append(ch)
+        if quote:
+            if escaped:
+                escaped = False
+            elif ch == '\\':
+                escaped = True
+            elif ch == quote:
+                quote = ''
+            continue
+        if ch in {'"', "'", '`'}:
+            quote = ch
+        elif ch in '([{':
+            depth += 1
+        elif ch in ')]}':
+            depth = max(0, depth - 1)
+        elif ch == ',' and depth == 0:
+            args.append(''.join(current[:-1]).strip())
+            current = []
+    tail = ''.join(current).strip()
+    if tail:
+        args.append(tail)
+    return args
+
+
+def route_call_args(line: str, start: int) -> list[str]:
+    call_start = line.find('(', start)
+    if call_start < 0:
+        return []
+    depth = 0
+    quote = ''
+    escaped = False
+    for pos in range(call_start, len(line)):
+        ch = line[pos]
+        if quote:
+            if escaped:
+                escaped = False
+            elif ch == '\\':
+                escaped = True
+            elif ch == quote:
+                quote = ''
+            continue
+        if ch in {'"', "'", '`'}:
+            quote = ch
+        elif ch == '(':
+            depth += 1
+        elif ch == ')':
+            depth -= 1
+            if depth == 0:
+                return split_go_call_args(line[call_start + 1:pos])
+    return []
+
+
+def extract_named_handler(args: list[str]) -> tuple[str, str]:
+    if len(args) < 2:
+        return '', 'missing'
+    handler_args = [arg.strip() for arg in args[1:] if arg.strip()]
+    if not handler_args:
+        return '', 'missing'
+    final = handler_args[-1]
+    if final.startswith('func') or 'func(' in final:
+        return '', 'inline'
+    if NAMED_HANDLER_RE.match(final):
+        return final, 'named'
+    return '', 'ambiguous'
 
 
 def is_approved_runtime_job_status_write(rel: str, func_name: str) -> bool:
@@ -293,7 +370,17 @@ def extract_route_signatures(path: Path, root: Path) -> list[dict[str, Any]]:
                 continue
             prefix = '' if path_part.startswith('/') or not group_stack else group_stack[-1]
             full_path = route_signature_token('/'.join([prefix.rstrip('/'), path_part.lstrip('/')]) if prefix else path_part)
-            signatures.append({'method': method, 'path': full_path, 'file': rel, 'line': idx, 'evidence': stripped[:240]})
+            args = route_call_args(line, match.start())
+            handler, handler_kind = extract_named_handler(args)
+            signatures.append({
+                'method': method,
+                'path': full_path,
+                'file': rel,
+                'line': idx,
+                'evidence': stripped[:240],
+                'handler': handler,
+                'handler_kind': handler_kind,
+            })
     return signatures
 
 
@@ -325,11 +412,14 @@ def load_spec_text(root: Path, spec_files: list[Path]) -> str:
     return '\n'.join(chunks)
 
 
-def route_has_contract_reference(signature: dict[str, Any], spec_text: str) -> bool:
+def route_contract_reference(signature: dict[str, Any], spec_text: str) -> dict[str, Any]:
+    result = {'method_path': False, 'handler': False, 'semantic': False, 'window': ''}
     if not spec_text:
-        return False
+        return result
     route_path = str(signature['path'])
     method = str(signature['method']).lower()
+    handler = str(signature.get('handler') or '')
+    handler_tokens = {handler, handler.split('.')[-1] if handler else ''} - {''}
     candidates = {
         route_path,
         route_path.replace('{', ':').replace('}', ''),
@@ -342,16 +432,23 @@ def route_has_contract_reference(signature: dict[str, Any], spec_text: str) -> b
                 continue
             escaped = re.escape(candidate)
             markdown_route = re.search(rf'(?i)\b{re.escape(method)}\b\s+`?{escaped}(?:`|\b|/|\?|#|$)', line)
-            if markdown_route:
-                return True
             local = '\n'.join(lines[max(0, idx - 8): min(len(lines), idx + 9)])
             # OpenAPI/YAML/JSON style: a path key with a nearby HTTP method key.
             # This deliberately does not accept path-only evidence, because a route
             # changed to POST must fail closed when only GET /path is documented.
             method_key = re.search(rf'(?im)^\s*["\']?{re.escape(method)}["\']?\s*:', local)
-            if method_key:
-                return True
-    return False
+            if markdown_route or method_key:
+                result['method_path'] = True
+                result['window'] = local[:1200]
+                result['semantic'] = bool(SEMANTIC_CONTRACT_RE.search(local))
+                result['handler'] = not handler_tokens or any(token in local for token in handler_tokens)
+                return result
+    return result
+
+
+def route_has_contract_reference(signature: dict[str, Any], spec_text: str) -> bool:
+    ref = route_contract_reference(signature, spec_text)
+    return bool(ref['method_path'] and ref['semantic'] and (str(signature.get('handler_kind')) != 'named' or ref['handler']))
 
 
 def route_openapi_check(root: Path, changed_files: list[str], findings: list[dict[str, Any]], stats: dict[str, int]) -> None:
@@ -374,7 +471,8 @@ def route_openapi_check(root: Path, changed_files: list[str], findings: list[dic
     if route_changed_files:
         if changed_signatures:
             for sig in changed_signatures:
-                if not route_has_contract_reference(sig, spec_text):
+                ref = route_contract_reference(sig, spec_text)
+                if not ref['method_path']:
                     add(
                         findings,
                         'route_openapi_drift_check',
@@ -382,6 +480,37 @@ def route_openapi_check(root: Path, changed_files: list[str], findings: list[dic
                         str(sig['file']),
                         int(sig['line']),
                         f"route signature {sig['method']} {sig['path']} has no matching INTERNAL_API_CONTRACT/OpenAPI reference",
+                        str(sig['evidence']),
+                    )
+                    continue
+                if str(sig.get('handler_kind')) == 'named' and not ref['handler']:
+                    add(
+                        findings,
+                        'route_openapi_drift_check',
+                        'error',
+                        str(sig['file']),
+                        int(sig['line']),
+                        f"route signature {sig['method']} {sig['path']} names handler {sig.get('handler')} but nearby contract/OpenAPI evidence does not name that handler",
+                        str(sig['evidence']),
+                    )
+                elif str(sig.get('handler_kind')) in {'inline', 'ambiguous', 'missing'}:
+                    add(
+                        findings,
+                        'route_openapi_drift_check',
+                        'warning',
+                        str(sig['file']),
+                        int(sig['line']),
+                        f"route signature {sig['method']} {sig['path']} has {sig.get('handler_kind')} handler evidence; semantic route diff cannot require handler mapping automatically",
+                        str(sig['evidence']),
+                    )
+                if not ref['semantic']:
+                    add(
+                        findings,
+                        'route_openapi_drift_check',
+                        'error',
+                        str(sig['file']),
+                        int(sig['line']),
+                        f"route signature {sig['method']} {sig['path']} has only method/path evidence; require nearby request/response/envelope evidence",
                         str(sig['evidence']),
                     )
         elif not spec_changed:
@@ -397,6 +526,8 @@ def summarize(findings: list[dict[str, Any]]) -> str:
         return 'NEEDS_REPAIR'
     if 'needs_human' in severities:
         return 'NEEDS_HUMAN'
+    if any(f.get('severity') == 'warning' and f.get('scanner') == 'route_openapi_drift_check' for f in findings):
+        return 'PASS_WITH_NOTES'
     return 'PASS'
 
 
