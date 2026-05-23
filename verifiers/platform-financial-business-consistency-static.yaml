@@ -1,0 +1,8 @@
+id: platform-financial-business-consistency-static
+kind: static
+description: "Focused Go test gate for Platform financial business paths: wallet debit/idempotency/expiry, metering quota/wallet/billing settlement/finalize, control reservations, runtime charge-session binding, commercial/catalog visible baseline, and incentive settlement/redemption."
+command: "scripts/platform_financial_business_consistency.py"
+evidence:
+  - command
+  - exit_code
+  - stdout_tail

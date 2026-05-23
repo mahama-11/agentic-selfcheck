@@ -20,17 +20,47 @@ CASES = [
     (
         'platform-runtime-selects-platform-and-critical-gates',
         ['platform-backend/internal/modules/runtime/provider_minimax_image.go'],
-        {'platform-core-engineering-baseline', 'platform-runtime-state-machine-baseline', 'platform-runtime-business-integration-safety', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+        {'platform-core-engineering-baseline', 'platform-runtime-state-machine-baseline', 'platform-runtime-business-integration-safety', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+    ),
+    (
+        'platform-wallet-selects-financial-business-gate',
+        ['platform-backend/internal/modules/wallet/service.go'],
+        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+    ),
+    (
+        'platform-metering-selects-financial-business-gate',
+        ['platform-backend/internal/modules/metering/service.go'],
+        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+    ),
+    (
+        'platform-billing-selects-financial-business-gate',
+        ['platform-backend/internal/modules/billing/service.go'],
+        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
     ),
     (
         'platform-commercial-selects-platform-and-critical-gates',
         ['platform-backend/internal/modules/commercial/service.go'],
-        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+    ),
+    (
+        'platform-catalog-selects-financial-business-gate',
+        ['platform-backend/internal/modules/catalog/service.go'],
+        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+    ),
+    (
+        'platform-incentive-selects-financial-business-gate',
+        ['platform-backend/internal/modules/incentive/service.go'],
+        {'platform-financial-consistency-baseline', 'platform-financial-business-consistency'},
     ),
     (
         'platform-quota-selects-financial-gate',
         ['platform-backend/internal/modules/quota/service.go'],
-        {'platform-financial-consistency-baseline'},
+        {'platform-financial-consistency-baseline', 'platform-financial-business-consistency'},
+    ),
+    (
+        'platform-control-selects-financial-business-gate',
+        ['platform-backend/internal/modules/control/service.go'],
+        {'platform-financial-business-consistency'},
     ),
     (
         'platform-frontend-selects-platform-engineering-and-ops-gates',

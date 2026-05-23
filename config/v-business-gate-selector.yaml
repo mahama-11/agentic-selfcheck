@@ -53,6 +53,12 @@ features:
     command: scripts/requirement-gate.sh platform-financial-consistency-baseline static requirement.changed.v.platform-financial-consistency-baseline
     blocking: true
     reason: Platform Phase-3 wallet/metering/billing/commercial/catalog/quota/incentive focused gate
+  platform-financial-business-consistency:
+    event: requirement.changed.v.platform-financial-business-consistency
+    groups: static
+    command: scripts/requirement-gate.sh platform-financial-business-consistency static requirement.changed.v.platform-financial-business-consistency
+    blocking: true
+    reason: Platform financial business-path consistency gate for wallet/metering/billing/quota/control/runtime charge/commercial/catalog/incentive invariants
 rules:
   - id: ecommerce-production-frontend-lowlevel
     description: Ecommerce production pages can affect Prep/Sandbox/Workshop prompt and generation flow.
@@ -99,7 +105,7 @@ rules:
       - platform-runtime-state-machine-baseline
       - platform-runtime-business-integration-safety
   - id: platform-financial-consistency-surfaces
-    description: Wallet/metering/billing/commercial/catalog/quota/incentive changes require the dedicated Phase-3 financial consistency baseline in addition to the core Platform baseline.
+    description: Wallet/metering/billing/commercial/catalog/quota/incentive changes require the dedicated Phase-3 financial consistency baseline and financial business-path consistency gate in addition to the core Platform baseline.
     patterns:
       - platform-backend/internal/modules/wallet/**
       - platform-backend/internal/modules/metering/**
@@ -110,6 +116,14 @@ rules:
       - platform-backend/internal/modules/incentive/**
     gates:
       - platform-financial-consistency-baseline
+      - platform-financial-business-consistency
+  - id: platform-financial-runtime-charge-surfaces
+    description: Runtime charge-session adjacent changes affect financial settlement and must run the financial business-path consistency gate alongside runtime gates.
+    patterns:
+      - platform-backend/internal/modules/runtime/**
+      - platform-backend/internal/modules/control/**
+    gates:
+      - platform-financial-business-consistency
   - id: ecommerce-release-critical-surfaces
     description: Ecommerce product/runtime surfaces can break auth, SKU, generation, listing/export, delivery, or commercial journeys.
     patterns:
