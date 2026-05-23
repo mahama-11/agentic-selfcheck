@@ -57,6 +57,7 @@ PROFILE_PREFIXES = {
 PRODUCT_LITERAL_RE = re.compile(r'(?i)(product[_-]?code|productCode|ProductCode)\s*[:=]\s*["\'](ecommerce|kyc|menu)["\']|["\'](ecommerce|kyc|menu)["\']')
 STATUS_WRITE_RE = re.compile(r'(?i)(\.Update(?:Column|Columns|s)?\s*\(\s*["\']status["\']|\bSET\s+status\s*=)')
 STATUS_ASSIGN_RE = re.compile(r'(?i)(\b\w+\.(?:Status|Stage)\b\s*=(?!=)|\bupdates\s*\[\s*["\']status["\']\s*\]\s*=(?!=))')
+RUNTIME_JOB_STATUS_ASSIGN_RE = re.compile(r'\b(?:job|locked|runtimeJob|runtime_job)\.(?:Status|Stage)\b\s*=(?!=)')
 IDEMPOTENCY_RE = re.compile(r'(?i)(idempotency[-_ ]?key|IdempotencyKey|idempotency_key)')
 RAW_DB_RE = re.compile(r'\b(db|tx|conn)\.(Exec|Raw|Table|Where|Create|Save|Updates?|Delete)\s*\(')
 ROUTE_RE = re.compile(r'\.(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD|Group)\s*\(\s*["\']([^"\']+)')
@@ -109,7 +110,22 @@ def window(lines: list[str], idx: int, radius: int = 4) -> str:
     return '\n'.join(lines[lo:hi])
 
 
-def scan_file(path: Path, root: Path, findings: list[dict[str, Any]], stats: dict[str, int]) -> None:
+def enclosing_go_func(lines: list[str], idx: int) -> str:
+    for line in reversed(lines[:idx]):
+        match = re.search(r'\bfunc\s+(?:\([^)]*\)\s*)?([A-Za-z_][A-Za-z0-9_]*)\s*\(', line)
+        if match:
+            return match.group(1)
+    return ''
+
+
+def is_approved_runtime_job_status_write(rel: str, func_name: str) -> bool:
+    if rel.endswith('_test.go'):
+        return True
+    approved = {'ApplyRuntimeJobTransition', 'applyRuntimeJobTransitionFields', 'CreateRuntimeJob'}
+    return rel.endswith('platform-backend/internal/modules/runtime/runtime_job_state_machine.go') and func_name in approved
+
+
+def scan_file(path: Path, root: Path, findings: list[dict[str, Any]], stats: dict[str, int], profile: str = 'core') -> None:
     rel = norm(path.relative_to(root))
     try:
         text = path.read_text(encoding='utf-8', errors='replace')
@@ -137,6 +153,14 @@ def scan_file(path: Path, root: Path, findings: list[dict[str, Any]], stats: dic
                 severity = 'info'
             add(findings, 'raw_status_write_scanner', severity, rel, idx, 'direct status/stage assignment must be guarded by an explicit domain transition/state-machine boundary', stripped)
             stats['raw_status_write_scanner'] += 1
+
+        if profile == 'runtime' and rel.startswith('platform-backend/internal/modules/runtime/') and path.suffix == '.go' and RUNTIME_JOB_STATUS_ASSIGN_RE.search(line):
+            func_name = enclosing_go_func(lines, idx)
+            if is_approved_runtime_job_status_write(rel, func_name):
+                add(findings, 'runtime_job_state_machine_ratchet', 'info', rel, idx, f'approved RuntimeJob Status/Stage write boundary: {func_name}', stripped)
+            else:
+                add(findings, 'runtime_job_state_machine_ratchet', 'error', rel, idx, 'RuntimeJob Status/Stage writes must use the canonical runtime job transition API; only the state-machine helper and creation initialization are approved', stripped)
+            stats['runtime_job_state_machine_ratchet'] += 1
 
         if IDEMPOTENCY_RE.search(line):
             ctx = window(lines, idx - 1, radius=8)
@@ -342,6 +366,7 @@ def main() -> int:
     findings: list[dict[str, Any]] = []
     stats = {
         'raw_status_write_scanner': 0,
+        'runtime_job_state_machine_ratchet': 0,
         'unscoped_idempotency_scanner': 0,
         'product_hardcode_classifier': 0,
         'service_raw_db_expansion_scanner': 0,
@@ -357,7 +382,7 @@ def main() -> int:
         if not files:
             add(findings, 'target_files', 'error', str(root), 0, 'no platform core files were available to scan', '')
         for path in files:
-            scan_file(path, root, findings, stats)
+            scan_file(path, root, findings, stats, args.profile)
         route_openapi_check(root, changed_files, findings, stats)
 
     status = summarize(findings)
@@ -373,6 +398,7 @@ def main() -> int:
         'fail_closed': 'NEEDS_REPAIR, NEEDS_HUMAN, critical, and error findings return non-zero.',
         'scanners': [
             'raw_status_write_scanner',
+            'runtime_job_state_machine_ratchet',
             'unscoped_idempotency_scanner',
             'product_hardcode_classifier',
             'service_raw_db_expansion_scanner',
