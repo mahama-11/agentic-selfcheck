@@ -1,0 +1,20 @@
+id: changed-v-platform-runtime-business-integration-safety
+event: requirement.changed.v.platform-runtime-business-integration-safety
+description: Gate Platform runtime product-facing business integration changes through dispatch/provider/fallback/callback/charge compatibility safety checks.
+feature: platform-runtime-business-integration-safety
+groups:
+  - static
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - runtime_business_path_compatibility
+  - dispatch_provider_callback_or_charge_contract_drift

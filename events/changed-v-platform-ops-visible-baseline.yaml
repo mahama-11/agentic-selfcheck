@@ -1,0 +1,21 @@
+id: changed-v-platform-ops-visible-baseline
+event: requirement.changed.v.platform-ops-visible-baseline
+description: Gate Platform ops-visible catalog/template/commercial/runtime-adjacent requirement changes through API and evidence checks.
+feature: platform-ops-visible-baseline
+groups:
+  - api
+  - evidence
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - ops_visible_catalog_template_or_commercial_scope
+  - route_openapi_contract_drift
