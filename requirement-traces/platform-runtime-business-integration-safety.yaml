@@ -1,0 +1,29 @@
+id: platform-runtime-business-integration-safety
+project: v-workspace
+workflow: /root/work/v/.hermes/workflows/platform-business-integration-safety
+feature: platform-runtime-business-integration-safety
+owner: platform-runtime
+status: active
+requirements:
+  - id: REQ-RUNTIME-BIZ-001
+    summary: Runtime dispatch/provider accepted path must remain product-compatible.
+    acceptance_examples:
+      - Dispatching an async runtime job accepts provider submission and enqueues polling without breaking existing product integration.
+    affected_gates:
+      - platform-runtime-business-integration-safety
+    evidence_paths:
+      - reports/platform-runtime-business-integration-safety/platform-runtime-business-integration-safety-static.json
+    workflow_evidence:
+      - /root/work/v/.hermes/workflows/platform-business-integration-safety/05-final-safety-verification.md
+    waiver: null
+  - id: REQ-RUNTIME-BIZ-002
+    summary: Runtime terminal business state must not be downgraded by stale provider progress or callbacks.
+    acceptance_examples:
+      - A stale callback after terminal completion is treated as a no-op and does not mutate completed charge/session state.
+    affected_gates:
+      - platform-runtime-business-integration-safety
+    evidence_paths:
+      - reports/platform-runtime-business-integration-safety/platform-runtime-business-integration-safety-static.json
+    workflow_evidence:
+      - /root/work/v/.hermes/workflows/platform-business-integration-safety/05-final-safety-verification.md
+    waiver: null

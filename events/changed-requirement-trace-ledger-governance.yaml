@@ -1,0 +1,20 @@
+id: changed-requirement-trace-ledger-governance
+event: requirement.changed.selfcheck.requirement-trace-ledger-governance
+description: Gate requirement trace ledger governance changes through the fail-closed ledger smoke.
+feature: requirement-trace-ledger-governance
+groups:
+  - static
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - missing_required_trace_ledger
+  - missing_or_invalid_trace_evidence
+  - expired_or_malformed_waiver
+  - duplicate_requirement_id

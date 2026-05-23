@@ -1,0 +1,39 @@
+id: requirement-trace-ledger-governance
+project: agentic-selfcheck
+description: "First-tranche requirement trace ledger governance for the high-risk Platform runtime and financial business gates only."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - continuous-governance
+must_pass:
+  static:
+    - requirement-trace-ledger-governance-static
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Requirement trace ledger governance is scoped to runtime and financial Platform business ledgers in this tranche; do not claim universal requirement quality coverage.
+  - Missing evidence requires an explicit non-expired waiver with owner, reason, and expiry before release decisions can treat the trace as acceptable.
+risk_dimensions:
+  - requirement-trace-ledger-missing
+  - requirement-id-duplication
+  - missing-gate-or-evidence
+  - waiver-expiry-drift
+governance:
+  trigger_policy:
+    required_for:
+      - changes under requirement-traces/
+      - changes to requirement trace ledger schema or smoke verifier
+      - changes to runtime/financial SelfCheck business gate evidence contracts
+    default_command: "cd /root/work/agentic-selfcheck && scripts/requirement-gate.sh requirement-trace-ledger-governance static requirement.changed.selfcheck.requirement-trace-ledger-governance"
+    fail_policy: "BLOCK merge/deploy on missing required ledgers, duplicate requirement IDs, missing gates/evidence, invalid paths, or expired/malformed waivers."
+  guardrails:
+    - "Only platform-runtime-business-integration-safety and platform-financial-business-consistency are required in this first tranche."
+    - "Ledger evidence paths under reports/ or .hermes/workflows/ resolve against /root/work/v, not the SelfCheck repository."
+    - "Affected gates must exist as SelfCheck features."
+evidence_required:
+  - reports/requirement-trace-ledger-governance/requirement-trace-ledger-governance-static.json

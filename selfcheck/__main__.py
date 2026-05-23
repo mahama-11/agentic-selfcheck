@@ -22,6 +22,7 @@ KINDS = {
     "verifier": ("verifiers", "schemas/verifier.schema.json"),
     "loop": ("loops", "schemas/loop.schema.json"),
     "event": ("events", "schemas/event-route.schema.json"),
+    "requirement_trace": ("requirement-traces", "schemas/requirement-trace.schema.json"),
     "critical_journey": ("journeys", "schemas/critical-journey.schema.json"),
     "repair_policy": ("repair-policies", "schemas/repair-policy.schema.json"),
     "pr_autonomy_policy": ("pr-autonomy-policies", "schemas/pr-autonomy-policy.schema.json"),

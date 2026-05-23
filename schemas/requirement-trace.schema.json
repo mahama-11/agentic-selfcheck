@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RequirementTraceLedger",
+  "type": "object",
+  "required": ["id", "project", "workflow", "feature", "owner", "status", "requirements"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "project": {"type": "string"},
+    "workflow": {"type": "string", "minLength": 1},
+    "feature": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "owner": {"type": "string", "minLength": 1},
+    "status": {"enum": ["active", "draft", "retired"]},
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "summary", "acceptance_examples", "affected_gates", "evidence_paths", "workflow_evidence", "waiver"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^REQ-[A-Z0-9-]+-[0-9]{3}$"},
+          "summary": {"type": "string", "minLength": 1},
+          "acceptance_examples": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "affected_gates": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"}},
+          "evidence_paths": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "workflow_evidence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "owner": {"type": "string", "minLength": 1},
+          "status": {"enum": ["active", "draft", "retired"]},
+          "waiver": {
+            "oneOf": [
+              {"type": "null"},
+              {
+                "type": "object",
+                "required": ["owner", "reason", "expires"],
+                "properties": {
+                  "owner": {"type": "string", "minLength": 1},
+                  "reason": {"type": "string", "minLength": 1},
+                  "expires": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"}
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

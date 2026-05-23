@@ -1,0 +1,8 @@
+id: requirement-trace-ledger-governance-static
+kind: static
+description: "Fail-closed requirement trace ledger smoke for first-tranche Platform runtime and financial business gate traceability."
+command: "scripts/requirement_trace_ledger_smoke.py --root . --format json"
+evidence:
+  - command
+  - exit_code
+  - stdout_tail
