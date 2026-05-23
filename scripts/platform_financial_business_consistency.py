@@ -28,11 +28,13 @@ EXPECTED_TESTS_BY_PACKAGE = {
         "TestGetWalletSummary_DoesNotExposeExpiredBalanceAsAvailable",
         "TestDebitAccountTx_BucketPriorityFIFO",
         "TestPostLedger_DebitIdempotencyWithReference",
+        "TestPostLedger_ConcurrentDebitDoesNotOverdrawSharedSQLite",
     ],
     "./internal/modules/metering": [
         "TestIngestEvent_UsageBillingUsesWalletThenBilling",
         "TestIngestEvent_IncludedThenOverageConsumesQuotaBeforeBilling",
         "TestIngestEvent_DoesNotConsumeExpiredWalletBucket",
+        "TestIngestEvent_ConcurrentIncludedThenOverageDoesNotOverconsumeQuotaSharedSQLite",
         "TestFinalize_UsesReservationAndIsIdempotent",
     ],
     "./internal/modules/control": [
@@ -124,7 +126,9 @@ def main() -> int:
         "list_timeout_seconds": LIST_TIMEOUT_SECONDS,
         "coverage_intent": [
             "wallet ledger debit idempotency and expired-bucket exclusion",
+            "wallet concurrent debit no-overdraw regression with SQLite shared-cache limitation documented in test",
             "metering wallet/quota/billing settlement and finalize idempotency",
+            "metering quota aggregate-row no-overconsume regression with SQLite shared-cache limitation documented in test",
             "control reserve/commit/release and idempotency",
             "runtime charge-session idempotency and terminal binding",
             "commercial/catalog visible baseline seeding and catalog handler smoke",
