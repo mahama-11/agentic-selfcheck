@@ -1,6 +1,6 @@
 id: platform-ops-visible-baseline
 project: v-workspace
-workflow: /root/work/v/.hermes/workflows/platform-ops-visible-baseline
+workflow: .hermes/workflows/platform-ops-visible-baseline
 feature: platform-ops-visible-baseline
 owner: platform-ops
 status: active
@@ -14,9 +14,9 @@ requirements:
     evidence_paths:
       - reports/platform-ops-visible-baseline/platform-ops-visible-baseline-gate.json
     workflow_evidence:
-      - /root/work/v/.hermes/workflows/platform-ops-visible-baseline/01-requirement.md
-      - /root/work/v/.hermes/workflows/platform-ops-visible-baseline/02-architecture-review.md
-      - /root/work/v/.hermes/workflows/platform-ops-visible-baseline/04-developer-summary.md
+      - .hermes/workflows/platform-ops-visible-baseline/01-requirement.md
+      - .hermes/workflows/platform-ops-visible-baseline/02-architecture-review.md
+      - .hermes/workflows/platform-ops-visible-baseline/04-developer-summary.md
     waiver: null
   - id: REQ-PLATFORM-OPS-002
     summary: Ops-visible baseline changes must preserve review evidence for architect and implementation decisions affecting shared Platform and Ecommerce visibility.
@@ -27,7 +27,7 @@ requirements:
     evidence_paths:
       - reports/platform-ops-visible-baseline/platform-ops-visible-baseline-gate.json
     workflow_evidence:
-      - /root/work/v/.hermes/workflows/platform-ops-visible-baseline/01-requirement.md
-      - /root/work/v/.hermes/workflows/platform-ops-visible-baseline/02-architecture-review.md
-      - /root/work/v/.hermes/workflows/platform-ops-visible-baseline/04-developer-summary.md
+      - .hermes/workflows/platform-ops-visible-baseline/01-requirement.md
+      - .hermes/workflows/platform-ops-visible-baseline/02-architecture-review.md
+      - .hermes/workflows/platform-ops-visible-baseline/04-developer-summary.md
     waiver: null

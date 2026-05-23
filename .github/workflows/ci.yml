@@ -50,3 +50,29 @@ jobs:
         run: |
           . .venv/bin/activate
           PYTHONPATH=. python -m selfcheck audit --root .
+
+  requirement-trace-adoption:
+    name: Requirement trace adoption fixture gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Create virtualenv and install dependencies
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Run requirement trace adoption smoke
+        run: |
+          . .venv/bin/activate
+          PYTHONPATH=. python scripts/requirement_trace_ledger_smoke.py --root . --v-root tests/fixtures/requirement-trace-v-root --format json

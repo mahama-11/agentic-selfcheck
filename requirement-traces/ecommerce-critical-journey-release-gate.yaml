@@ -1,6 +1,6 @@
 id: ecommerce-critical-journey-release-gate
 project: v-workspace
-workflow: /root/work/v/.hermes/workflows/requirement-to-governance-quality-track
+workflow: .hermes/workflows/requirement-to-governance-quality-track
 feature: ecommerce-critical-journey-release-gate
 owner: ecommerce-release
 status: active
@@ -17,7 +17,7 @@ requirements:
       - reports/critical-journeys/v-ecommerce-critical-sku-production/browser.json
       - reports/critical-journeys/v-ecommerce-critical-sku-production/evidence.json
     workflow_evidence:
-      - /root/work/v/.hermes/workflows/requirement-to-governance-quality-track/01-requirement.md
+      - .hermes/workflows/requirement-to-governance-quality-track/01-requirement.md
     waiver: null
   - id: REQ-ECOMMERCE-CRITICAL-002
     summary: Ecommerce critical journey evidence must cover SKU lifecycle, product workflow, listing/export/download delivery, Template Center, commercial account, protected browser paths, and cleanup readiness before release.
@@ -28,5 +28,5 @@ requirements:
     evidence_paths:
       - reports/critical-journeys/v-ecommerce-critical-sku-production/evidence.json
     workflow_evidence:
-      - /root/work/v/.hermes/workflows/requirement-to-governance-quality-track/01-requirement.md
+      - .hermes/workflows/requirement-to-governance-quality-track/01-requirement.md
     waiver: null

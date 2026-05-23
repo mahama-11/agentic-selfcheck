@@ -1,6 +1,6 @@
 id: platform-runtime-state-machine-baseline
 project: v-workspace
-workflow: /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening
+workflow: .hermes/workflows/platform-runtime-state-machine-hardening
 feature: platform-runtime-state-machine-baseline
 owner: platform-runtime
 status: active
@@ -14,11 +14,11 @@ requirements:
     evidence_paths:
       - reports/platform-runtime-state-machine-baseline/platform-runtime-state-machine-baseline.json
     workflow_evidence:
-      - /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening/04-developer-summary.md
-      - /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening/05-spec-review-report.md
-      - /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening/06-quality-review-report.md
-      - /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening/07-qa-report.md
-      - /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening/08-final-verification.md
+      - .hermes/workflows/platform-runtime-state-machine-hardening/04-developer-summary.md
+      - .hermes/workflows/platform-runtime-state-machine-hardening/05-spec-review-report.md
+      - .hermes/workflows/platform-runtime-state-machine-hardening/06-quality-review-report.md
+      - .hermes/workflows/platform-runtime-state-machine-hardening/07-qa-report.md
+      - .hermes/workflows/platform-runtime-state-machine-hardening/08-final-verification.md
     waiver: null
   - id: REQ-RUNTIME-STATE-002
     summary: Runtime route and handler changes must preserve OpenAPI/internal contract alignment and callback idempotency scope.
@@ -30,5 +30,5 @@ requirements:
     evidence_paths:
       - reports/platform-runtime-state-machine-baseline/platform-runtime-state-machine-baseline.json
     workflow_evidence:
-      - /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening/08-final-verification.md
+      - .hermes/workflows/platform-runtime-state-machine-hardening/08-final-verification.md
     waiver: null

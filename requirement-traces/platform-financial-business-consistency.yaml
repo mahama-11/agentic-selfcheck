@@ -1,6 +1,6 @@
 id: platform-financial-business-consistency
 project: v-workspace
-workflow: /root/work/v/.hermes/workflows/platform-financial-business-consistency-gate
+workflow: .hermes/workflows/platform-financial-business-consistency-gate
 feature: platform-financial-business-consistency
 owner: platform-financial
 status: active
@@ -14,7 +14,7 @@ requirements:
     evidence_paths:
       - reports/platform-financial-business-consistency/platform-financial-business-consistency-static.json
     workflow_evidence:
-      - /root/work/v/.hermes/workflows/platform-financial-business-consistency-gate/08-final-verification.md
+      - .hermes/workflows/platform-financial-business-consistency-gate/08-final-verification.md
     waiver: null
   - id: REQ-FINANCIAL-BIZ-002
     summary: Commercial catalog and incentive/referral financial behavior must preserve visible baseline and settlement consistency.
@@ -25,5 +25,5 @@ requirements:
     evidence_paths:
       - reports/platform-financial-business-consistency/platform-financial-business-consistency-static.json
     workflow_evidence:
-      - /root/work/v/.hermes/workflows/platform-financial-business-consistency-gate/08-final-verification.md
+      - .hermes/workflows/platform-financial-business-consistency-gate/08-final-verification.md
     waiver: null

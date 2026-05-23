@@ -1,6 +1,6 @@
 id: platform-runtime-business-integration-safety
 project: v-workspace
-workflow: /root/work/v/.hermes/workflows/platform-business-integration-safety
+workflow: .hermes/workflows/platform-business-integration-safety
 feature: platform-runtime-business-integration-safety
 owner: platform-runtime
 status: active
@@ -14,7 +14,7 @@ requirements:
     evidence_paths:
       - reports/platform-runtime-business-integration-safety/platform-runtime-business-integration-safety-static.json
     workflow_evidence:
-      - /root/work/v/.hermes/workflows/platform-business-integration-safety/05-final-safety-verification.md
+      - .hermes/workflows/platform-business-integration-safety/05-final-safety-verification.md
     waiver: null
   - id: REQ-RUNTIME-BIZ-002
     summary: Runtime terminal business state must not be downgraded by stale provider progress or callbacks.
@@ -25,5 +25,5 @@ requirements:
     evidence_paths:
       - reports/platform-runtime-business-integration-safety/platform-runtime-business-integration-safety-static.json
     workflow_evidence:
-      - /root/work/v/.hermes/workflows/platform-business-integration-safety/05-final-safety-verification.md
+      - .hermes/workflows/platform-business-integration-safety/05-final-safety-verification.md
     waiver: null

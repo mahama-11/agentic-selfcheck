@@ -1,4 +1,6 @@
 reports/
+!tests/fixtures/requirement-trace-v-root/reports/
+!tests/fixtures/requirement-trace-v-root/reports/**
 .hermes/dispatch/
 .hermes/dispatch-runs/
 # Smoke scripts may create throwaway workflow fixtures. Canonical workflow
