@@ -1,0 +1,8 @@
+id: platform-runtime-business-integration-safety-static
+kind: static
+description: "Focused Go test gate for Platform runtime product-facing business paths: dispatch/provider accepted, fallback/retry, charge binding, stale terminal callbacks/no-ops, and failed-to-queued rejection."
+command: "scripts/platform_runtime_business_integration_safety.py"
+evidence:
+  - command
+  - exit_code
+  - stdout_tail

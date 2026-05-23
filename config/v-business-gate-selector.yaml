@@ -41,6 +41,12 @@ features:
     command: scripts/requirement-gate.sh platform-runtime-state-machine-baseline static requirement.changed.v.platform-runtime-state-machine-baseline
     blocking: true
     reason: Platform Phase-3 runtime job/session/provider/callback/idempotency/status-transition focused gate
+  platform-runtime-business-integration-safety:
+    event: requirement.changed.v.platform-runtime-business-integration-safety
+    groups: static
+    command: scripts/requirement-gate.sh platform-runtime-business-integration-safety static requirement.changed.v.platform-runtime-business-integration-safety
+    blocking: true
+    reason: Platform runtime product-facing business integration safety gate for dispatch/provider/fallback/callback/charge compatibility
   platform-financial-consistency-baseline:
     event: requirement.changed.v.platform-financial-consistency-baseline
     groups: static
@@ -84,13 +90,14 @@ rules:
       - platform-core-engineering-baseline
       - platform-ops-visible-baseline
   - id: platform-runtime-state-machine-surfaces
-    description: Runtime job/session/provider/callback/idempotency/status-transition changes require the dedicated Phase-3 runtime baseline in addition to the core Platform baseline.
+    description: Runtime job/session/provider/callback/idempotency/status-transition changes require the dedicated Phase-3 runtime baseline and business-integration safety gate in addition to the core Platform baseline.
     patterns:
       - platform-backend/internal/modules/runtime/**
       - platform-backend/internal/router/**
       - platform-backend/internal/routes/**
     gates:
       - platform-runtime-state-machine-baseline
+      - platform-runtime-business-integration-safety
   - id: platform-financial-consistency-surfaces
     description: Wallet/metering/billing/commercial/catalog/quota/incentive changes require the dedicated Phase-3 financial consistency baseline in addition to the core Platform baseline.
     patterns:

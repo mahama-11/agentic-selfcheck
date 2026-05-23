@@ -20,7 +20,7 @@ CASES = [
     (
         'platform-runtime-selects-platform-and-critical-gates',
         ['platform-backend/internal/modules/runtime/provider_minimax_image.go'],
-        {'platform-core-engineering-baseline', 'platform-runtime-state-machine-baseline', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+        {'platform-core-engineering-baseline', 'platform-runtime-state-machine-baseline', 'platform-runtime-business-integration-safety', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
     ),
     (
         'platform-commercial-selects-platform-and-critical-gates',
