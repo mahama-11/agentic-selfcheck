@@ -1,0 +1,89 @@
+version: 1
+owner: platform-engineering-governance
+purpose: >-
+  Committed inventory for the platform product literal scanner. Entries are
+  intentionally path-scoped; production runtime/templateops/core code that is not
+  classified here fails closed when ecommerce/kyc/menu literals appear.
+classification_values:
+  generic_config_data: Shared platform catalog/commercial/config data, not product workflow logic.
+  adapter_projection: Boundary adapter/projection mapping to externally owned product APIs or admin UI filters.
+  devseed_demo_fixture: Local/dev bootstrap, demo, or seed fixture data; not runtime branching policy.
+  docs_tests_migrations: Documentation, tests, migrations, and operational smoke examples.
+  violation: Known product-specific hardcode that must be removed or isolated.
+classifications:
+  - id: platform-docs-product-examples
+    classification: docs_tests_migrations
+    path_patterns:
+      - platform-backend/docs/**
+    justification: Documentation and contract examples need concrete product codes as illustrative examples.
+
+  - id: platform-tests-product-fixtures
+    classification: docs_tests_migrations
+    path_patterns:
+      - platform-backend/**/*_test.go
+      - platform-backend/internal/repository/repository_test.go
+    justification: Tests use concrete product codes as fixtures to exercise multi-product scoping.
+
+  - id: platform-migration-seed-fixtures
+    classification: docs_tests_migrations
+    path_patterns:
+      - platform-backend/internal/migration/**
+    justification: Migration and seed fixtures install historical/local catalog rows; scanner records but does not treat them as runtime policy.
+
+  - id: platform-config-environment-product-data
+    classification: generic_config_data
+    path_patterns:
+      - platform-backend/config.dev.yaml
+      - platform-backend/config.prod.yaml
+    justification: Environment config binds product endpoints and catalog seed data outside platform runtime logic.
+
+  - id: commercial-ecommerce-visible-baseline-devseed
+    classification: devseed_demo_fixture
+    path_patterns:
+      - platform-backend/internal/modules/commercial/ecommerce_visible_baseline.go
+    justification: Explicit local/dev commercial visible baseline seed data, isolated in one seed file rather than runtime commercial policy.
+
+  - id: templateops-product-adapter-projection
+    classification: adapter_projection
+    path_patterns:
+      - platform-backend/internal/modules/templateops/service.go
+    line_ranges:
+      - start: 313
+        end: 611
+      - start: 1374
+        end: 1386
+    justification: TemplateOps maps platform projection records to externally owned Menu/Ecommerce template-center API adapters at the boundary.
+
+  - id: templateops-csv-demo-example
+    classification: devseed_demo_fixture
+    path_patterns:
+      - platform-backend/internal/modules/templateops/service.go
+    line_ranges:
+      - start: 1334
+        end: 1357
+    justification: CSVTemplateExample emits an operator-facing demo row, not production runtime branching.
+
+  - id: platform-frontend-catalog-admin-examples
+    classification: generic_config_data
+    path_patterns:
+      - platform-frontend/src/modules/catalog/pages/CatalogPage.tsx
+    justification: Admin catalog UI placeholders and example query text show concrete editable product codes.
+
+  - id: platform-frontend-templateops-admin-adapter
+    classification: adapter_projection
+    path_patterns:
+      - platform-frontend/src/modules/template-ops/pages/TemplateOpsPage.tsx
+    justification: Admin UI filter/default values expose adapter projection product codes for platform operators.
+
+  - id: platform-frontend-i18n-product-labels
+    classification: generic_config_data
+    path_patterns:
+      - platform-frontend/src/shared/i18n/locales/*.ts
+    justification: Locale dictionaries contain display labels for product catalog/admin configuration.
+
+  - id: ops-scripts-product-smoke-examples
+    classification: docs_tests_migrations
+    path_patterns:
+      - platform-backend/tools/prod/**
+      - platform-backend/scripts/**
+    justification: Operational smoke/export scripts reference concrete deployed product codes for evidence collection.

@@ -100,7 +100,8 @@ func product() string { return "ecommerce" }
 ''')
         product_case = run(root, target)
         scanners = {f.get('scanner') for f in product_case['payload'].get('findings', [])}
-        cases.append({'case': 'product-hardcode-classified', 'ok': product_case['returncode'] == 0 and 'product_hardcode_classifier' in scanners, **product_case})
+        messages = '\n'.join(str(f.get('message', '')) for f in product_case['payload'].get('findings', []))
+        cases.append({'case': 'unclassified-production-product-literal-fails-closed', 'ok': product_case['returncode'] != 0 and product_case['payload'].get('status') == 'NEEDS_REPAIR' and 'product_hardcode_classifier' in scanners and 'classification=unclassified' in messages, **product_case})
 
     with tempfile.TemporaryDirectory() as td:
         target = Path(td)

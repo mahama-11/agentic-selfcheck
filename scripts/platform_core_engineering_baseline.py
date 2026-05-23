@@ -10,6 +10,11 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+try:
+    import yaml  # type: ignore
+except Exception:  # pragma: no cover - optional dependency fallback
+    yaml = None
+
 TEXT_SUFFIXES = {'.go', '.ts', '.tsx', '.js', '.jsx', '.py', '.sql', '.yaml', '.yml', '.json', '.md'}
 CORE_PREFIXES = (
     'platform-backend/internal/modules/runtime/',
@@ -71,6 +76,13 @@ SPEC_PATTERNS = [
     'platform-backend/api/**/*.yml',
     'platform-backend/api/**/*.json',
 ]
+DEFAULT_PRODUCT_CLASSIFICATION_CONFIG = Path(__file__).resolve().parents[1] / 'config/platform-product-literal-classification.yaml'
+ALLOWED_PRODUCT_LITERAL_CLASSIFICATIONS = {
+    'generic_config_data',
+    'adapter_projection',
+    'devseed_demo_fixture',
+    'docs_tests_migrations',
+}
 
 
 def norm(path: Path | str) -> str:
@@ -104,6 +116,49 @@ def add(findings: list[dict[str, Any]], scanner: str, severity: str, file: str, 
     findings.append({'scanner': scanner, 'severity': severity, 'file': file, 'line': line, 'message': message, 'evidence': evidence[:240]})
 
 
+def load_product_literal_classifications(path: Path) -> list[dict[str, Any]]:
+    if not path.is_file():
+        return []
+    try:
+        text = path.read_text(encoding='utf-8')
+        if yaml is not None:
+            payload = yaml.safe_load(text) or {}
+        else:
+            payload = json.loads(text)
+    except Exception:
+        return []
+    entries = payload.get('classifications', []) if isinstance(payload, dict) else []
+    return [entry for entry in entries if isinstance(entry, dict)]
+
+
+def line_in_ranges(line: int, ranges: Any) -> bool:
+    if not ranges:
+        return True
+    if not isinstance(ranges, list):
+        return False
+    for item in ranges:
+        if not isinstance(item, dict):
+            continue
+        start = int(item.get('start', 0) or 0)
+        end = int(item.get('end', start) or start)
+        if start <= line <= end:
+            return True
+    return False
+
+
+def classify_product_literal(rel: str, line: int, classifications: list[dict[str, Any]]) -> dict[str, Any] | None:
+    for entry in classifications:
+        patterns = entry.get('path_patterns', [])
+        if isinstance(patterns, str):
+            patterns = [patterns]
+        if not any(fnmatch.fnmatch(rel, str(pattern)) for pattern in patterns):
+            continue
+        if not line_in_ranges(line, entry.get('line_ranges')):
+            continue
+        return entry
+    return None
+
+
 def window(lines: list[str], idx: int, radius: int = 4) -> str:
     lo = max(0, idx - radius)
     hi = min(len(lines), idx + radius + 1)
@@ -125,7 +180,7 @@ def is_approved_runtime_job_status_write(rel: str, func_name: str) -> bool:
     return rel.endswith('platform-backend/internal/modules/runtime/runtime_job_state_machine.go') and func_name in approved
 
 
-def scan_file(path: Path, root: Path, findings: list[dict[str, Any]], stats: dict[str, int], profile: str = 'core') -> None:
+def scan_file(path: Path, root: Path, findings: list[dict[str, Any]], stats: dict[str, int], profile: str = 'core', product_classifications: list[dict[str, Any]] | None = None) -> None:
     rel = norm(path.relative_to(root))
     try:
         text = path.read_text(encoding='utf-8', errors='replace')
@@ -180,9 +235,22 @@ def scan_file(path: Path, root: Path, findings: list[dict[str, Any]], stats: dic
             stats['unscoped_idempotency_scanner'] += 1
 
         if PRODUCT_LITERAL_RE.search(line):
-            allowed = any(token in rel for token in ('/catalog/', '/commercial/', '/templateops/', '/docs/', 'seed', 'migration', 'test'))
-            severity = 'info' if allowed else 'warning'
-            add(findings, 'product_hardcode_classifier', severity, rel, idx, 'product literal classified; shared platform code should prefer catalog/config where practical', stripped)
+            classification = classify_product_literal(rel, idx, product_classifications or [])
+            classification_name = str((classification or {}).get('classification', 'unclassified'))
+            classification_id = str((classification or {}).get('id', 'unclassified'))
+            justification = str((classification or {}).get('justification', 'no committed product literal classification matched this path/line'))
+            severity = 'info' if classification_name in ALLOWED_PRODUCT_LITERAL_CLASSIFICATIONS else 'error'
+            if classification_name == 'violation':
+                severity = 'error'
+            add(
+                findings,
+                'product_hardcode_classifier',
+                severity,
+                rel,
+                idx,
+                f'product literal classification={classification_name} id={classification_id}; {justification}',
+                stripped,
+            )
             stats['product_hardcode_classifier'] += 1
 
         if RAW_DB_RE.search(line) and rel.endswith('service.go'):
@@ -359,6 +427,7 @@ def main() -> int:
     ap.add_argument('--changed-file', action='append', default=[])
     ap.add_argument('--include', action='append', default=[], help='Limit scan to repo-relative file path; may be repeated.')
     ap.add_argument('--profile', choices=['core', 'runtime', 'financial'], default='core', help='Scanner profile/report feature identity.')
+    ap.add_argument('--product-classification-config', default=str(DEFAULT_PRODUCT_CLASSIFICATION_CONFIG), help='Machine-readable product literal classification inventory.')
     ap.add_argument('--format', choices=['json', 'text'], default='json')
     args = ap.parse_args()
 
@@ -374,6 +443,8 @@ def main() -> int:
     }
     changed_files: list[str] = []
     files: list[Path] = []
+    product_classification_path = Path(args.product_classification_config).resolve()
+    product_classifications = load_product_literal_classifications(product_classification_path)
     if not root.exists():
         add(findings, 'target_root', 'error', str(root), 0, 'target root does not exist', '')
     else:
@@ -382,7 +453,7 @@ def main() -> int:
         if not files:
             add(findings, 'target_files', 'error', str(root), 0, 'no platform core files were available to scan', '')
         for path in files:
-            scan_file(path, root, findings, stats, args.profile)
+            scan_file(path, root, findings, stats, args.profile, product_classifications)
         route_openapi_check(root, changed_files, findings, stats)
 
     status = summarize(findings)
@@ -395,6 +466,8 @@ def main() -> int:
         'stats': stats,
         'findings': findings,
         'changed_files': changed_files,
+        'product_classification_config': str(product_classification_path),
+        'product_classification_entries': len(product_classifications),
         'fail_closed': 'NEEDS_REPAIR, NEEDS_HUMAN, critical, and error findings return non-zero.',
         'scanners': [
             'raw_status_write_scanner',
