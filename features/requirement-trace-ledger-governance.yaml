@@ -1,6 +1,6 @@
 id: requirement-trace-ledger-governance
 project: agentic-selfcheck
-description: "First-tranche requirement trace ledger governance for the high-risk Platform runtime and financial business gates only."
+description: "Requirement trace ledger adoption governance for high-risk V workspace selector features and release/business gates."
 level_target: L4
 repair_policy: default-repair-policy
 depends_on:
@@ -16,7 +16,7 @@ reviewer_gates:
   - qa
   - final-verification
 human_required:
-  - Requirement trace ledger governance is scoped to runtime and financial Platform business ledgers in this tranche; do not claim universal requirement quality coverage.
+  - Requirement trace ledger governance is scoped to the high-risk selector features declared in config/requirement-trace-adoption.yaml; do not claim universal requirement quality coverage outside that adoption config.
   - Missing evidence requires an explicit non-expired waiver with owner, reason, and expiry before release decisions can treat the trace as acceptable.
 risk_dimensions:
   - requirement-trace-ledger-missing
@@ -28,12 +28,14 @@ governance:
     required_for:
       - changes under requirement-traces/
       - changes to requirement trace ledger schema or smoke verifier
-      - changes to runtime/financial SelfCheck business gate evidence contracts
+      - changes to high-risk SelfCheck business gate evidence contracts listed in config/requirement-trace-adoption.yaml
     default_command: "cd /root/work/agentic-selfcheck && scripts/requirement-gate.sh requirement-trace-ledger-governance static requirement.changed.selfcheck.requirement-trace-ledger-governance"
     fail_policy: "BLOCK merge/deploy on missing required ledgers, duplicate requirement IDs, missing gates/evidence, invalid paths, or expired/malformed waivers."
   guardrails:
-    - "Only platform-runtime-business-integration-safety and platform-financial-business-consistency are required in this first tranche."
+    - "High-risk selector features declared in config/requirement-trace-adoption.yaml must exist in config/v-business-gate-selector.yaml and have same-id requirement-traces/*.yaml ledgers."
+    - "Missing default adoption config falls back to the original two Platform business ledgers for backward compatibility; malformed or explicit missing configs fail closed."
     - "Ledger evidence paths under reports/ or .hermes/workflows/ resolve against /root/work/v, not the SelfCheck repository."
     - "Affected gates must exist as SelfCheck features."
 evidence_required:
+  - config/requirement-trace-adoption.yaml
   - reports/requirement-trace-ledger-governance/requirement-trace-ledger-governance-static.json

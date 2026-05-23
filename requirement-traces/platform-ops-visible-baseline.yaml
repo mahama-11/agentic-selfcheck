@@ -1,0 +1,33 @@
+id: platform-ops-visible-baseline
+project: v-workspace
+workflow: /root/work/v/.hermes/workflows/platform-ops-visible-baseline
+feature: platform-ops-visible-baseline
+owner: platform-ops
+status: active
+requirements:
+  - id: REQ-PLATFORM-OPS-001
+    summary: Platform Ops-visible catalog, template, commercial, and runtime-adjacent data must remain visible through governed Platform surfaces without frontend fake rows.
+    acceptance_examples:
+      - Ops-visible baseline API/evidence gate confirms Template Ops and Catalog & Assets data are sourced from real Platform/Ecommerce integration paths.
+    affected_gates:
+      - platform-ops-visible-baseline
+    evidence_paths:
+      - reports/platform-ops-visible-baseline/platform-ops-visible-baseline-gate.json
+    workflow_evidence:
+      - /root/work/v/.hermes/workflows/platform-ops-visible-baseline/01-requirement.md
+      - /root/work/v/.hermes/workflows/platform-ops-visible-baseline/02-architecture-review.md
+      - /root/work/v/.hermes/workflows/platform-ops-visible-baseline/04-developer-summary.md
+    waiver: null
+  - id: REQ-PLATFORM-OPS-002
+    summary: Ops-visible baseline changes must preserve review evidence for architect and implementation decisions affecting shared Platform and Ecommerce visibility.
+    acceptance_examples:
+      - Requirement, architecture review, and developer summary workflow artifacts exist for the gate evidence consumed by release decisions.
+    affected_gates:
+      - platform-ops-visible-baseline
+    evidence_paths:
+      - reports/platform-ops-visible-baseline/platform-ops-visible-baseline-gate.json
+    workflow_evidence:
+      - /root/work/v/.hermes/workflows/platform-ops-visible-baseline/01-requirement.md
+      - /root/work/v/.hermes/workflows/platform-ops-visible-baseline/02-architecture-review.md
+      - /root/work/v/.hermes/workflows/platform-ops-visible-baseline/04-developer-summary.md
+    waiver: null

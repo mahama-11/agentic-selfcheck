@@ -1,0 +1,21 @@
+version: 1
+project: agentic-selfcheck
+selector_config: config/v-business-gate-selector.yaml
+description: >-
+  Requirement trace ledger adoption rule for high-risk V workspace workflows.
+  Each listed high-risk selector feature must exist in the V business gate selector
+  and must have a same-id requirement trace ledger under requirement-traces/.
+required_ledgers:
+  - platform-runtime-business-integration-safety
+  - platform-financial-business-consistency
+  - platform-runtime-state-machine-baseline
+  - platform-core-engineering-baseline
+  - platform-ops-visible-baseline
+  - ecommerce-critical-journey-release-gate
+high_risk_selector_features:
+  - platform-runtime-business-integration-safety
+  - platform-financial-business-consistency
+  - platform-runtime-state-machine-baseline
+  - platform-core-engineering-baseline
+  - platform-ops-visible-baseline
+  - ecommerce-critical-journey-release-gate

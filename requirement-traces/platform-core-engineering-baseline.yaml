@@ -1,0 +1,30 @@
+id: platform-core-engineering-baseline
+project: v-workspace
+workflow: /root/work/v/.hermes/workflows/platform-engineering-governance
+feature: platform-core-engineering-baseline
+owner: platform-engineering
+status: active
+requirements:
+  - id: REQ-PLATFORM-CORE-001
+    summary: Shared Platform engineering guardrails must prevent route/spec drift, raw DB expansion, product-boundary leaks, raw status writes, and unscoped idempotency.
+    acceptance_examples:
+      - Platform core engineering baseline evidence reports PASS for required scanner profiles before shared Platform changes merge.
+    affected_gates:
+      - platform-core-engineering-baseline
+    evidence_paths:
+      - reports/platform-core-engineering-baseline/platform-core-engineering-baseline.json
+    workflow_evidence:
+      - /root/work/v/.hermes/workflows/platform-engineering-governance/04b-platform-guardrail-developer-summary.md
+      - /root/work/v/.hermes/workflows/platform-engineering-governance/08-final-verification.md
+    waiver: null
+  - id: REQ-PLATFORM-CORE-002
+    summary: Phase-3 Platform hardening changes must retain final verification evidence for runtime, financial, API, persistence, and product-boundary governance.
+    acceptance_examples:
+      - Phase-3 final verification is present alongside baseline scanner output for any high-risk Platform engineering release candidate.
+    affected_gates:
+      - platform-core-engineering-baseline
+    evidence_paths:
+      - reports/platform-core-engineering-baseline/platform-core-engineering-baseline.json
+    workflow_evidence:
+      - /root/work/v/.hermes/workflows/platform-engineering-governance/15-phase3-final-verification.md
+    waiver: null

@@ -1,0 +1,34 @@
+id: platform-runtime-state-machine-baseline
+project: v-workspace
+workflow: /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening
+feature: platform-runtime-state-machine-baseline
+owner: platform-runtime
+status: active
+requirements:
+  - id: REQ-RUNTIME-STATE-001
+    summary: Runtime job, session, provider, callback, and charge state transitions must remain explicit, scoped, and terminal-safe.
+    acceptance_examples:
+      - Runtime state-machine gate evidence shows no raw terminal-status downgrade, unscoped idempotency, or route/spec drift findings for affected runtime surfaces.
+    affected_gates:
+      - platform-runtime-state-machine-baseline
+    evidence_paths:
+      - reports/platform-runtime-state-machine-baseline/platform-runtime-state-machine-baseline.json
+    workflow_evidence:
+      - /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening/04-developer-summary.md
+      - /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening/05-spec-review-report.md
+      - /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening/06-quality-review-report.md
+      - /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening/07-qa-report.md
+      - /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening/08-final-verification.md
+    waiver: null
+  - id: REQ-RUNTIME-STATE-002
+    summary: Runtime route and handler changes must preserve OpenAPI/internal contract alignment and callback idempotency scope.
+    acceptance_examples:
+      - Runtime baseline scanners complete with PASS status for route OpenAPI drift and idempotency-scope checks before high-risk runtime changes are accepted.
+    affected_gates:
+      - platform-runtime-state-machine-baseline
+      - platform-runtime-business-integration-safety
+    evidence_paths:
+      - reports/platform-runtime-state-machine-baseline/platform-runtime-state-machine-baseline.json
+    workflow_evidence:
+      - /root/work/v/.hermes/workflows/platform-runtime-state-machine-hardening/08-final-verification.md
+    waiver: null
