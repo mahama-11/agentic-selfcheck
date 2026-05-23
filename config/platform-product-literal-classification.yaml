@@ -48,11 +48,27 @@ classifications:
     path_patterns:
       - platform-backend/internal/modules/templateops/service.go
     line_ranges:
-      - start: 313
-        end: 611
-      - start: 1374
-        end: 1386
-    justification: TemplateOps maps platform projection records to externally owned Menu/Ecommerce template-center API adapters at the boundary.
+      - start: 317
+        end: 317
+      - start: 408
+        end: 408
+      - start: 450
+        end: 451
+      - start: 468
+        end: 468
+      - start: 478
+        end: 478
+      - start: 508
+        end: 509
+      - start: 562
+        end: 562
+      - start: 596
+        end: 596
+      - start: 605
+        end: 608
+      - start: 1380
+        end: 1383
+    justification: Narrow line-scoped TemplateOps adapter allowlist for externally owned Menu/Ecommerce template-center product endpoints, reference construction, sync dispatch, and detail dispatch only; nearby production list/detail/business logic remains unclassified by default.
 
   - id: templateops-csv-demo-example
     classification: devseed_demo_fixture

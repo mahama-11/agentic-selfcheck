@@ -23,6 +23,7 @@ Configure branch protection for protected branches (currently `main`) to require
      python3 -m selfcheck run --root . --feature platform-core-engineering-baseline --groups static --timeout 120
      ```
    - The verifier command targets live `/root/work/v` and writes the real Platform evidence report under `/root/work/v/reports/platform-core-engineering-baseline/platform-core-engineering-baseline.json`.
+   - The route/OpenAPI semantic check is conservative in clean checkouts: it evaluates discovered live Platform route signatures for the core/runtime/financial scanner profiles instead of relying solely on passed changed files or `git status`.
    - Merge evidence must cite the exact command result and report path in the PR or workflow evidence note.
 
 ## Fixture versus real evidence
@@ -45,3 +46,7 @@ In GitHub repository settings for protected branches:
 ## Future self-hosted runner migration
 
 When a self-hosted runner can access `/root/work/v`, add a dedicated required check named `Platform live evidence gate` that runs the live Platform SelfCheck command above. At that point, replace the manual local/live evidence requirement with that required check.
+
+## Financial concurrency evidence scope
+
+The financial consistency verifier's default targeted concurrency regressions run against deterministic SQLite/shared-cache test harnesses. Those tests are required regression evidence, but they do **not** alone prove production database row-locking behavior. Any 80% production-like financial/concurrency claim must additionally cite a local-prod/Postgres run when available, using the optional `PLATFORM_TEST_DATABASE_DSN` harness (or an equivalent documented local-prod DSN) without making external services mandatory for normal `go test`/CI runs.

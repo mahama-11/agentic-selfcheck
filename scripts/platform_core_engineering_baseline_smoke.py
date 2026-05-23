@@ -79,6 +79,31 @@ paths:
     with tempfile.TemporaryDirectory() as td:
         target = Path(td)
         write(target / 'platform-backend/internal/router/routes.go', '''package router
+func r(router Group) {
+  v1 := router.Group("/api/v1")
+  auth := v1.Group("/auth")
+  auth.POST("/register", authHandler.Register)
+}
+''')
+        write(target / 'platform-backend/docs/openapi.yaml', '''openapi: 3.0.0
+paths:
+  /api/v1/auth/register:
+    post:
+      summary: register account
+      x-handler: Register
+      requestBody:
+        description: register request body
+      responses:
+        '200':
+          description: success response envelope
+''')
+        nested_case = run(root, target)
+        stats = nested_case['payload'].get('stats', {})
+        cases.append({'case': 'nested-gin-groups-compose-full-route-with-clean-checkout', 'ok': nested_case['returncode'] == 0 and nested_case['payload'].get('status') == 'PASS' and stats.get('route_openapi_checked_signatures') == 1, **nested_case})
+
+    with tempfile.TemporaryDirectory() as td:
+        target = Path(td)
+        write(target / 'platform-backend/internal/router/routes.go', '''package router
 func r(g Group) { g.POST("/api/v1/runtime/jobs", runtimeHandler.CreateJob) }
 ''')
         write(target / 'platform-backend/docs/INTERNAL_API_CONTRACT.md', '''# Internal API Contract

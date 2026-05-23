@@ -66,6 +66,8 @@ RUNTIME_JOB_STATUS_ASSIGN_RE = re.compile(r'\b(?:job|locked|runtimeJob|runtime_j
 IDEMPOTENCY_RE = re.compile(r'(?i)(idempotency[-_ ]?key|IdempotencyKey|idempotency_key)')
 RAW_DB_RE = re.compile(r'\b(db|tx|conn)\.(Exec|Raw|Table|Where|Create|Save|Updates?|Delete)\s*\(')
 ROUTE_RE = re.compile(r'\.(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD|Group)\s*\(\s*["\']([^"\']+)')
+ROUTE_CALL_RE = re.compile(r'(?P<receiver>[A-Za-z_][A-Za-z0-9_\.]*)\s*\.\s*(?P<method>GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD|Group)\s*\(\s*["\'](?P<path>[^"\']+)')
+GROUP_ASSIGN_RE = re.compile(r'(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*(?::=|=)\s*(?P<receiver>[A-Za-z_][A-Za-z0-9_\.]*)\s*\.\s*Group\s*\(\s*["\'](?P<path>[^"\']+)')
 NAMED_HANDLER_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)?$')
 SEMANTIC_CONTRACT_RE = re.compile(
     r'(?i)(@Param|@Success|@Failure|request\b|response\b|responses\b|response\.SuccessResponse|envelope|body\b|query\b|path\s+param|returns?\b|data\b|schema\b)'
@@ -81,6 +83,7 @@ SPEC_PATTERNS = [
     'platform-backend/api/**/*.json',
 ]
 DEFAULT_PRODUCT_CLASSIFICATION_CONFIG = Path(__file__).resolve().parents[1] / 'config/platform-product-literal-classification.yaml'
+DEFAULT_ROUTE_SEMANTIC_ALLOWLIST_CONFIG = Path(__file__).resolve().parents[1] / 'config/platform-route-semantic-allowlist.yaml'
 ALLOWED_PRODUCT_LITERAL_CLASSIFICATIONS = {
     'generic_config_data',
     'adapter_projection',
@@ -133,6 +136,29 @@ def load_product_literal_classifications(path: Path) -> list[dict[str, Any]]:
         return []
     entries = payload.get('classifications', []) if isinstance(payload, dict) else []
     return [entry for entry in entries if isinstance(entry, dict)]
+
+
+def load_route_semantic_allowlist(path: Path) -> set[str]:
+    if not path.is_file():
+        return set()
+    try:
+        text = path.read_text(encoding='utf-8')
+        if yaml is not None:
+            payload = yaml.safe_load(text) or {}
+        else:
+            payload = json.loads(text)
+    except Exception:
+        return set()
+    routes = payload.get('routes', []) if isinstance(payload, dict) else []
+    allowed: set[str] = set()
+    for item in routes:
+        if not isinstance(item, dict):
+            continue
+        method = str(item.get('method', '')).upper().strip()
+        route_path = route_signature_token(str(item.get('path', '')).strip())
+        if method and route_path:
+            allowed.add(f'{method} {route_path}')
+    return allowed
 
 
 def line_in_ranges(line: int, ranges: Any) -> bool:
@@ -349,6 +375,12 @@ def route_signature_token(path: str) -> str:
     return token.rstrip('/') or '/'
 
 
+def join_route_paths(prefix: str, path_part: str) -> str:
+    if not prefix:
+        return route_signature_token(path_part)
+    return route_signature_token('/'.join([prefix.rstrip('/'), path_part.lstrip('/')]))
+
+
 def extract_route_signatures(path: Path, root: Path) -> list[dict[str, Any]]:
     rel = norm(path.relative_to(root))
     try:
@@ -356,20 +388,31 @@ def extract_route_signatures(path: Path, root: Path) -> list[dict[str, Any]]:
     except OSError:
         return []
     signatures: list[dict[str, Any]] = []
-    group_stack: list[str] = []
+    group_prefixes: dict[str, str] = {}
     for idx, line in enumerate(text.splitlines(), 1):
         stripped = line.strip()
         if not stripped or stripped.startswith('//'):
             continue
-        for match in ROUTE_RE.finditer(line):
-            method = match.group(1).upper()
-            path_part = match.group(2).strip()
+        # Track common Gin nested-group composition:
+        #   v1 := router.Group("/api/v1")
+        #   auth := v1.Group("/auth")
+        #   auth.POST("/register", handler)
+        # Literal simple receivers get composed; unknown receivers conservatively
+        # fall back to the route literal instead of claiming a false full path.
+        for group_match in GROUP_ASSIGN_RE.finditer(line):
+            receiver = group_match.group('receiver').strip()
+            path_part = group_match.group('path').strip()
+            parent_prefix = group_prefixes.get(receiver, '')
+            group_prefixes[group_match.group('var').strip()] = join_route_paths(parent_prefix, path_part)
+
+        for match in ROUTE_CALL_RE.finditer(line):
+            method = match.group('method').upper()
+            path_part = match.group('path').strip()
             if method == 'GROUP':
-                group_stack.append(path_part.rstrip('/'))
-                group_stack = group_stack[-3:]
                 continue
-            prefix = '' if path_part.startswith('/') or not group_stack else group_stack[-1]
-            full_path = route_signature_token('/'.join([prefix.rstrip('/'), path_part.lstrip('/')]) if prefix else path_part)
+            receiver = match.group('receiver').strip()
+            prefix = group_prefixes.get(receiver, '')
+            full_path = join_route_paths(prefix, path_part)
             args = route_call_args(line, match.start())
             handler, handler_kind = extract_named_handler(args)
             signatures.append({
@@ -451,7 +494,7 @@ def route_has_contract_reference(signature: dict[str, Any], spec_text: str) -> b
     return bool(ref['method_path'] and ref['semantic'] and (str(signature.get('handler_kind')) != 'named' or ref['handler']))
 
 
-def route_openapi_check(root: Path, changed_files: list[str], findings: list[dict[str, Any]], stats: dict[str, int]) -> None:
+def route_openapi_check(root: Path, changed_files: list[str], findings: list[dict[str, Any]], stats: dict[str, int], route_allowlist: set[str] | None = None) -> None:
     normalized_changes = [norm(f) for f in changed_files]
     route_changed_files = [f for f in normalized_changes if ROUTE_FILE_RE.search(f) and f.endswith(('.go', '.md', '.yaml', '.yml', '.json'))]
     spec_files = [p for pat in SPEC_PATTERNS for p in root.glob(pat)]
@@ -468,55 +511,63 @@ def route_openapi_check(root: Path, changed_files: list[str], findings: list[dic
             changed_signatures.extend(extract_route_signatures(p, root))
     spec_text = load_spec_text(root, spec_files)
 
-    if route_changed_files:
-        if changed_signatures:
-            for sig in changed_signatures:
-                ref = route_contract_reference(sig, spec_text)
-                if not ref['method_path']:
-                    add(
-                        findings,
-                        'route_openapi_drift_check',
-                        'error',
-                        str(sig['file']),
-                        int(sig['line']),
-                        f"route signature {sig['method']} {sig['path']} has no matching INTERNAL_API_CONTRACT/OpenAPI reference",
-                        str(sig['evidence']),
-                    )
-                    continue
-                if str(sig.get('handler_kind')) == 'named' and not ref['handler']:
-                    add(
-                        findings,
-                        'route_openapi_drift_check',
-                        'error',
-                        str(sig['file']),
-                        int(sig['line']),
-                        f"route signature {sig['method']} {sig['path']} names handler {sig.get('handler')} but nearby contract/OpenAPI evidence does not name that handler",
-                        str(sig['evidence']),
-                    )
-                elif str(sig.get('handler_kind')) in {'inline', 'ambiguous', 'missing'}:
-                    add(
-                        findings,
-                        'route_openapi_drift_check',
-                        'warning',
-                        str(sig['file']),
-                        int(sig['line']),
-                        f"route signature {sig['method']} {sig['path']} has {sig.get('handler_kind')} handler evidence; semantic route diff cannot require handler mapping automatically",
-                        str(sig['evidence']),
-                    )
-                if not ref['semantic']:
-                    add(
-                        findings,
-                        'route_openapi_drift_check',
-                        'error',
-                        str(sig['file']),
-                        int(sig['line']),
-                        f"route signature {sig['method']} {sig['path']} has only method/path evidence; require nearby request/response/envelope evidence",
-                        str(sig['evidence']),
-                    )
-        elif not spec_changed:
-            add(findings, 'route_openapi_drift_check', 'error', '<changed-files>', 0, 'route/handler changed but no route signature or contract/spec change was detected; fail closed for manual contract review', ', '.join(route_changed_files[:20]))
+    # Always evaluate discovered live route signatures for Platform profiles. This
+    # avoids a clean-checkout blind spot where CI/verifier invocations do not pass
+    # changed files and `git status` is empty, while route/OpenAPI drift still needs
+    # conservative evidence. Changed route files are still used for fail-closed
+    # diagnostics when a changed file contains no parseable route signature.
+    signatures_to_check = changed_signatures if route_changed_files and changed_signatures else all_signatures
+    if signatures_to_check and spec_files:
+        for sig in signatures_to_check:
+            ref = route_contract_reference(sig, spec_text)
+            route_key = f"{sig['method']} {sig['path']}"
+            allowlisted_legacy_gap = not route_changed_files and route_key in (route_allowlist or set())
+            if not ref['method_path']:
+                add(
+                    findings,
+                    'route_openapi_drift_check',
+                    'info' if allowlisted_legacy_gap else 'error',
+                    str(sig['file']),
+                    int(sig['line']),
+                    f"route signature {sig['method']} {sig['path']} has no matching INTERNAL_API_CONTRACT/OpenAPI reference" + ('; allowed as committed legacy route coverage debt' if allowlisted_legacy_gap else ''),
+                    str(sig['evidence']),
+                )
+                continue
+            if str(sig.get('handler_kind')) == 'named' and not ref['handler']:
+                add(
+                    findings,
+                    'route_openapi_drift_check',
+                    'info' if allowlisted_legacy_gap else 'error',
+                    str(sig['file']),
+                    int(sig['line']),
+                    f"route signature {sig['method']} {sig['path']} names handler {sig.get('handler')} but nearby contract/OpenAPI evidence does not name that handler",
+                    str(sig['evidence']),
+                )
+            elif str(sig.get('handler_kind')) in {'inline', 'ambiguous', 'missing'}:
+                add(
+                    findings,
+                    'route_openapi_drift_check',
+                    'warning',
+                    str(sig['file']),
+                    int(sig['line']),
+                    f"route signature {sig['method']} {sig['path']} has {sig.get('handler_kind')} handler evidence; semantic route diff cannot require handler mapping automatically",
+                    str(sig['evidence']),
+                )
+            if not ref['semantic']:
+                add(
+                    findings,
+                    'route_openapi_drift_check',
+                    'info' if allowlisted_legacy_gap else 'error',
+                    str(sig['file']),
+                    int(sig['line']),
+                    f"route signature {sig['method']} {sig['path']} has only method/path evidence; require nearby request/response/envelope evidence" + ('; allowed as committed legacy route coverage debt' if allowlisted_legacy_gap else ''),
+                    str(sig['evidence']),
+                )
+    elif route_changed_files and not changed_signatures and not spec_changed:
+        add(findings, 'route_openapi_drift_check', 'error', '<changed-files>', 0, 'route/handler changed but no route signature or contract/spec change was detected; fail closed for manual contract review', ', '.join(route_changed_files[:20]))
     elif not spec_files:
         add(findings, 'route_openapi_drift_check', 'warning', 'platform-backend', 0, 'no OpenAPI/spec file discovered; route contract drift check recorded route count only', '')
+    stats['route_openapi_checked_signatures'] = len(signatures_to_check) if spec_files else 0
     stats['route_openapi_spec_files'] = len(set(spec_files))
 
 
@@ -559,6 +610,7 @@ def main() -> int:
     ap.add_argument('--include', action='append', default=[], help='Limit scan to repo-relative file path; may be repeated.')
     ap.add_argument('--profile', choices=['core', 'runtime', 'financial'], default='core', help='Scanner profile/report feature identity.')
     ap.add_argument('--product-classification-config', default=str(DEFAULT_PRODUCT_CLASSIFICATION_CONFIG), help='Machine-readable product literal classification inventory.')
+    ap.add_argument('--route-semantic-allowlist-config', default=str(DEFAULT_ROUTE_SEMANTIC_ALLOWLIST_CONFIG), help='Machine-readable inventory of committed legacy route semantic coverage gaps.')
     ap.add_argument('--format', choices=['json', 'text'], default='json')
     args = ap.parse_args()
 
@@ -576,6 +628,8 @@ def main() -> int:
     files: list[Path] = []
     product_classification_path = Path(args.product_classification_config).resolve()
     product_classifications = load_product_literal_classifications(product_classification_path)
+    route_allowlist_path = Path(args.route_semantic_allowlist_config).resolve()
+    route_allowlist = load_route_semantic_allowlist(route_allowlist_path)
     if not root.exists():
         add(findings, 'target_root', 'error', str(root), 0, 'target root does not exist', '')
     else:
@@ -585,7 +639,7 @@ def main() -> int:
             add(findings, 'target_files', 'error', str(root), 0, 'no platform core files were available to scan', '')
         for path in files:
             scan_file(path, root, findings, stats, args.profile, product_classifications)
-        route_openapi_check(root, changed_files, findings, stats)
+        route_openapi_check(root, changed_files, findings, stats, route_allowlist)
 
     status = summarize(findings)
     report = {
@@ -599,6 +653,8 @@ def main() -> int:
         'changed_files': changed_files,
         'product_classification_config': str(product_classification_path),
         'product_classification_entries': len(product_classifications),
+        'route_semantic_allowlist_config': str(route_allowlist_path),
+        'route_semantic_allowlist_entries': len(route_allowlist),
         'fail_closed': 'NEEDS_REPAIR, NEEDS_HUMAN, critical, and error findings return non-zero.',
         'scanners': [
             'raw_status_write_scanner',

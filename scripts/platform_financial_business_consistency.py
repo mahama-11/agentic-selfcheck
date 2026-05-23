@@ -134,6 +134,10 @@ def main() -> int:
             "commercial/catalog visible baseline seeding and catalog handler smoke",
             "incentive channel settlement/idempotency and commission redemption",
         ],
+        "production_like_concurrency_note": (
+            "Default verifier evidence uses deterministic SQLite/shared-cache regressions and is not, by itself, proof of production database locking behavior. "
+            "For 80% production-like financial/concurrency claims, rerun the same impacted Go package tests against a local-prod/Postgres DSN via PLATFORM_TEST_DATABASE_DSN when that harness is available and cite that evidence separately."
+        ),
     }
     try:
         preflight = preflight_expected_tests()
