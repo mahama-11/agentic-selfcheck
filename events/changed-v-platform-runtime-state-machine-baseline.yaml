@@ -1,0 +1,20 @@
+id: changed-v-platform-runtime-state-machine-baseline
+event: requirement.changed.v.platform-runtime-state-machine-baseline
+description: Gate Platform runtime job/session/provider/callback/idempotency/status-transition changes through the Phase-3 runtime baseline.
+feature: platform-runtime-state-machine-baseline
+groups:
+  - static
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - runtime_status_transition_or_idempotency_scope
+  - route_openapi_contract_drift

@@ -23,6 +23,30 @@ features:
     command: scripts/requirement-gate.sh ecommerce-v1-listing-export-gate static requirement.changed.v.ecommerce-v1-listing-export
     blocking: true
     reason: Ecommerce listing/export active-slice quarantine/readiness gate
+  platform-ops-visible-baseline:
+    event: requirement.changed.v.platform-ops-visible-baseline
+    groups: api,evidence
+    command: scripts/requirement-gate.sh platform-ops-visible-baseline api,evidence requirement.changed.v.platform-ops-visible-baseline
+    blocking: true
+    reason: Platform shared capability baseline gate for ops-visible catalog/template/commercial/runtime-adjacent regressions
+  platform-core-engineering-baseline:
+    event: requirement.changed.v.platform-core-engineering-baseline
+    groups: static
+    command: scripts/requirement-gate.sh platform-core-engineering-baseline static requirement.changed.v.platform-core-engineering-baseline
+    blocking: true
+    reason: Platform Phase-1/2/3 engineering hardening gate for state/idempotency/product-boundary/raw-DB/route-contract regressions
+  platform-runtime-state-machine-baseline:
+    event: requirement.changed.v.platform-runtime-state-machine-baseline
+    groups: static
+    command: scripts/requirement-gate.sh platform-runtime-state-machine-baseline static requirement.changed.v.platform-runtime-state-machine-baseline
+    blocking: true
+    reason: Platform Phase-3 runtime job/session/provider/callback/idempotency/status-transition focused gate
+  platform-financial-consistency-baseline:
+    event: requirement.changed.v.platform-financial-consistency-baseline
+    groups: static
+    command: scripts/requirement-gate.sh platform-financial-consistency-baseline static requirement.changed.v.platform-financial-consistency-baseline
+    blocking: true
+    reason: Platform Phase-3 wallet/metering/billing/commercial/catalog/quota/incentive focused gate
 rules:
   - id: ecommerce-production-frontend-lowlevel
     description: Ecommerce production pages can affect Prep/Sandbox/Workshop prompt and generation flow.
@@ -39,6 +63,46 @@ rules:
       - ecommerce-backend/internal/modules/visualworkflow/**
     gates:
       - ecommerce-v2-prep-sandbox-lowlevel
+  - id: platform-core-shared-capability-surfaces
+    description: Platform is a shared dependency; changes to core shared modules must run a Platform baseline gate, not only downstream product gates.
+    patterns:
+      - platform-backend/internal/modules/runtime/**
+      - platform-backend/internal/modules/wallet/**
+      - platform-backend/internal/modules/metering/**
+      - platform-backend/internal/modules/billing/**
+      - platform-backend/internal/modules/storage/**
+      - platform-backend/internal/modules/auth/**
+      - platform-backend/internal/modules/identity/**
+      - platform-backend/internal/modules/access/**
+      - platform-backend/internal/modules/catalog/**
+      - platform-backend/internal/modules/commercial/**
+      - platform-backend/internal/modules/templateops/**
+      - platform-backend/docs/architecture/**
+      - platform-backend/docs/PROD_DEPLOY_RUNBOOK.md
+      - platform-frontend/src/**
+    gates:
+      - platform-core-engineering-baseline
+      - platform-ops-visible-baseline
+  - id: platform-runtime-state-machine-surfaces
+    description: Runtime job/session/provider/callback/idempotency/status-transition changes require the dedicated Phase-3 runtime baseline in addition to the core Platform baseline.
+    patterns:
+      - platform-backend/internal/modules/runtime/**
+      - platform-backend/internal/router/**
+      - platform-backend/internal/routes/**
+    gates:
+      - platform-runtime-state-machine-baseline
+  - id: platform-financial-consistency-surfaces
+    description: Wallet/metering/billing/commercial/catalog/quota/incentive changes require the dedicated Phase-3 financial consistency baseline in addition to the core Platform baseline.
+    patterns:
+      - platform-backend/internal/modules/wallet/**
+      - platform-backend/internal/modules/metering/**
+      - platform-backend/internal/modules/billing/**
+      - platform-backend/internal/modules/commercial/**
+      - platform-backend/internal/modules/catalog/**
+      - platform-backend/internal/modules/quota/**
+      - platform-backend/internal/modules/incentive/**
+    gates:
+      - platform-financial-consistency-baseline
   - id: ecommerce-release-critical-surfaces
     description: Ecommerce product/runtime surfaces can break auth, SKU, generation, listing/export, delivery, or commercial journeys.
     patterns:
@@ -55,6 +119,8 @@ rules:
       - platform-backend/internal/modules/metering/**
       - platform-backend/internal/modules/billing/**
       - platform-backend/internal/modules/storage/**
+      - platform-backend/internal/modules/commercial/**
+      - platform-backend/internal/modules/catalog/**
       - platform-backend/internal/modules/auth/**
     gates:
       - ecommerce-critical-journey-release-gate

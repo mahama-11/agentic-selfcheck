@@ -1,0 +1,43 @@
+id: platform-runtime-state-machine-baseline
+project: v-workspace
+description: "Platform Phase-3 runtime-state focused baseline for job/session/provider/callback/idempotency/status transition regressions."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - continuous-governance
+target_services:
+  platform: platform-backend
+must_pass:
+  static:
+    - platform-runtime-state-machine-baseline-static
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+governance:
+  contract:
+    phase: platform-phase-3-selfcheck-hardening
+    scanner_profile: runtime
+    required_scanners:
+      - raw_status_write_scanner
+      - unscoped_idempotency_scanner
+      - route_openapi_drift_check
+    focus:
+      - runtime_job_state_transition
+      - session_provider_callback_idempotency
+      - terminal_status_write_protection
+    fail_closed:
+      - NEEDS_REPAIR
+      - NEEDS_HUMAN
+      - critical_finding
+      - error_finding
+human_required:
+  - Runtime route/handler changes without internal contract references require platform architect review.
+  - Callback/idempotency/status transition changes must keep explicit scope and transition evidence.
+# Evidence paths below are project-relative. For project `v-workspace`,
+# SelfCheck resolves `reports/...` under `/root/work/v`, not this SelfCheck checkout.
+evidence_required:
+  - reports/platform-runtime-state-machine-baseline/platform-runtime-state-machine-baseline.json

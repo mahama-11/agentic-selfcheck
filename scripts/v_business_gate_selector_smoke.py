@@ -18,9 +18,24 @@ CASES = [
         {'ecommerce-v2-prep-sandbox-lowlevel', 'ecommerce-critical-journey-release-gate'},
     ),
     (
-        'platform-runtime-selects-critical-only',
+        'platform-runtime-selects-platform-and-critical-gates',
         ['platform-backend/internal/modules/runtime/provider_minimax_image.go'],
-        {'ecommerce-critical-journey-release-gate'},
+        {'platform-core-engineering-baseline', 'platform-runtime-state-machine-baseline', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+    ),
+    (
+        'platform-commercial-selects-platform-and-critical-gates',
+        ['platform-backend/internal/modules/commercial/service.go'],
+        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+    ),
+    (
+        'platform-quota-selects-financial-gate',
+        ['platform-backend/internal/modules/quota/service.go'],
+        {'platform-financial-consistency-baseline'},
+    ),
+    (
+        'platform-frontend-selects-platform-engineering-and-ops-gates',
+        ['platform-frontend/src/pages/catalog/CatalogPage.tsx'],
+        {'platform-core-engineering-baseline', 'platform-ops-visible-baseline'},
     ),
     (
         'unrelated-doc-selects-no-business-gate',

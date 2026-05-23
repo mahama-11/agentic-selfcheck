@@ -1,0 +1,20 @@
+id: changed-v-platform-financial-consistency-baseline
+event: requirement.changed.v.platform-financial-consistency-baseline
+description: Gate Platform wallet/metering/billing/commercial/catalog/quota/incentive changes through the Phase-3 financial baseline.
+feature: platform-financial-consistency-baseline
+groups:
+  - static
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - financial_consistency_or_auditability
+  - route_openapi_contract_drift

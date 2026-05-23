@@ -1,0 +1,57 @@
+id: platform-core-engineering-baseline
+project: v-workspace
+description: "Platform Phase-1 Engineering Hardening baseline for shared Platform core gates, contracts, route/spec discipline, idempotency scope, state transitions, product boundaries, and service persistence boundaries."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - continuous-governance
+target_services:
+  platform: platform-backend
+  frontend: platform-frontend
+must_pass:
+  static:
+    - platform-core-engineering-baseline-static
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+governance:
+  contract:
+    phase: platform-phase-1-engineering-hardening
+    required_scanners:
+      - raw_status_write_scanner
+      - unscoped_idempotency_scanner
+      - product_hardcode_classifier
+      - service_raw_db_expansion_scanner
+      - route_openapi_drift_check
+    fail_closed:
+      - NEEDS_REPAIR
+      - NEEDS_HUMAN
+      - critical_finding
+      - error_finding
+    platform_financial_consistency_scaffold:
+      status: scaffold
+      intent: "Future/adjacent contract for wallet, metering, billing, catalog, rate-card, settlement, and audit consistency."
+      expected_gate_shape:
+        - ledger_balance_invariant
+        - metering_to_wallet_charge_trace
+        - catalog_rate_card_effective_date_consistency
+        - refund_or_compensation_auditability
+    platform_runtime_state_machine_scaffold:
+      status: scaffold
+      intent: "Future/adjacent contract for runtime job/session/provider/callback state machines."
+      expected_gate_shape:
+        - explicit_transition_table
+        - callback_idempotency_scope
+        - terminal_state_write_protection
+        - provider_retry_and_timeout_contract
+human_required:
+  - Any NEEDS_HUMAN result must be reviewed by platform architect/QA before merge.
+  - New Platform public/internal routes must update OpenAPI/spec or carry explicit compatibility evidence.
+  - Financial and runtime state-machine scaffolds are contract placeholders for Phase-1 expansion, not permission to bypass the baseline.
+evidence_required:
+  - reports/platform-core-engineering-baseline/platform-core-engineering-baseline.json
+  - .hermes/workflows/platform-engineering-governance/04b-platform-guardrail-developer-summary.md
