@@ -18,31 +18,7 @@ SKIP_DIRS = {
 
 # Existing legacy files are allowed only until the dedicated refactor plan splits them.
 # They must not grow. Remove each entry as soon as the file is split below threshold.
-LEGACY_ALLOWLIST: dict[str, dict[str, Any]] = {
-    'ecommerce-backend/internal/modules/imageruntime/handler_test.go': {'max_lines': 808, 'owner': 'backend-agent', 'task': 'RT-ECOM-IMAGERUNTIME-HANDLER-TEST'},
-    'ecommerce-backend/internal/modules/imageruntime/service.go': {'max_lines': 1352, 'owner': 'backend-agent', 'task': 'RT-8E0A9384D933'},
-    'ecommerce-backend/internal/modules/productcore/handler_test.go': {'max_lines': 1244, 'owner': 'backend-agent', 'task': 'RT-ECOM-PRODUCTCORE-HANDLER-TEST'},
-    'ecommerce-backend/internal/modules/productcore/service.go': {'max_lines': 2351, 'owner': 'backend-agent', 'task': 'RT-E1CDB81CDD87'},
-    'ecommerce-backend/internal/modules/visualworkflow/service.go': {'max_lines': 5870, 'owner': 'backend-agent', 'task': 'RT-06EC9EDE4F65'},
-    'ecommerce-backend/internal/modules/visualworkflow/service_test.go': {'max_lines': 3333, 'owner': 'backend-agent', 'task': 'RT-F2EDDF815F2D'},
-    'ecommerce-backend/internal/modules/visualworkflow/types.go': {'max_lines': 814, 'owner': 'backend-agent', 'task': 'RT-ECOM-VISUALWORKFLOW-TYPES'},
-    'ecommerce-backend/internal/platform/client.go': {'max_lines': 887, 'owner': 'backend-agent', 'task': 'RT-ECOM-PLATFORM-CLIENT'},
-    'ecommerce-backend/internal/repository/template_center_repository.go': {'max_lines': 1123, 'owner': 'backend-agent', 'task': 'RT-ECOM-TEMPLATE-REPOSITORY'},
-    'ecommerce-frontend/src/i18n/en.ts': {'max_lines': 1597, 'owner': 'frontend-agent', 'task': 'RT-AB1D002289DD'},
-    'ecommerce-frontend/src/i18n/zh.ts': {'max_lines': 1663, 'owner': 'frontend-agent', 'task': 'RT-C69E70D21FF8'},
-    'ecommerce-frontend/src/pages/AgentTemplateMarketPage.tsx': {'max_lines': 1165, 'owner': 'frontend-agent', 'task': 'RT-ECOM-TEMPLATE-MARKET-PAGE'},
-    'ecommerce-frontend/src/pages/AssetCommercePage.tsx': {'max_lines': 981, 'owner': 'frontend-agent', 'task': 'RT-ECOM-ASSET-COMMERCE-PAGE'},
-    'ecommerce-frontend/src/pages/DesignWorkbenchPage.tsx': {'max_lines': 854, 'owner': 'frontend-agent', 'task': 'RT-ECOM-DESIGN-WORKBENCH-PAGE'},
-    'ecommerce-frontend/src/pages/GenericPage.tsx': {'max_lines': 1395, 'owner': 'frontend-agent', 'task': 'RT-ECOM-GENERIC-PAGE'},
-    'ecommerce-frontend/src/pages/ToolPage.tsx': {'max_lines': 1117, 'owner': 'frontend-agent', 'task': 'RT-ECOM-TOOL-PAGE'},
-    'ecommerce-frontend/src/pages/product/ProductDetailPage.tsx': {'max_lines': 977, 'owner': 'frontend-agent', 'task': 'RT-ECOM-PRODUCT-DETAIL-PAGE'},
-    'ecommerce-frontend/src/pages/product/components/ProductDetailTabs.tsx': {'max_lines': 866, 'owner': 'frontend-agent', 'task': 'RT-ECOM-PRODUCT-DETAIL-TABS'},
-    'ecommerce-frontend/src/pages/production/PrepHubPage.tsx': {'max_lines': 1374, 'owner': 'frontend-agent', 'task': 'RT-ECOM-PREP-HUB'},
-    'ecommerce-frontend/src/pages/production/SandboxPage.tsx': {'max_lines': 1510, 'owner': 'frontend-agent', 'task': 'RT-1EF8A28A9044'},
-    'ecommerce-frontend/src/pages/production/WorkshopPage.tsx': {'max_lines': 1135, 'owner': 'frontend-agent', 'task': 'RT-ECOM-WORKSHOP-PAGE'},
-    'ecommerce-frontend/src/services/product.ts': {'max_lines': 837, 'owner': 'frontend-agent', 'task': 'RT-ECOM-PRODUCT-SERVICE'},
-    'ecommerce-frontend/src/services/production.ts': {'max_lines': 2031, 'owner': 'frontend-agent', 'task': 'RT-6D0700F9F8ED'},
-}
+LEGACY_ALLOWLIST: dict[str, dict[str, Any]] = {}
 
 
 def norm(path: Path | str) -> str:

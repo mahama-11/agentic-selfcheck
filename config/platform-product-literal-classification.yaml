@@ -47,8 +47,21 @@ classifications:
     classification: adapter_projection
     path_patterns:
       - platform-backend/internal/modules/templateops/service.go
+      - platform-backend/internal/modules/templateops/upstream.go
     line_ranges:
-      - start: 317
+      - start: 310
+        end: 310
+      - start: 18
+        end: 18
+      - start: 60
+        end: 61
+      - start: 78
+        end: 78
+      - start: 118
+        end: 119
+      - start: 206
+        end: 217
+      - start: 314
         end: 317
       - start: 408
         end: 408
@@ -68,15 +81,15 @@ classifications:
         end: 608
       - start: 1380
         end: 1383
-    justification: Narrow line-scoped TemplateOps adapter allowlist for externally owned Menu/Ecommerce template-center product endpoints, reference construction, sync dispatch, and detail dispatch only; nearby production list/detail/business logic remains unclassified by default.
+    justification: Narrow line-scoped TemplateOps adapter allowlist for externally owned Menu/Ecommerce template-center product endpoints, reference construction, sync dispatch, and detail dispatch only; nearby production list/detail/business logic remains unclassified by default. Updated for the TemplateOps upstream split so the same adapter boundary remains classified without allowing unrelated product policy literals.
 
   - id: templateops-csv-demo-example
     classification: devseed_demo_fixture
     path_patterns:
-      - platform-backend/internal/modules/templateops/service.go
+      - platform-backend/internal/modules/templateops/csv.go
     line_ranges:
-      - start: 1334
-        end: 1357
+      - start: 213
+        end: 235
     justification: CSVTemplateExample emits an operator-facing demo row, not production runtime branching.
 
   - id: platform-frontend-catalog-admin-examples

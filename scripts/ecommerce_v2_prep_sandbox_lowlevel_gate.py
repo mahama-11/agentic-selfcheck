@@ -161,8 +161,12 @@ def check_static() -> None:
 
 
 def check_api() -> None:
-    service = read(BACKEND / "internal/modules/visualworkflow/service.go")
-    tests = read(BACKEND / "internal/modules/visualworkflow/service_test.go")
+    visualworkflow_dir = BACKEND / "internal/modules/visualworkflow"
+    service = "\n".join(
+        read(path) for path in sorted(visualworkflow_dir.glob("*.go"))
+        if not path.name.endswith("_test.go")
+    )
+    tests = "\n".join(read(path) for path in sorted(visualworkflow_dir.glob("*_test.go")))
     required_symbols = [
         "mergeIntentSelections",
         "fixedPromptQuestionSelections",

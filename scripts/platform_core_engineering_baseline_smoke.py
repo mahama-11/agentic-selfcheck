@@ -12,6 +12,13 @@ def write(path: Path, content: str) -> None:
     path.write_text(content, encoding='utf-8')
 
 
+def sparse_go(lines: dict[int, str], total: int = 330) -> str:
+    body = ['package templateops'] + [''] * (total - 1)
+    for line_no, text in lines.items():
+        body[line_no - 1] = text
+    return '\n'.join(body) + '\n'
+
+
 def run(root: Path, target: Path, *extra: str) -> dict:
     cmd = [str(root / 'scripts/platform_core_engineering_baseline.py'), '--target-root', str(target), '--report', str(target / 'report.json'), '--format', 'json', *extra]
     cp = subprocess.run(cmd, cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
@@ -179,6 +186,34 @@ func product() string { return "ecommerce" }
         scanners = {f.get('scanner') for f in product_case['payload'].get('findings', [])}
         messages = '\n'.join(str(f.get('message', '')) for f in product_case['payload'].get('findings', []))
         cases.append({'case': 'unclassified-production-product-literal-fails-closed', 'ok': product_case['returncode'] != 0 and product_case['payload'].get('status') == 'NEEDS_REPAIR' and 'product_hardcode_classifier' in scanners and 'classification=unclassified' in messages, **product_case})
+
+    with tempfile.TemporaryDirectory() as td:
+        target = Path(td)
+        write(target / 'platform-backend/internal/modules/templateops/service.go', sparse_go({310: 'func source() { _ = "menu"; _ = "ecommerce" }'}))
+        write(target / 'platform-backend/internal/modules/templateops/upstream.go', sparse_go({
+            18: 'func menuSource() { _ = sources["menu"] }',
+            60: 'func menuRef() { _ = buildTemplateRef("menu", item.TemplateID) }',
+            61: 'func menuCode() { ProductCode := "menu"; _ = ProductCode }',
+            78: 'func ecommerceSource() { _ = sources["ecommerce"] }',
+            118: 'func ecommerceRef() { _ = buildTemplateRef("ecommerce", item.ID) }',
+            119: 'func ecommerceCode() { ProductCode := "ecommerce"; _ = ProductCode }',
+            206: 'func products() { products := []string{"menu", "ecommerce"}; _ = products }',
+            215: 'func dispatchMenu() { switch code { case "menu": } }',
+            217: 'func dispatchEcommerce() { switch code { case "ecommerce": } }',
+            314: 'func detailMenu() { switch productCode { case "menu": } }',
+            316: 'func detailEcommerce() { switch productCode { case "ecommerce": } }',
+        }))
+        write(target / 'platform-backend/internal/modules/templateops/csv.go', sparse_go({218: 'func csvExample() { _ = "menu" }'}))
+        split_case = run(root, target)
+        product_findings = [f for f in split_case['payload'].get('findings', []) if f.get('scanner') == 'product_hardcode_classifier']
+        cases.append({'case': 'templateops-split-product-literals-remain-narrowly-classified', 'ok': split_case['returncode'] == 0 and split_case['payload'].get('status') in {'PASS', 'PASS_WITH_NOTES'} and product_findings and all(f.get('severity') == 'info' for f in product_findings), **split_case})
+
+    with tempfile.TemporaryDirectory() as td:
+        target = Path(td)
+        write(target / 'platform-backend/internal/modules/templateops/upstream.go', sparse_go({19: 'func rogue() { _ = "menu" }'}))
+        adjacent_case = run(root, target)
+        messages = '\n'.join(str(f.get('message', '')) for f in adjacent_case['payload'].get('findings', []))
+        cases.append({'case': 'templateops-adjacent-product-literal-still-fails-closed', 'ok': adjacent_case['returncode'] != 0 and adjacent_case['payload'].get('status') == 'NEEDS_REPAIR' and 'classification=unclassified' in messages, **adjacent_case})
 
     with tempfile.TemporaryDirectory() as td:
         target = Path(td)
