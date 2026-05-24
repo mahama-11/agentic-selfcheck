@@ -37,8 +37,8 @@ def exists_all(root: Path, paths: list[str]) -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description='Quarantine/readiness gate for Ecommerce V1 listing/export active worktree slice.')
-    parser.add_argument('--backend-root', default='/root/work/v-worktrees/ecommerce-v1-listing-immutability/ecommerce-backend')
-    parser.add_argument('--frontend-root', default='/root/work/v-worktrees/ecommerce-v1-listing-immutability/ecommerce-frontend')
+    parser.add_argument('--backend-root', default='/root/work/v/ecommerce-backend')
+    parser.add_argument('--frontend-root', default='/root/work/v/ecommerce-frontend')
     parser.add_argument('--format', choices=['json', 'text'], default='json')
     args = parser.parse_args()
     backend = Path(args.backend_root)
@@ -60,7 +60,7 @@ def main() -> int:
         pnpm_drift = [line for line in frontend_status if line.endswith('pnpm-lock.yaml')]
         if pnpm_drift:
             findings.append({'severity': 'warning', 'code': 'PACKAGE_MANAGER_LOCK_DRIFT_REQUIRES_OWNER_DECISION_BEFORE_MERGE', 'detail': pnpm_drift})
-        status = 'PASS_WITH_NOTES'
+        status = 'PASS_WITH_NOTES' if findings else 'PASS'
         if any(f['severity'] == 'error' for f in findings):
             status = 'FAIL'
     payload = {
@@ -69,7 +69,7 @@ def main() -> int:
         'frontend_root': str(frontend),
         'backend_dirty_count': len(git_status(backend)) if backend.exists() else None,
         'frontend_dirty_count': len(git_status(frontend)) if frontend.exists() else None,
-        'merge_state': 'QUARANTINED_UNTIL_DEDICATED_GATE_FULLY_PASSES',
+        'merge_state': 'HITL_BLOCKED_WITH_CANONICAL_GATE_EVIDENCE',
         'required_next_checks': [
             'backend productcore/imageruntime/migration/templatecenter tests in same run',
             'frontend typecheck/build in same run',
