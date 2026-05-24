@@ -9,6 +9,9 @@ DOC_SUFFIXES = {'.md', '.mdx', '.rst'}
 CODE_SUFFIXES = {'.py', '.go', '.ts', '.tsx', '.js', '.jsx', '.json', '.yaml', '.yml', '.toml', '.mod', '.sum'}
 FRONTEND_SUFFIXES = {'.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte', '.html', '.css', '.scss'}
 FRONTEND_PATH_PARTS = {'platform-frontend', 'ecommerce-frontend', 'menu-frontend', 'kyc-frontend', 'src/pages', 'src/components', 'src/views', 'app/routes', 'routes', 'templates'}
+MAX_CHANGED_SOURCE_LINES = 800
+MAX_CHANGED_SOURCE_BYTES = 1024 * 1024
+SOURCE_SUFFIXES = {'.py', '.go', '.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte'}
 
 
 def norm(p: str) -> str:
@@ -79,6 +82,47 @@ def frontend_implementation_files(files: list[str], repo: Path | None = None) ->
         if repo_name in frontend_roots:
             result.append(norm(str(Path(repo_name) / p)))
     return result
+
+
+def large_changed_file_findings(files: list[str], repo: Path) -> list[dict]:
+    findings = []
+    repo_name = repo.name
+    for file in files:
+        p = norm(file)
+        parts = p.split('/')
+        candidates = [repo / p]
+        if parts and parts[0] == repo_name:
+            candidates.insert(0, repo / Path(*parts[1:]))
+        path = next((candidate for candidate in candidates if candidate.exists()), None)
+        if path is None or path.is_dir() or path.suffix.lower() not in SOURCE_SUFFIXES:
+            continue
+        try:
+            size = path.stat().st_size
+        except OSError:
+            continue
+        lines = None
+        if size <= MAX_CHANGED_SOURCE_BYTES * 8:
+            try:
+                lines = path.read_text(encoding='utf-8', errors='ignore').count('\n') + 1
+            except Exception:
+                lines = None
+        reasons = []
+        if size > MAX_CHANGED_SOURCE_BYTES:
+            reasons.append(f'{size} bytes > {MAX_CHANGED_SOURCE_BYTES}')
+        if lines is not None and lines > MAX_CHANGED_SOURCE_LINES:
+            reasons.append(f'{lines} lines > {MAX_CHANGED_SOURCE_LINES}')
+        if reasons:
+            findings.append({
+                'severity': 'error',
+                'failure_type': 'LARGE_CHANGED_SOURCE_FILE',
+                'path': p,
+                'bytes': size,
+                'lines': lines,
+                'thresholds': {'max_source_lines': MAX_CHANGED_SOURCE_LINES, 'max_source_bytes': MAX_CHANGED_SOURCE_BYTES},
+                'message': 'changed source file exceeds locality threshold: ' + '; '.join(reasons),
+                'recommended_action': 'split/refactor in an isolated worktree with tests, or attach explicit human approval before merge',
+            })
+    return findings
 
 
 def auto_bootstrap_frontend_workflow(files: list[str], source: str, timeout: int) -> dict:
@@ -282,6 +326,7 @@ def main() -> None:
         'unsafe_changed_files': unsafe_files,
         'events': [],
         'business_gate_selector': None,
+        'large_changed_file_gate': None,
         'frontend_auto_bootstrap': None,
         'frontend_implementation_gate': None,
     }
@@ -289,6 +334,14 @@ def main() -> None:
     if unsafe_files:
         failures += 1
         report['frontend_implementation_gate'] = {'status': 'BLOCKED', 'exit_code': 1, 'stdout': '', 'stderr': 'unsafe changed-file path input', 'changed_files': unsafe_files}
+    large_findings = [] if unsafe_files else large_changed_file_findings(files, repo)
+    report['large_changed_file_gate'] = {
+        'status': 'FAIL' if large_findings else 'PASS',
+        'findings': large_findings,
+        'thresholds': {'max_source_lines': MAX_CHANGED_SOURCE_LINES, 'max_source_bytes': MAX_CHANGED_SOURCE_BYTES},
+    }
+    if large_findings:
+        failures += 1
     impl_files = frontend_implementation_files(files, repo)
     frontend_workflow = args.frontend_workflow
     if args.enforce_frontend_implementation and impl_files and args.auto_bootstrap_frontend_workflow and not frontend_workflow and not unsafe_files:

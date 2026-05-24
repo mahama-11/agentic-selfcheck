@@ -32,6 +32,18 @@ SENSITIVE_MARKERS = (
     'bearer ', 'cookie', 'set-cookie', 'connection string', 'dsn=',
 )
 
+FEISHU_SHAPE_DEGRADED_JOB_IDS = {
+    # 2026-05-24: these jobs executed successfully but Feishu rejected the
+    # rendered cron response with [99992402] field validation failed. The
+    # historical responses used Feishu-hostile markdown/card shapes (markdown
+    # tables in the weekly digest and long nested report sections in the 2h
+    # executor). Prompts were updated to compact bullet-only output; until the
+    # next successful external delivery clears Hermes' last_delivery_error,
+    # project them as degraded-with-local-artifact rather than active failures.
+    'be41037f9ef4',
+    'e3c95c6dfa5d',
+}
+
 
 def run(argv: list[str], cwd: Path | None = None, timeout: int = 60) -> subprocess.CompletedProcess[str]:
     return subprocess.run(argv, cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout)
@@ -175,10 +187,25 @@ def cron_status(hermes_home: Path) -> dict[str, Any]:
     output_root = hermes_home / 'cron' / 'output'
     for job in jobs:
         job['latest_output'] = latest_cron_output(job['job_id'], output_root)
+        err = job.get('delivery_error') or ''
+        if (
+            job.get('job_id') in FEISHU_SHAPE_DEGRADED_JOB_IDS
+            and '[99992402]' in err
+            and job['latest_output'].get('exists')
+        ):
+            job['delivery_degraded_with_local_artifact'] = {
+                'reason': 'feishu_field_validation_for_historical_markdown_shape',
+                'local_output': job['latest_output'].get('path'),
+                'mitigation': 'cron prompt updated to compact bullet-only Feishu-safe output; awaiting next successful delivery to clear Hermes last_delivery_error',
+            }
     return {
         'ok': True,
         'count': len(jobs),
-        'delivery_errors': [j for j in jobs if j.get('delivery_error')],
+        'delivery_errors': [
+            j for j in jobs
+            if j.get('delivery_error') and not j.get('delivery_degraded_with_local_artifact')
+        ],
+        'delivery_degraded': [j for j in jobs if j.get('delivery_degraded_with_local_artifact')],
         'jobs': jobs,
     }
 
@@ -214,6 +241,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     cron = payload.get('cron', {})
     product_batches = payload.get('product_worktree_batches', {})
     delivery_errors = cron.get('delivery_errors') or []
+    delivery_degraded = cron.get('delivery_degraded') or []
     lines = [
         '# V Control Plane Status',
         '',
@@ -236,6 +264,11 @@ def render_markdown(payload: dict[str, Any]) -> str:
     ]
     for job in delivery_errors[:5]:
         lines.append(f"- {job.get('job_id')} {job.get('name')}: {job.get('delivery_error')}")
+    if delivery_degraded:
+        lines.append(f"Delivery degraded with local artifact: {len(delivery_degraded)}")
+        for job in delivery_degraded[:5]:
+            artifact = (job.get('delivery_degraded_with_local_artifact') or {}).get('local_output')
+            lines.append(f"- {job.get('job_id')} {job.get('name')}: Feishu shape degraded; local artifact `{artifact}`")
     lines.extend(['', '## Product worktree batches'])
     for batch in product_batches.get('batches', []):
         lines.append(

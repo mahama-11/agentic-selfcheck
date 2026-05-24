@@ -24,6 +24,10 @@ def main() -> int:
         'selector_status_fail_checked': "selector.get('status') == 'FAIL'" in source,
         'selector_findings_checked': "selector.get('findings')" in source,
         'selector_failure_type_reported': 'BUSINESS_GATE_SELECTOR_FAILED' in source,
+        'large_changed_file_failure_reported': 'LARGE_CHANGED_SOURCE_FILE' in source,
+        'large_changed_file_lines_threshold': 'MAX_CHANGED_SOURCE_LINES = 800' in source,
+        'large_changed_file_bytes_threshold': 'MAX_CHANGED_SOURCE_BYTES = 1024 * 1024' in source,
+        'v_worktrees_discovered': "V_WORKTREES_ROOT.glob('*/*/.git')" in source,
         'failure_closed_loop_present': 'run_failure_closed_loop()' in source,
     }
     result = {'status': 'PASS' if all(checks.values()) else 'FAIL', 'checks': checks, 'script': str(script)}

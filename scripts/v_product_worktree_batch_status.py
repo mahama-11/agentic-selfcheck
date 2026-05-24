@@ -65,21 +65,98 @@ def summarize_repo(repo_text: str) -> dict[str, Any]:
     return item
 
 
+def evidence_if_exists(path: str) -> dict[str, str] | None:
+    p = Path(path)
+    if not p.exists():
+        return None
+    return {"path": str(p), "kind": "batch_quarantine_exit_classification"}
+
+
+def latest_crossplanet_same_run_gate(selfcheck_root: Path = Path("/root/work/agentic-selfcheck")) -> dict[str, str] | None:
+    """Return latest repaired CrossPlanet same-run gate evidence, if it passed.
+
+    Batch C used to be classified only from a stale quarantine-exit markdown file.
+    The repaired gate writes normal SelfCheck loop/verifier evidence, so the control
+    plane should surface that same-run root-aware result instead of continuing to
+    describe the batch as awaiting a dedicated repair plan.
+    """
+    loop_dir = selfcheck_root / "reports/loops/crossplanet-listing-strategy-gate-repair"
+    candidates = sorted(loop_dir.glob("loop-*.json"), key=lambda path: path.stat().st_mtime, reverse=True)
+    for path in candidates:
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if payload.get("status") not in {"PASS", "PASS_WITH_NOTES"}:
+            continue
+        verifiers = payload.get("verifiers") or []
+        if not any(
+            item.get("id") == "crossplanet-listing-strategy-gate-repair-static"
+            and item.get("status") == "PASS"
+            and item.get("ok") is True
+            for item in verifiers
+        ):
+            continue
+        return {
+            "path": str(path),
+            "kind": "selfcheck_same_run_root_aware_gate",
+            "status": str(payload.get("status")),
+        }
+    return None
+
+
 def classify_batch(batch: str, repos: list[dict[str, Any]]) -> dict[str, Any]:
     dirty = sum(int(repo.get("dirty_count", 0)) for repo in repos)
+    evidence: dict[str, str] | None = None
+    blocking_notes: list[str] = []
     if batch == "batch_b_env":
         status = "PASS" if dirty == 0 else "NEEDS_REPAIR"
         action = "keep clean; commit only explicit toolchain scripts"
     elif batch == "batch_c_crossplanet":
-        status = "QUARANTINED" if dirty else "CLEAN"
-        action = "do not merge product worktrees until CrossPlanet gates are repaired and pass"
+        evidence = latest_crossplanet_same_run_gate() or evidence_if_exists(
+            "/root/work/v/reports/crossplanet-listing-strategy-input/2026-05-24-batch-c/quarantine-exit-classification.md"
+        )
+        if dirty and evidence and evidence.get("kind") == "selfcheck_same_run_root_aware_gate":
+            status = "HITL_BLOCKED_WITH_REPAIRED_GATES"
+            action = "do not merge; repaired same-run CrossPlanet gate passed, owner approval is still required"
+            blocking_notes = [
+                "repaired CrossPlanet gate ran backend/frontend checks from explicit roots in the same SelfCheck loop",
+                "human approval required before merging worktrees or deploying product changes",
+            ]
+        elif dirty and evidence:
+            status = "QUARANTINED_WITH_DEDICATED_REPAIR_PLAN"
+            action = "do not merge; backend/frontend checks passed but repaired same-run CrossPlanet merge gate is still required"
+            blocking_notes = [
+                "only stale quarantine-exit classification evidence is available",
+                "human approval required before promoting archived CrossPlanet gates or merging worktrees",
+            ]
+        else:
+            status = "QUARANTINED" if dirty else "CLEAN"
+            action = "do not merge product worktrees until CrossPlanet gates are repaired and pass"
     elif batch == "batch_d_v1_listing":
-        status = "QUARANTINED" if dirty else "CLEAN"
-        action = "treat as active large slice; require dedicated listing/export gate before merge"
+        evidence = evidence_if_exists(
+            "/root/work/agentic-selfcheck/reports/ecommerce-v1-listing-export-gate/batch-d-quarantine-exit-2026-05-24.md"
+        )
+        if dirty and evidence:
+            status = "HITL_BLOCKED_WITH_VERIFIED_GATES"
+            action = "do not merge; automated gates passed, owner decision needed for gate-state/deploy policy"
+            blocking_notes = [
+                "listing/export static gate still reports quarantine merge_state",
+                "package-manager lock drift was resolved by removing accidental untracked pnpm-lock.yaml and keeping npm/package-lock as source of truth",
+                "no production deploy/public bundle approval was requested or performed",
+            ]
+        else:
+            status = "QUARANTINED" if dirty else "CLEAN"
+            action = "treat as active large slice; require dedicated listing/export gate before merge"
     else:
         status = "UNKNOWN"
         action = "inspect"
-    return {"batch": batch, "status": status, "dirty_total": dirty, "action": action, "repos": repos}
+    result = {"batch": batch, "status": status, "dirty_total": dirty, "action": action, "repos": repos}
+    if evidence:
+        result["evidence"] = evidence
+    if blocking_notes:
+        result["blocking_notes"] = blocking_notes
+    return result
 
 
 def main() -> int:

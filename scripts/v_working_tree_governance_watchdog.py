@@ -12,8 +12,12 @@ from typing import Any
 
 SELF_ROOT = Path('/root/work/agentic-selfcheck')
 V_ROOT = Path('/root/work/v')
+V_WORKTREES_ROOT = Path('/root/work/v-worktrees')
 STATE_PATH = SELF_ROOT / 'reports' / 'v-working-tree-governance-watchdog' / 'state.json'
 LATEST_PATH = SELF_ROOT / 'reports' / 'v-working-tree-governance-watchdog' / 'latest.json'
+MAX_CHANGED_SOURCE_LINES = 800
+MAX_CHANGED_SOURCE_BYTES = 1024 * 1024
+SOURCE_SUFFIXES = {'.py', '.go', '.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte'}
 CANONICAL_REPOS = [
     'platform-backend', 'ecommerce-backend', 'menu-backend', 'kyc-backend',
     'platform-frontend', 'ecommerce-frontend', 'menu-frontend', 'kyc-frontend',
@@ -37,6 +41,12 @@ def discover_repos() -> list[Path]:
         if repo not in seen:
             repos.append(repo)
             seen.add(repo)
+    if V_WORKTREES_ROOT.exists():
+        for git_path in sorted([*V_WORKTREES_ROOT.glob('*/.git'), *V_WORKTREES_ROOT.glob('*/*/.git')]):
+            repo = git_path.parent
+            if repo not in seen:
+                repos.append(repo)
+                seen.add(repo)
     return repos
 
 
@@ -103,6 +113,41 @@ def repo_signature(repo: Path, files: list[str]) -> str:
 def prefixed_files(repo: Path, files: list[str]) -> list[str]:
     prefix = canonical_prefix(repo)
     return [f'{prefix}/{f}' for f in files]
+
+
+def large_changed_file_findings(repo: Path, files: list[str]) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    for rel in files:
+        path = repo / rel
+        if not path.exists() or path.is_dir() or path.suffix.lower() not in SOURCE_SUFFIXES:
+            continue
+        try:
+            size = path.stat().st_size
+        except OSError:
+            continue
+        lines = None
+        if size <= MAX_CHANGED_SOURCE_BYTES * 8:
+            try:
+                lines = path.read_text(encoding='utf-8', errors='ignore').count('\n') + 1
+            except Exception:
+                lines = None
+        reasons = []
+        if size > MAX_CHANGED_SOURCE_BYTES:
+            reasons.append(f'{size} bytes > {MAX_CHANGED_SOURCE_BYTES}')
+        if lines is not None and lines > MAX_CHANGED_SOURCE_LINES:
+            reasons.append(f'{lines} lines > {MAX_CHANGED_SOURCE_LINES}')
+        if reasons:
+            findings.append({
+                'severity': 'error',
+                'failure_type': 'LARGE_CHANGED_SOURCE_FILE',
+                'path': f'{canonical_prefix(repo)}/{rel}',
+                'bytes': size,
+                'lines': lines,
+                'thresholds': {'max_source_lines': MAX_CHANGED_SOURCE_LINES, 'max_source_bytes': MAX_CHANGED_SOURCE_BYTES},
+                'message': 'changed source file exceeds locality threshold: ' + '; '.join(reasons),
+                'recommended_action': 'split/refactor in an isolated worktree with tests, or attach explicit human approval before merge',
+            })
+    return findings
 
 
 def load_state() -> dict[str, Any]:
@@ -220,6 +265,13 @@ def main() -> int:
         if selector_failed:
             entry['last_status'] = 'FAIL'
             failure = {**repo_report, 'status': 'FAIL', 'failure_type': 'BUSINESS_GATE_SELECTOR_FAILED', 'selector': selector}
+            report['repos'].append(failure)
+            report['failures'].append(failure)
+            continue
+        large_findings = large_changed_file_findings(repo, rel_files)
+        if large_findings:
+            entry['last_status'] = 'FAIL'
+            failure = {**repo_report, 'status': 'FAIL', 'failure_type': 'LARGE_CHANGED_SOURCE_FILE', 'findings': large_findings}
             report['repos'].append(failure)
             report['failures'].append(failure)
             continue

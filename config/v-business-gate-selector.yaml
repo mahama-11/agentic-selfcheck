@@ -22,7 +22,13 @@ features:
     groups: static
     command: scripts/requirement-gate.sh ecommerce-v1-listing-export-gate static requirement.changed.v.ecommerce-v1-listing-export
     blocking: true
-    reason: Ecommerce listing/export active-slice quarantine/readiness gate
+    reason: Ecommerce listing/export active-slice quarantine/readiness gate until full same-run evidence exists.
+  ecommerce-large-source-locality-guard:
+    event: governance.changed.v.ecommerce-large-source-locality
+    groups: static
+    command: scripts/v_ecommerce_large_source_guard.py --format json
+    blocking: true
+    reason: Prevent new or growing oversized Ecommerce source files while the legacy split plan is being burned down.
   platform-ops-visible-baseline:
     event: requirement.changed.v.platform-ops-visible-baseline
     groups: api,evidence
@@ -60,6 +66,15 @@ features:
     blocking: true
     reason: Platform financial business-path consistency gate for wallet/metering/billing/quota/control/runtime charge/commercial/catalog/incentive invariants
 rules:
+  - id: ecommerce-large-source-locality-surfaces
+    description: Any Ecommerce source/docs change should keep the no-new-large-source guard active until the split backlog is cleared.
+    patterns:
+      - ecommerce-backend/**
+      - ecommerce-frontend/**
+      - docs/ecommerce/**
+      - docs/plans/*ecommerce*large*source*.md
+    gates:
+      - ecommerce-large-source-locality-guard
   - id: ecommerce-production-frontend-lowlevel
     description: Ecommerce production pages can affect Prep/Sandbox/Workshop prompt and generation flow.
     patterns:
