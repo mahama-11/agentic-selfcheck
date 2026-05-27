@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import time
+from pathlib import Path
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -166,12 +167,27 @@ def main() -> int:
     offerings = fetch_json(args.platform_base + "/api/v1/catalog/offerings?" + urllib.parse.urlencode({"product_code": "ecommerce"}), headers=auth)
     assets = fetch_json(args.platform_base + "/api/v1/wallet/assets?" + urllib.parse.urlencode({"product_code": "ecommerce", "status": "active"}), headers=auth)
     quota_policies = fetch_json(args.platform_base + "/api/v1/controls/quota/policies?" + urllib.parse.urlencode({"product_code": "ecommerce"}), headers=auth)
+    audit_logs = fetch_json(args.platform_base + "/api/v1/audit/logs?" + urllib.parse.urlencode({"limit": "1", "offset": "0"}), headers=auth)
 
     billable_codes = [str(x.get("code") or "") for x in items_from(billable_items)]
     rate_items = items_from(rate_cards)
     asset_items = items_from(assets)
     quota_items = items_from(quota_policies)
     offering_data = envelope_data(offerings)
+    audit_data = envelope_data(audit_logs)
+    platform_frontend_root = Path('/root/work/v/platform-frontend')
+    platform_backend_root = Path('/root/work/v/platform-backend')
+    audit_page_text = (platform_frontend_root / 'src/modules/audit/pages/AuditPage.tsx').read_text(encoding='utf-8') if (platform_frontend_root / 'src/modules/audit/pages/AuditPage.tsx').exists() else ''
+    env_text = (platform_frontend_root / 'src/shared/config/env.ts').read_text(encoding='utf-8') if (platform_frontend_root / 'src/shared/config/env.ts').exists() else ''
+    logging_contract_path = platform_backend_root / 'docs/architecture/LOGGING_CONTRACT.md'
+    logging_contract_text = logging_contract_path.read_text(encoding='utf-8') if logging_contract_path.exists() else ''
+    cloud_loki_dir = platform_backend_root / 'docs/architecture/logging/cloud-dev'
+    cloud_loki_files = [
+        cloud_loki_dir / 'docker-compose.loki-alloy.yml',
+        cloud_loki_dir / 'loki-config.yml',
+        cloud_loki_dir / 'alloy-docker-logs.alloy',
+        cloud_loki_dir / 'grafana-loki-datasource.yml',
+    ]
 
     checks = {
         "platform_login": {k: v for k, v in login.items() if k != "json"},
@@ -185,6 +201,10 @@ def main() -> int:
         "catalog_offerings": {"ok": offerings.get("ok"), "status": offerings.get("status"), "has_payload": isinstance(offering_data, dict)},
         "wallet_assets": {"ok": assets.get("ok"), "status": assets.get("status"), "count": len(asset_items), "asset_codes": [x.get("asset_code") or x.get("assetCode") for x in asset_items]},
         "quota_policies": {"ok": quota_policies.get("ok"), "status": quota_policies.get("status"), "count": len(quota_items)},
+        "audit_logs": {"ok": audit_logs.get("ok"), "status": audit_logs.get("status"), "has_items": isinstance(audit_data, dict) and isinstance(audit_data.get("items"), list), "has_stats": isinstance(audit_data, dict) and isinstance(audit_data.get("stats"), dict)},
+        "audit_diagnostics_frontend_entrypoints": {"has_log_env": "VITE_LOG_EXPLORER_URL" in env_text, "has_trace_env": "VITE_TRACE_EXPLORER_URL" in env_text, "has_open_logs_action": "Open logs" in audit_page_text, "has_open_trace_action": "Open trace" in audit_page_text, "frontend_avoids_loki_coupling": "LogQL" not in audit_page_text and "loki" not in audit_page_text.lower()},
+        "logging_contract": {"exists": logging_contract_path.exists(), "has_json_stdout": "JSON stdout" in logging_contract_text, "has_provider_adapter": "LogQueryProvider" in logging_contract_text, "forbids_high_cardinality_loki_labels": "request_id" in logging_contract_text and "must not be Loki labels" in logging_contract_text},
+        "cloud_dev_loki_alloy_templates": {"all_exist": all(p.exists() for p in cloud_loki_files), "files": [str(p) for p in cloud_loki_files]},
         "token_obtained": bool(token),
     }
     expectations = {
@@ -202,6 +222,10 @@ def main() -> int:
         "wallet_assets_minimum": bool(assets.get("ok") and len(asset_items) >= 4),
         "quota_policies_minimum": bool(quota_policies.get("ok") and len(quota_items) >= 5),
         "offerings_payload_ecommerce": bool(offerings.get("ok") and isinstance(offering_data, dict)),
+        "audit_diagnostics_api_queryable": bool(audit_logs.get("ok") and isinstance(audit_data, dict) and isinstance(audit_data.get("items"), list) and isinstance(audit_data.get("stats"), dict)),
+        "audit_diagnostics_external_log_trace_entry_configurable": bool("VITE_LOG_EXPLORER_URL" in env_text and "VITE_TRACE_EXPLORER_URL" in env_text and "Open logs" in audit_page_text and "Open trace" in audit_page_text and "LogQL" not in audit_page_text and "loki" not in audit_page_text.lower()),
+        "logging_contract_backend_neutral": bool(logging_contract_path.exists() and "JSON stdout" in logging_contract_text and "LogQueryProvider" in logging_contract_text and "must not be Loki labels" in logging_contract_text),
+        "cloud_dev_loki_alloy_templates_available": bool(all(p.exists() for p in cloud_loki_files)),
     }
     report = {
         "project": args.project,
@@ -210,7 +234,7 @@ def main() -> int:
         "scope": "platform-ops-visible-baseline",
         "expectations": expectations,
         "checks": checks,
-        "notes": ["Password/token values are used only in memory and are never printed.", "Gate requires the Ecommerce Template Ops sync HTTP request to succeed and report non-empty upserts; persisted projection visibility is tracked separately and cannot mask sync failure."],
+        "notes": ["Password/token values are used only in memory and are never printed.", "Gate requires the Ecommerce Template Ops sync HTTP request to succeed and report non-empty upserts; persisted projection visibility is tracked separately and cannot mask sync failure.", "Audit diagnostics check verifies the admin-only audit query shape; it does not require raw stdout/access logs to be persisted in the business DB.", "Business-log backend checks enforce vendor-neutral JSON stdout contract and Cloud dev Loki/Alloy templates; Loki is the first lightweight backend, not a product-code dependency."],
     }
     os.makedirs(os.path.dirname(args.report), exist_ok=True)
     with open(args.report, "w", encoding="utf-8") as fh:

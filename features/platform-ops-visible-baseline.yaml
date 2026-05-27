@@ -1,6 +1,6 @@
 id: platform-ops-visible-baseline
 project: v-workspace
-description: "Platform Ops visibility baseline: Template Ops Ecommerce projections plus Catalog & Assets Ecommerce commercial data."
+description: "Platform Ops visibility baseline: Template Ops Ecommerce projections, Catalog & Assets Ecommerce commercial data, audit diagnostics queryability, and vendor-neutral business-log diagnostics readiness."
 level_target: L4
 repair_policy: default-repair-policy
 depends_on:
@@ -23,7 +23,9 @@ reviewer_gates:
   - final-verification
 human_required:
   - Platform must not contain Ecommerce workflow state or frontend fake rows.
-  - Browser QA should separately confirm Template Ops and Catalog & Assets visible data.
+  - Browser QA should separately confirm Template Ops, Catalog & Assets, and Audit Diagnostics visible data.
+  - Audit Diagnostics must expose business audit facts, correlation IDs, and configured external log/trace entry points; raw access-log persistence in business DB is not allowed.
+  - Business-log diagnostics must preserve a backend-neutral JSON stdout contract and configurable URL/provider boundaries so Loki can be replaced by ELK/OpenSearch/ClickHouse later.
 evidence_required:
   - reports/platform-ops-visible-baseline/platform-ops-visible-baseline-gate.json
   - .hermes/workflows/platform-ops-visible-baseline/01-requirement.md
