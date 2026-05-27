@@ -186,7 +186,10 @@ def main() -> int:
         cloud_loki_dir / 'docker-compose.loki-alloy.yml',
         cloud_loki_dir / 'loki-config.yml',
         cloud_loki_dir / 'alloy-docker-logs.alloy',
+        cloud_loki_dir / 'tempo-config.yml',
+        cloud_loki_dir / 'otel-collector-config.yml',
         cloud_loki_dir / 'grafana-loki-datasource.yml',
+        cloud_loki_dir / 'grafana-tempo-datasource.yml',
     ]
 
     checks = {
