@@ -1,6 +1,6 @@
 id: platform-ops-visible-baseline-gate
 kind: api
-description: "Semantic API gate for Platform Template Ops Ecommerce projections, Catalog & Assets Ecommerce commercial price data, Audit Diagnostics query shape, and vendor-neutral business-log diagnostics readiness."
+description: "Semantic API gate for Platform Template Ops Ecommerce projections, Catalog & Assets Ecommerce commercial price data, Audit Diagnostics query shape, system-wide request_id log-search UX, trace-backend gating, and vendor-neutral business-log diagnostics readiness."
 command: "scripts/project_api_smoke.sh {project.id} {feature.id}"
 requires: [running_backend, running_frontend, local_postgres]
 evidence:

@@ -24,7 +24,8 @@ reviewer_gates:
 human_required:
   - Platform must not contain Ecommerce workflow state or frontend fake rows.
   - Browser QA should separately confirm Template Ops, Catalog & Assets, and Audit Diagnostics visible data.
-  - Audit Diagnostics must expose business audit facts, correlation IDs, and configured external log/trace entry points; raw access-log persistence in business DB is not allowed.
+  - Audit Diagnostics must expose business audit facts, correlation IDs, system-wide request_id log search for non-audit requests, and configured external log/trace entry points; raw access-log persistence in business DB is not allowed.
+  - Trace links must be gated by a real trace backend flag; trace_id in logs alone is not sufficient evidence of Tempo/Jaeger span search.
   - Business-log diagnostics must preserve a backend-neutral JSON stdout contract and configurable URL/provider boundaries so Loki can be replaced by ELK/OpenSearch/ClickHouse later.
 evidence_required:
   - reports/platform-ops-visible-baseline/platform-ops-visible-baseline-gate.json
