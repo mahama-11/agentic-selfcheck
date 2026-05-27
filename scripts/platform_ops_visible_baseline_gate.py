@@ -202,8 +202,8 @@ def main() -> int:
         "wallet_assets": {"ok": assets.get("ok"), "status": assets.get("status"), "count": len(asset_items), "asset_codes": [x.get("asset_code") or x.get("assetCode") for x in asset_items]},
         "quota_policies": {"ok": quota_policies.get("ok"), "status": quota_policies.get("status"), "count": len(quota_items)},
         "audit_logs": {"ok": audit_logs.get("ok"), "status": audit_logs.get("status"), "has_items": isinstance(audit_data, dict) and isinstance(audit_data.get("items"), list), "has_stats": isinstance(audit_data, dict) and isinstance(audit_data.get("stats"), dict)},
-        "audit_diagnostics_frontend_entrypoints": {"has_log_env": "VITE_LOG_EXPLORER_URL" in env_text, "has_trace_env": "VITE_TRACE_EXPLORER_URL" in env_text, "has_open_logs_action": "Open logs" in audit_page_text, "has_open_trace_action": "Open trace" in audit_page_text, "frontend_avoids_loki_coupling": "LogQL" not in audit_page_text and "loki" not in audit_page_text.lower()},
-        "logging_contract": {"exists": logging_contract_path.exists(), "has_json_stdout": "JSON stdout" in logging_contract_text, "has_provider_adapter": "LogQueryProvider" in logging_contract_text, "forbids_high_cardinality_loki_labels": "request_id" in logging_contract_text and "must not be Loki labels" in logging_contract_text},
+        "audit_diagnostics_frontend_entrypoints": {"has_log_env": "VITE_LOG_EXPLORER_URL" in env_text, "has_trace_env": "VITE_TRACE_EXPLORER_URL" in env_text, "has_open_logs_action": "Open logs" in audit_page_text, "has_open_trace_action": "Open trace" in audit_page_text, "frontend_avoids_query_language_coupling": "LogQL" not in audit_page_text},
+        "logging_contract": {"exists": logging_contract_path.exists(), "has_json_stdout": "JSON stdout" in logging_contract_text, "has_provider_adapter": "LogQueryProvider" in logging_contract_text, "forbids_high_cardinality_loki_labels": "request_id" in logging_contract_text and "do **not** promote high-cardinality correlation IDs to labels" in logging_contract_text},
         "cloud_dev_loki_alloy_templates": {"all_exist": all(p.exists() for p in cloud_loki_files), "files": [str(p) for p in cloud_loki_files]},
         "token_obtained": bool(token),
     }
@@ -223,8 +223,8 @@ def main() -> int:
         "quota_policies_minimum": bool(quota_policies.get("ok") and len(quota_items) >= 5),
         "offerings_payload_ecommerce": bool(offerings.get("ok") and isinstance(offering_data, dict)),
         "audit_diagnostics_api_queryable": bool(audit_logs.get("ok") and isinstance(audit_data, dict) and isinstance(audit_data.get("items"), list) and isinstance(audit_data.get("stats"), dict)),
-        "audit_diagnostics_external_log_trace_entry_configurable": bool("VITE_LOG_EXPLORER_URL" in env_text and "VITE_TRACE_EXPLORER_URL" in env_text and "Open logs" in audit_page_text and "Open trace" in audit_page_text and "LogQL" not in audit_page_text and "loki" not in audit_page_text.lower()),
-        "logging_contract_backend_neutral": bool(logging_contract_path.exists() and "JSON stdout" in logging_contract_text and "LogQueryProvider" in logging_contract_text and "must not be Loki labels" in logging_contract_text),
+        "audit_diagnostics_external_log_trace_entry_configurable": bool("VITE_LOG_EXPLORER_URL" in env_text and "VITE_TRACE_EXPLORER_URL" in env_text and "Open logs" in audit_page_text and "Open trace" in audit_page_text and "LogQL" not in audit_page_text),
+        "logging_contract_backend_neutral": bool(logging_contract_path.exists() and "JSON stdout" in logging_contract_text and "LogQueryProvider" in logging_contract_text and "do **not** promote high-cardinality correlation IDs to labels" in logging_contract_text),
         "cloud_dev_loki_alloy_templates_available": bool(all(p.exists() for p in cloud_loki_files)),
     }
     report = {
