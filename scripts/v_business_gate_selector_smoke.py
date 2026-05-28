@@ -8,14 +8,14 @@ from pathlib import Path
 
 CASES = [
     (
-        'prep-page-selects-lowlevel-and-critical',
+        'prep-page-selects-lowlevel-critical-and-style-governance',
         ['ecommerce-frontend/src/pages/production/PrepHubPage.tsx'],
-        {'ecommerce-v2-prep-sandbox-lowlevel', 'ecommerce-critical-journey-release-gate'},
+        {'ecommerce-v2-prep-sandbox-lowlevel', 'ecommerce-critical-journey-release-gate', 'ecommerce-frontend-style-governance', 'ecommerce-large-source-locality-guard'},
     ),
     (
         'visualworkflow-selects-lowlevel-and-critical',
         ['ecommerce-backend/internal/modules/visualworkflow/service.go'],
-        {'ecommerce-v2-prep-sandbox-lowlevel', 'ecommerce-critical-journey-release-gate'},
+        {'ecommerce-v2-prep-sandbox-lowlevel', 'ecommerce-critical-journey-release-gate', 'ecommerce-large-source-locality-guard'},
     ),
     (
         'platform-runtime-selects-platform-and-critical-gates',
@@ -66,6 +66,21 @@ CASES = [
         'platform-frontend-selects-platform-engineering-and-ops-gates',
         ['platform-frontend/src/pages/catalog/CatalogPage.tsx'],
         {'platform-core-engineering-baseline', 'platform-ops-visible-baseline'},
+    ),
+    (
+        'style-token-change-selects-style-governance',
+        ['ecommerce-frontend/src/index.css'],
+        {'ecommerce-frontend-style-governance', 'ecommerce-large-source-locality-guard'},
+    ),
+    (
+        'acceptance-governance-doc-selects-style-governance',
+        ['ecommerce-frontend/docs/acceptance-tdd-governance.md'],
+        {'ecommerce-frontend-style-governance', 'ecommerce-large-source-locality-guard'},
+    ),
+    (
+        'acceptance-governance-script-selects-style-governance',
+        ['ecommerce-frontend/scripts/ecommerce-acceptance-governance-gate.mjs'],
+        {'ecommerce-frontend-style-governance', 'ecommerce-large-source-locality-guard'},
     ),
     (
         'unrelated-doc-selects-no-business-gate',
