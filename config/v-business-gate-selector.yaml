@@ -82,6 +82,8 @@ rules:
       - ecommerce-frontend/src/layouts/ProductionLayout.tsx
       - ecommerce-frontend/src/pages/product/**
       - ecommerce-frontend/src/pages/production/**
+      - ecommerce-frontend/src/pages/ToolPage.tsx
+      - ecommerce-frontend/src/pages/ProductVisualToolsPage.tsx
       - ecommerce-frontend/src/components/product-workbench/**
       - ecommerce-frontend/scripts/ecommerce-style-consistency.mjs
       - ecommerce-frontend/scripts/ecommerce-acceptance-governance-gate.mjs

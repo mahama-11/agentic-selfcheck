@@ -83,6 +83,11 @@ CASES = [
         {'ecommerce-frontend-style-governance', 'ecommerce-large-source-locality-guard'},
     ),
     (
+        'product-scoped-ai-tool-selects-style-governance',
+        ['ecommerce-frontend/src/pages/ToolPage.tsx'],
+        {'ecommerce-frontend-style-governance', 'ecommerce-large-source-locality-guard'},
+    ),
+    (
         'unrelated-doc-selects-no-business-gate',
         ['docs/random-note.md'],
         set(),
