@@ -1,0 +1,66 @@
+id: ecommerce-frontend-style-governance
+project: v-workspace
+description: "Agent Ecommerce frontend style and acceptance governance: enforce shared Ecommerce tokens/primitives, block new style drift, require visual evidence for product-flow UI changes, and require P0/P1 requirement semantics → executable acceptance → RED/GREEN → runtime evidence before PASS."
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - frontend-runtime
+  - review-gates
+target_services:
+  frontend: ecommerce-frontend
+must_pass:
+  static:
+    - ecommerce-frontend-style-governance-static
+    - frontend-typecheck
+    - frontend-build
+reviewer_gates:
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Product owner approves global style-change proposals that alter shared tokens, Button, or EcomShell behavior.
+  - Product owner or delegated designer accepts visual evidence for Product Center / Production page-level UI changes.
+risk_dimensions:
+  - requirement-semantics
+  - acceptance-tdd-governance
+  - style-drift
+  - design-token-governance
+  - shared-component-regression
+  - product-flow-visual-evidence
+  - historical-style-debt-burn-down
+governance:
+  trigger_policy:
+    required_for:
+      - any change under ecommerce-frontend/src/index.css
+      - any change under ecommerce-frontend/src/components/ui/Button.tsx
+      - any change under ecommerce-frontend/src/components/ui/EcomShell.tsx
+      - any change under ecommerce-frontend/src/pages/product
+      - any change under ecommerce-frontend/src/pages/production
+      - any change under ecommerce-frontend/src/layouts/ProductWorkbenchLayout.tsx
+      - any change under ecommerce-frontend/src/layouts/ProductionLayout.tsx
+      - any change under ecommerce-frontend/scripts/ecommerce-style-consistency.mjs
+      - any change under ecommerce-frontend/scripts/ecommerce-acceptance-governance-gate.mjs
+      - any change under ecommerce-frontend/scripts/ecommerce-frontend-automation-gate.mjs
+    default_command: "cd /root/work/agentic-selfcheck && scripts/v-requirement-gate.sh ecommerce-frontend-style-governance static requirement.changed.v.ecommerce-frontend-style-governance"
+    fail_policy: "BLOCK merge/deploy on FAIL/BLOCKED; PASS_WITH_NOTES requires explicit non-user-visible evidence debt and owner follow-up."
+  feedback_policy:
+    on_style_change:
+      - require reports/frontend-style-consistency/style-change-proposal.json in ecommerce-frontend
+      - include rationale, scope, affected_surfaces, migration_plan, screenshots or visual_evidence, and accepted/approved decision
+      - migrate pages in batches and reduce drift baseline only after actual burn-down
+    on_product_flow_ui_change:
+      - require reports/frontend-quality/acceptance-matrix-latest.json for P0/P1 changed user flows, with Given/When/Then, target page identity, required context, forbidden result, and RED/GREEN evidence
+      - require reports/frontend-style-consistency/evidence-manifest.json in ecommerce-frontend with local screenshots and PASS/ACCEPTED decision
+      - rerun npm run ci:quick before reporting complete
+    on_verifier_failure:
+      - create/dispatch RepairTask to frontend owner; do not bypass by refreshing baseline
+  guardrails:
+    - "Unified style can evolve, but only through shared tokens/primitives plus accepted proposal evidence."
+    - "No page-local second dark palette, bare button system, ad-hoc hover/header surfaces, or baseline increase."
+    - "Product Center / Production page UI changes require visible browser/screenshot evidence before completion."
+    - "P0 user-flow changes require acceptance matrix, RED/GREEN evidence, and runtime browser evidence; without browser behavior validation the status is PARTIAL_PASS, not PASS."
+evidence_required:
+  - reports/ecommerce-frontend-style-governance/static.json
+  - /root/work/v/ecommerce-frontend/reports/frontend-quality/acceptance-governance-latest.json
+  - /root/work/v/ecommerce-frontend/reports/frontend-style-consistency/selfcheck-static.json
+  - /root/work/v/ecommerce-frontend/reports/frontend-style-consistency/style-consistency-latest.json

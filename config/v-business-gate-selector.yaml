@@ -5,6 +5,12 @@ description: >-
   governance events are not sufficient for product-critical Ecommerce changes;
   this selector maps touched surfaces to required business feature gates.
 features:
+  ecommerce-frontend-style-governance:
+    event: requirement.changed.v.ecommerce-frontend-style-governance
+    groups: static
+    command: scripts/v-requirement-gate.sh ecommerce-frontend-style-governance static requirement.changed.v.ecommerce-frontend-style-governance
+    blocking: true
+    reason: Ecommerce frontend shared-style, visual evidence, and drift governance gate
   ecommerce-v2-prep-sandbox-lowlevel:
     event: requirement.changed.v.ecommerce-v2-prep-sandbox-lowlevel
     groups: static,api,browser,evidence
@@ -66,6 +72,26 @@ features:
     blocking: true
     reason: Platform financial business-path consistency gate for wallet/metering/billing/quota/control/runtime charge/commercial/catalog/incentive invariants
 rules:
+  - id: ecommerce-frontend-style-governance-surfaces
+    description: Ecommerce frontend style-critical surfaces must run the shared style governance gate so style evolution is controlled by proposals/evidence rather than page-local drift.
+    patterns:
+      - ecommerce-frontend/src/index.css
+      - ecommerce-frontend/src/components/ui/Button.tsx
+      - ecommerce-frontend/src/components/ui/EcomShell.tsx
+      - ecommerce-frontend/src/layouts/ProductWorkbenchLayout.tsx
+      - ecommerce-frontend/src/layouts/ProductionLayout.tsx
+      - ecommerce-frontend/src/pages/product/**
+      - ecommerce-frontend/src/pages/production/**
+      - ecommerce-frontend/src/components/product-workbench/**
+      - ecommerce-frontend/scripts/ecommerce-style-consistency.mjs
+      - ecommerce-frontend/scripts/ecommerce-acceptance-governance-gate.mjs
+      - ecommerce-frontend/scripts/ecommerce-frontend-automation-gate.mjs
+      - ecommerce-frontend/docs/frontend-style-governance.md
+      - ecommerce-frontend/docs/acceptance-tdd-governance.md
+      - ecommerce-frontend/docs/templates/frontend-cta-acceptance-matrix.md
+      - ecommerce-frontend/docs/agent-acceptance-tdd-workflow.md
+    gates:
+      - ecommerce-frontend-style-governance
   - id: ecommerce-large-source-locality-surfaces
     description: Any Ecommerce source/docs change should keep the no-new-large-source guard active until the split backlog is cleared.
     patterns:
