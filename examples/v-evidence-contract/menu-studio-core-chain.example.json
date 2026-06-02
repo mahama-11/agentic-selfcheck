@@ -1,0 +1,101 @@
+{
+  "feature_id": "menu-studio-core-chain-evidence-contract",
+  "change_scope": "menu-studio-core-chain",
+  "affected_services": [
+    "menu-backend",
+    "menu-frontend",
+    "platform-backend",
+    "agentic-selfcheck"
+  ],
+  "affected_routes": [
+    "POST /api/v1/auth/register",
+    "POST /api/v1/auth/login",
+    "GET /api/v1/templates",
+    "POST /api/v1/studio/uploads",
+    "POST /api/v1/studio/jobs",
+    "GET /api/v1/studio/jobs/:id",
+    "GET /api/v1/history",
+    "GET /api/v1/library",
+    "POST /internal/v1/runtime/jobs",
+    "POST /internal/v1/runtime/callbacks"
+  ],
+  "auth_context": {
+    "lane": "local/dev required",
+    "user_jwt": "required for product APIs",
+    "org_context": "required",
+    "internal_hmac": "required for Platform runtime/callback",
+    "prod_writes": "not_allowed_without_approval"
+  },
+  "real_api_evidence": [
+    {
+      "status": "NOT_RUN",
+      "required": "register/login/template/studio upload/single image/four-slot/history/library/quota negative through local/dev lane",
+      "report_path": "/root/work/v/reports/evidence-contract/menu-studio-core-chain/latest.json"
+    }
+  ],
+  "browser_evidence": [
+    {
+      "status": "NOT_RUN",
+      "required": "Template Center -> Studio upload -> generate -> history/library on desktop/mobile with Thai/English/Chinese copy"
+    }
+  ],
+  "contract_smoke_evidence": [
+    {
+      "status": "PARTIAL_PASS",
+      "kind": "schema/client/readiness",
+      "report_path": "/root/work/v/reports/evidence-contract/menu-studio-core-chain/latest.json"
+    }
+  ],
+  "prod_dev_log_evidence": [
+    {
+      "status": "NOT_RUN",
+      "required_fields": [
+        "request_id",
+        "trace_id",
+        "runtime_job_id",
+        "callback_status",
+        "charge_session_id"
+      ],
+      "report_path": "/root/work/v/reports/evidence-contract/menu-studio-core-chain/latest.json"
+    }
+  ],
+  "negative_cases": [
+    {
+      "case": "quota insufficient",
+      "expected": "fail-closed, no provider execution, user copy stays action-oriented"
+    },
+    {
+      "case": "bad internal HMAC",
+      "expected": "reject callback/internal request"
+    },
+    {
+      "case": "provider failure/callback retry",
+      "expected": "job remains honest failed/retryable state"
+    }
+  ],
+  "consumer_sweep": [
+    {
+      "consumer": "menu-frontend service layer/pages",
+      "status": "REQUIRED"
+    },
+    {
+      "consumer": "platform runtime/storage/quota/wallet internal APIs",
+      "status": "REQUIRED"
+    },
+    {
+      "consumer": "SelfCheck selector/evidence reader",
+      "status": "COVERED_BY_SCHEMA"
+    }
+  ],
+  "risk_level": "high",
+  "rollback_path": {
+    "type": "feature/contract gate rollback",
+    "path": "revert Menu contract/client/smoke changes or disable release promotion; no prod mutation without approval"
+  },
+  "blind_spots": [
+    "Menu dedicated generated-client bridge is not split out yet",
+    "real local/dev browser/API smoke not run in this governance-only pass"
+  ],
+  "owner_role": "orchestrator/qa",
+  "final_status": "PARTIAL_PASS"
+}

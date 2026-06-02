@@ -1,0 +1,7 @@
+id: v-menu-contract-evidence-bridge-smoke
+kind: static
+description: "Smoke-test Menu Evidence Contract bridge positive/negative validation and selector coverage."
+command: "scripts/v_menu_contract_evidence_bridge_smoke.py"
+evidence:
+  - validator_negative_positive
+  - selector_smoke

@@ -1,0 +1,8 @@
+id: v-contract-client-evidence-bridge-gate
+kind: static
+description: "Run Ecommerce OpenAPI/generated-client drift checks and emit V Evidence Contract report; optionally run real product-create/read/list smoke."
+command: "scripts/v_contract_client_evidence_bridge_gate.py"
+evidence:
+  - api_contract_report
+  - contract_diff_report
+  - v_evidence_contract

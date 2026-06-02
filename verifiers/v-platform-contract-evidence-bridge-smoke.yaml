@@ -1,0 +1,6 @@
+id: v-platform-contract-evidence-bridge-smoke
+kind: static
+description: "Smoke-test Platform evidence contract validation positive/negative cases."
+command: "scripts/v_platform_contract_evidence_bridge_smoke.py"
+evidence:
+  - platform_shared_capability_evidence

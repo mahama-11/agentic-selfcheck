@@ -27,6 +27,20 @@ services:
     commands:
       typecheck: pnpm exec tsc --noEmit
       build: pnpm run build
+  menu-backend:
+    path: menu-backend
+    kind: go-backend
+    health: http://127.0.0.1:8094/healthz
+    ready: http://127.0.0.1:8094/readyz
+    commands:
+      test: go test ./...
+  menu-frontend:
+    path: menu-frontend
+    kind: vite-react-frontend
+    dev: pnpm run dev -- --host 0.0.0.0 --port 5182
+    commands:
+      typecheck: npm run typecheck
+      build: npm run build
 environment:
   preferred_backend_ports:
     platform: 8195

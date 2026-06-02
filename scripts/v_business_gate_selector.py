@@ -17,7 +17,12 @@ DEFAULT_CONFIG = ROOT / 'config' / 'v-business-gate-selector.yaml'
 
 
 def norm(path: str) -> str:
-    return path.strip().replace('\\', '/').removeprefix('./')
+    out = path.strip().replace('\\', '/').removeprefix('./')
+    for prefix in ('/root/work/v/', '/root/work/agentic-selfcheck/', 'v/', 'agentic-selfcheck/'):
+        if out.startswith(prefix):
+            out = out[len(prefix):]
+            break
+    return out
 
 
 def load_config(path: Path) -> dict[str, Any]:

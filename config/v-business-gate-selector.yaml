@@ -11,6 +11,30 @@ selector_policy:
   producer_only_api_closure_allowed: false
   release_wide_critical_journeys: true
 features:
+  v-ai-native-governance-foundation:
+    event: requirement.changed.v-ai-native-governance-foundation
+    groups: static,evidence
+    command: scripts/requirement-gate.sh v-ai-native-governance-foundation static,evidence requirement.changed.v-ai-native-governance-foundation
+    blocking: true
+    reason: V Evidence Contract, OpenAPI/generated-client drift baseline, GenAI observability/security/eval, release ring, cron noise/capacity, and branch hygiene governance foundation across Platform/Ecommerce/Menu/SelfCheck
+  v-contract-client-evidence-bridge:
+    event: requirement.changed.v-contract-client-evidence-bridge
+    groups: static,evidence
+    command: scripts/requirement-gate.sh v-contract-client-evidence-bridge static,evidence requirement.changed.v-contract-client-evidence-bridge
+    blocking: true
+    reason: Ecommerce OpenAPI/generated-client drift and optional real product-create/read/list smoke emitted as V Evidence Contract across Platform/Ecommerce/Menu
+  v-platform-contract-evidence-bridge:
+    event: requirement.changed.v-platform-contract-evidence-bridge
+    groups: static,evidence
+    command: scripts/requirement-gate.sh v-platform-contract-evidence-bridge static,evidence requirement.changed.v-platform-contract-evidence-bridge
+    blocking: true
+    reason: Platform runtime/quota/storage/auth/wallet shared-capability contract-smoke readiness emitted as V Evidence Contract with Menu consumer impact noted
+  v-menu-contract-evidence-bridge:
+    event: requirement.changed.v-menu-contract-evidence-bridge
+    groups: static,evidence
+    command: scripts/requirement-gate.sh v-menu-contract-evidence-bridge static,evidence requirement.changed.v-menu-contract-evidence-bridge
+    blocking: true
+    reason: Menu Studio core-chain OpenAPI/frontend consumer readiness emitted as V Evidence Contract; live write smoke remains approval-gated
   ecommerce-frontend-style-governance:
     event: requirement.changed.v.ecommerce-frontend-style-governance
     groups: static
@@ -84,6 +108,111 @@ features:
     blocking: true
     reason: Composite Platform stability closed-loop gate covering core contracts, runtime/provider/callback/result, financial/quota/metering, storage/audit observability, and Ecom/Menu/KYC consumer compile sweeps
 rules:
+  - id: ai-native-governance-foundation-surfaces
+    description: Governance docs/schemas/scripts for the V Evidence Contract, OpenAPI/generated-client drift, GenAI observability/security/eval, release ring, cron noise/capacity, and branch hygiene must run the foundation gate. Menu is included in this rollout.
+    patterns:
+      - docs/governance/v-evidence-contract.md
+      - docs/governance/api-contract-client-generation-baseline.md
+      - docs/governance/genai-observability-baseline.md
+      - docs/governance/genai-security-evaluation-baseline.md
+      - docs/governance/release-ring-cron-branch-hygiene-baseline.md
+      - schemas/v-evidence-contract.schema.json
+      - examples/v-evidence-contract/**
+      - scripts/v_evidence_contract_gate.py
+      - scripts/v_contract_client_generation_gate.py
+      - scripts/v_genai_observability_gate.py
+      - scripts/v_genai_security_eval_baseline_gate.py
+      - scripts/v_release_cron_branch_hygiene_baseline_gate.py
+      - scripts/v_ai_native_governance_foundation_*.py
+      - verifiers/v-*-gate.yaml
+      - features/v-ai-native-governance-foundation.yaml
+      - events/changed-v-ai-native-governance-foundation.yaml
+      - menu-backend/docs/openapi/**
+      - menu-backend/docs/architecture/STUDIO_FRONTEND_INTEGRATION.md
+      - menu-backend/docs/architecture/TEMPLATE_CREATIVE_STRATEGY.md
+      - menu-backend/internal/modules/auth/**
+      - menu-backend/internal/modules/studio/**
+      - menu-backend/internal/modules/job/**
+      - menu-backend/internal/modules/jobs/**
+      - menu-backend/internal/modules/templatecenter/**
+      - menu-backend/internal/modules/templates/**
+      - menu-backend/internal/modules/assets/**
+      - menu-backend/internal/modules/history/**
+      - menu-backend/internal/modules/library/**
+      - menu-backend/internal/modules/wallet/**
+      - menu-backend/internal/modules/quota/**
+      - menu-frontend/src/services/**
+      - menu-frontend/src/pages/**
+      - menu-frontend/src/store/**
+      - menu-frontend/src/components/studio/**
+      - menu-frontend/src/components/template/**
+    gates:
+      - v-ai-native-governance-foundation
+  - id: contract-client-evidence-bridge-surfaces
+    description: Ecommerce OpenAPI/generated-client drift and V Evidence Contract bridge files must run the bridge gate; Menu must route through foundation evidence until a dedicated bridge is split out.
+    patterns:
+      - ecommerce-frontend/contracts/**
+      - ecommerce-frontend/src/api/generated/**
+      - ecommerce-frontend/scripts/ecommerce-api-contract-gate.mjs
+      - ecommerce-frontend/reports/frontend-quality/api-contract-latest.json
+      - ecommerce-frontend/reports/contract-governance/contract-diff.json
+      - ecommerce-frontend/reports/contract-governance/contract-smoke.json
+      - ecommerce-frontend/package.json
+      - tools/contract-smoke/v-contract-smoke.sh
+      - scripts/v_contract_client_evidence_bridge_*.py
+      - features/v-contract-client-evidence-bridge.yaml
+      - verifiers/v-contract-client-evidence-bridge*.yaml
+      - events/changed-v-contract-client-evidence-bridge.yaml
+    gates:
+      - v-contract-client-evidence-bridge
+  - id: platform-contract-evidence-bridge-surfaces
+    description: Platform runtime/quota/storage/auth/wallet route, smoke, and bridge surfaces must emit V Evidence Contract; Menu product flow is covered by standardized evidence and selector surfaces.
+    patterns:
+      - platform-backend/internal/router/**
+      - platform-backend/tools/prod/platform-runtime-smoke.sh
+      - tools/contract-smoke/platform-shared-capability-smoke.sh
+      - platform-backend/docs/openapi/**
+      - platform-backend/docs/INTERNAL_API_CONTRACT.md
+      - platform-backend/docs/architecture/RUNTIME_AND_CHARGE_PLATFORMIZATION.md
+      - platform-backend/docs/architecture/ASSET_STORAGE_REGISTRY_AND_IMPORT.md
+      - platform-backend/docs/architecture/METERING_AND_USAGE_SSOT.md
+      - docs/governance/project-adapters/platform-contract-adapter-plan.md
+      - scripts/v_platform_contract_evidence_bridge_*.py
+      - features/v-platform-contract-evidence-bridge.yaml
+      - verifiers/v-platform-contract-evidence-bridge*.yaml
+      - events/changed-v-platform-contract-evidence-bridge.yaml
+    gates:
+      - v-platform-contract-evidence-bridge
+  - id: menu-contract-evidence-bridge-surfaces
+    description: Menu Studio/Auth/Template/Library/History contract and frontend consumer changes must emit dedicated V Evidence Contract bridge evidence.
+    patterns:
+      - menu-backend/docs/openapi/**
+      - menu-backend/scripts/gen-swagger.sh
+      - menu-backend/internal/router/**
+      - menu-backend/internal/modules/auth/**
+      - menu-backend/internal/modules/studio/**
+      - menu-backend/internal/modules/job/**
+      - menu-backend/internal/modules/jobs/**
+      - menu-backend/internal/modules/templatecenter/**
+      - menu-backend/internal/modules/templates/**
+      - menu-backend/internal/modules/assets/**
+      - menu-backend/internal/modules/history/**
+      - menu-backend/internal/modules/library/**
+      - menu-backend/internal/modules/quota/**
+      - menu-backend/internal/modules/user/**
+      - menu-frontend/src/services/auth.ts
+      - menu-frontend/src/services/studio.ts
+      - menu-frontend/src/services/templateCenter.ts
+      - menu-frontend/src/services/upload.ts
+      - menu-frontend/src/store/**
+      - menu-frontend/src/pages/**
+      - scripts/v_menu_contract_evidence_bridge_*.py
+      - scripts/v_menu_safe_contract_smoke.py
+      - features/v-menu-contract-evidence-bridge.yaml
+      - verifiers/v-menu-contract-evidence-bridge*.yaml
+      - events/changed-v-menu-contract-evidence-bridge.yaml
+    gates:
+      - v-menu-contract-evidence-bridge
   - id: ecommerce-frontend-style-governance-surfaces
     description: Ecommerce frontend style-critical surfaces must run the shared style governance gate so style evolution is controlled by proposals/evidence rather than page-local drift.
     patterns:

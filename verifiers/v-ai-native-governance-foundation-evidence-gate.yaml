@@ -1,0 +1,7 @@
+id: v-ai-native-governance-foundation-evidence-gate
+kind: evidence
+description: "Verify governance foundation reports were generated and passing."
+command: "scripts/v_ai_native_governance_foundation_evidence_gate.py"
+evidence:
+  - report_paths
+  - gate_status

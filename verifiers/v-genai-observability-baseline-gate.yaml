@@ -1,0 +1,7 @@
+id: v-genai-observability-baseline-gate
+kind: static
+description: "Verify GenAI trace/runtime evidence baseline fields and examples."
+command: "scripts/v_genai_observability_gate.py"
+evidence:
+  - otel_genai_fields
+  - runtime_job_prompt_storage_charge_joins

@@ -1,0 +1,6 @@
+id: v-contract-client-evidence-bridge-smoke
+kind: static
+description: "Smoke-test generated-client evidence contract validation negative and positive cases."
+command: "scripts/v_contract_client_evidence_bridge_smoke.py"
+evidence:
+  - validator_negative_positive

@@ -1,0 +1,6 @@
+id: v-platform-contract-evidence-bridge-gate
+kind: static
+description: "Verify Platform shared capability router contracts and runtime smoke readiness, then emit V Evidence Contract."
+command: "scripts/v_platform_contract_evidence_bridge_gate.py"
+evidence:
+  - platform_shared_capability_evidence

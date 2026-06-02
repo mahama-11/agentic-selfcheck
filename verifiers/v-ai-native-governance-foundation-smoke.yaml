@@ -1,0 +1,6 @@
+id: v-ai-native-governance-foundation-smoke
+kind: static
+description: "Smoke-test V Evidence Contract validator negative and positive cases."
+command: "scripts/v_ai_native_governance_foundation_smoke.py"
+evidence:
+  - validator_positive_negative_cases
