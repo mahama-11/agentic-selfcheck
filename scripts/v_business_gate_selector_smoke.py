@@ -90,7 +90,7 @@ CASES = [
     (
         'platform-openapi-change-selects-contract-gates',
         ['platform-backend/docs/openapi/platform.yaml'],
-        {'platform-core-engineering-baseline', 'platform-stability-closed-loop-gates'},
+        {'platform-core-engineering-baseline', 'platform-stability-closed-loop-gates', 'v-platform-contract-evidence-bridge'},
     ),
     (
         'ecommerce-frontend-type-change-selects-consumer-gates',
@@ -105,7 +105,7 @@ CASES = [
     (
         'menu-platform-compatibility-change-selects-platform-ops-gate',
         ['menu-backend/internal/modules/studio/service.go'],
-        {'platform-ops-visible-baseline'},
+        {'platform-ops-visible-baseline', 'v-ai-native-governance-foundation', 'v-menu-contract-evidence-bridge'},
     ),
     (
         'unrelated-doc-selects-no-business-gate',
