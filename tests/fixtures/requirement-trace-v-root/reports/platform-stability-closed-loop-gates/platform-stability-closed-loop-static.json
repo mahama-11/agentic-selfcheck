@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "feature": "platform-stability-closed-loop-gates",
+  "verifier": "platform-stability-closed-loop-static",
+  "fixture": true
+}
