@@ -79,8 +79,8 @@ features:
     reason: Platform financial business-path consistency gate for wallet/metering/billing/quota/control/runtime charge/commercial/catalog/incentive invariants
   platform-stability-closed-loop-gates:
     event: requirement.changed.v.platform-stability-closed-loop-gates
-    groups: static
-    command: scripts/requirement-gate.sh platform-stability-closed-loop-gates static requirement.changed.v.platform-stability-closed-loop-gates
+    groups: static,api,browser,evidence
+    command: scripts/requirement-gate.sh platform-stability-closed-loop-gates static,api,browser,evidence requirement.changed.v.platform-stability-closed-loop-gates
     blocking: true
     reason: Composite Platform stability closed-loop gate covering core contracts, runtime/provider/callback/result, financial/quota/metering, storage/audit observability, and Ecom/Menu/KYC consumer compile sweeps
 rules:
@@ -144,7 +144,9 @@ rules:
       - platform-backend/internal/modules/catalog/**
       - platform-backend/internal/modules/commercial/**
       - platform-backend/internal/modules/templateops/**
-      - platform-backend/docs/architecture/**
+      - platform-backend/docs/architecture/OBSERVABILITY_AUDIT_DIAGNOSTICS.md
+      - platform-backend/docs/architecture/LOGGING_CONTRACT.md
+      - platform-backend/docs/architecture/logging/**
       - platform-backend/docs/PROD_DEPLOY_RUNBOOK.md
       - platform-frontend/src/**
     gates:

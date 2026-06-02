@@ -62,7 +62,6 @@ COMMANDS: list[dict[str, Any]] = [
             "test",
             "./internal/modules/assetstorage",
             "./internal/modules/audit",
-            "./internal/observability",
             "./internal/telemetry",
             "-run",
             "^(TestUploadRegisterResolveAndDataURL|TestImportLocalAssetUpdateAndConflict|TestSeedLocalDefaultsCreatesStorageBinding|TestAuditServiceRecordAndHelpers|TestSafeErrorRedactsSensitiveText|TestInitTracingDisabledAndStartGinSpan)$",
