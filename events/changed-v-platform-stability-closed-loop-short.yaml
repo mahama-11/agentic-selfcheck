@@ -1,6 +1,6 @@
-id: changed-v-platform-stability-closed-loop
-event: requirement.changed.v.platform-stability-closed-loop-gates
-description: Gate Platform shared stability closure through core contracts, runtime/provider/callback/result, financial/quota/metering, storage/audit observability, and Ecom/Menu/KYC consumers.
+id: changed-v-platform-stability-closed-loop-short
+event: requirement.changed.v.platform-stability-closed-loop
+description: Alias route for the explicit Platform stability closure command used by the execution plan; routes to the same feature as the selector event with the -gates suffix.
 feature: platform-stability-closed-loop-gates
 groups:
   - static

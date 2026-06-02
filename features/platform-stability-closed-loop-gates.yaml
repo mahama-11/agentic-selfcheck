@@ -12,6 +12,12 @@ target_services:
 must_pass:
   static:
     - platform-stability-closed-loop-static
+  api:
+    - platform-stability-closed-loop-api
+  browser:
+    - platform-stability-closed-loop-browser
+  evidence:
+    - platform-stability-closed-loop-evidence
 reviewer_gates:
   - architect
   - spec-review

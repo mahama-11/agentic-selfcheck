@@ -1,0 +1,6 @@
+id: platform-stability-closed-loop-api
+kind: api
+description: "API-group alias for the Platform stability closed-loop gate; verifies the platform stability contract manifest and gate wiring are present before the explicit static loop runs the heavy same-run API/consumer commands."
+command: "scripts/platform_stability_closed_loop_alias.py platform-stability-closed-loop-api"
+evidence:
+  - reports/platform-stability-closed-loop-gates/platform-stability-closed-loop-api.json
