@@ -1,8 +1,8 @@
 id: v-business-gate-selector
-project: v-workspace
+project: agentic-selfcheck
 description: Ensure V changed-file governance selects business-specific SelfCheck gates instead of only generic code/frontend governance.
 level_target: L3.5
-repair_policy: default-repair-policy
+repair_policy: selector-integration-repair-policy
 depends_on:
   - continuous-governance
 must_pass:
@@ -15,15 +15,22 @@ reviewer_gates:
 human_required:
   - Product owner approves adding expensive live/release gates as hard blocking in git hooks.
 evidence_required:
-  - config/v-business-gate-selector.yaml
-  - scripts/v_business_gate_selector.py
-  - scripts/v_business_gate_selector_smoke.py
-  - scripts/v_continuous_governance_trigger.py
+  - /root/work/agentic-selfcheck/config/v-business-gate-selector.yaml
+  - /root/work/agentic-selfcheck/scripts/v_business_gate_selector.py
+  - /root/work/agentic-selfcheck/scripts/v_business_gate_selector_smoke.py
+  - /root/work/agentic-selfcheck/scripts/v_continuous_governance_trigger.py
+  - /root/work/agentic-selfcheck/scripts/v_working_tree_governance_watchdog.py
+  - /root/work/agentic-selfcheck/docs/v-business-impact-map.md
 risk_dimensions:
   - changed-file-routing
   - business-gate-selection
   - ecommerce-critical-journeys
+  - contract-consumer-sweep
+  - dirty-tree-change-impact
+  - fail-closed-unmapped-risk
 governance:
   selector: config/v-business-gate-selector.yaml
   trigger_integration: scripts/v_continuous_governance_trigger.py
   default_behavior: report selected business gates; run gates only when --run-business-gates is supplied
+  dirty_tree_integration: scripts/v_working_tree_governance_watchdog.py selects gates from uncommitted diffs and runs selected business gates in watchdog mode
+  fail_closed_unmapped_high_risk: true

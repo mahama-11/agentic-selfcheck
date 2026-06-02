@@ -451,6 +451,11 @@ def build_repair_tasks(
         project = projects_by_id.get(str(f.get("project_id") or ""), {})
         decision = str(f.get("repair_decision") or "")
         sandbox_required = decision != "repair_now" or str(project.get("kind") or "") != "docs"
+        sandbox_contract = {
+            "required": sandbox_required,
+            "isolation": "dedicated_worktree_or_branch" if sandbox_required else "in_place_allowed_for_low_risk_docs",
+            "destructive_actions_allowed": False,
+        }
         task = {
             "task_id": repair_task_id_for(str(f.get("finding_id"))),
             "finding_id": f.get("finding_id"),
@@ -464,6 +469,7 @@ def build_repair_tasks(
             "path": f.get("path"),
             "decision": decision,
             "owner": "Hermes/工程代理",
+            "sandbox": sandbox_contract,
             "sandbox_required": sandbox_required,
             "worktree_policy": "required_for_code_or_contract_changes" if sandbox_required else "optional_for_low_risk_docs",
             "permissions": {

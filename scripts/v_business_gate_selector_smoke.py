@@ -20,47 +20,47 @@ CASES = [
     (
         'platform-runtime-selects-platform-and-critical-gates',
         ['platform-backend/internal/modules/runtime/provider_minimax_image.go'],
-        {'platform-core-engineering-baseline', 'platform-runtime-state-machine-baseline', 'platform-runtime-business-integration-safety', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+        {'platform-core-engineering-baseline', 'platform-runtime-state-machine-baseline', 'platform-runtime-business-integration-safety', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate', 'platform-stability-closed-loop-gates'},
     ),
     (
         'platform-wallet-selects-financial-business-gate',
         ['platform-backend/internal/modules/wallet/service.go'],
-        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate', 'platform-stability-closed-loop-gates'},
     ),
     (
         'platform-metering-selects-financial-business-gate',
         ['platform-backend/internal/modules/metering/service.go'],
-        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate', 'platform-stability-closed-loop-gates'},
     ),
     (
         'platform-billing-selects-financial-business-gate',
         ['platform-backend/internal/modules/billing/service.go'],
-        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate', 'platform-stability-closed-loop-gates'},
     ),
     (
         'platform-commercial-selects-platform-and-critical-gates',
         ['platform-backend/internal/modules/commercial/service.go'],
-        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate', 'platform-stability-closed-loop-gates'},
     ),
     (
         'platform-catalog-selects-financial-business-gate',
         ['platform-backend/internal/modules/catalog/service.go'],
-        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate'},
+        {'platform-core-engineering-baseline', 'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-ops-visible-baseline', 'ecommerce-critical-journey-release-gate', 'platform-stability-closed-loop-gates'},
     ),
     (
         'platform-incentive-selects-financial-business-gate',
         ['platform-backend/internal/modules/incentive/service.go'],
-        {'platform-financial-consistency-baseline', 'platform-financial-business-consistency'},
+        {'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-stability-closed-loop-gates'},
     ),
     (
         'platform-quota-selects-financial-gate',
         ['platform-backend/internal/modules/quota/service.go'],
-        {'platform-financial-consistency-baseline', 'platform-financial-business-consistency'},
+        {'platform-financial-consistency-baseline', 'platform-financial-business-consistency', 'platform-stability-closed-loop-gates'},
     ),
     (
         'platform-control-selects-financial-business-gate',
         ['platform-backend/internal/modules/control/service.go'],
-        {'platform-financial-business-consistency'},
+        {'platform-financial-business-consistency', 'platform-stability-closed-loop-gates'},
     ),
     (
         'platform-frontend-selects-platform-engineering-and-ops-gates',
@@ -88,6 +88,26 @@ CASES = [
         {'ecommerce-frontend-style-governance', 'ecommerce-large-source-locality-guard'},
     ),
     (
+        'platform-openapi-change-selects-contract-gates',
+        ['platform-backend/docs/openapi/platform.yaml'],
+        {'platform-core-engineering-baseline', 'platform-stability-closed-loop-gates'},
+    ),
+    (
+        'ecommerce-frontend-type-change-selects-consumer-gates',
+        ['ecommerce-frontend/src/types/product.ts'],
+        {'ecommerce-critical-journey-release-gate', 'ecommerce-v1-listing-export-gate', 'ecommerce-large-source-locality-guard'},
+    ),
+    (
+        'deploy-script-change-selects-release-gates',
+        ['tools/dev/deploy-cloud-dev-all.sh'],
+        {'ecommerce-critical-journey-release-gate', 'platform-stability-closed-loop-gates'},
+    ),
+    (
+        'menu-platform-compatibility-change-selects-platform-ops-gate',
+        ['menu-backend/internal/modules/studio/service.go'],
+        {'platform-ops-visible-baseline'},
+    ),
+    (
         'unrelated-doc-selects-no-business-gate',
         ['docs/random-note.md'],
         set(),
@@ -95,7 +115,7 @@ CASES = [
 ]
 
 
-def run_case(root: Path, name: str, files: list[str], expected: set[str]) -> dict:
+def run_case(root: Path, name: str, files: list[str], expected: set[str], expected_status: str = 'PASS') -> dict:
     cmd = ['scripts/v_business_gate_selector.py', '--root', str(root), '--format', 'json']
     for file in files:
         cmd.extend(['--changed-file', file])
@@ -106,13 +126,17 @@ def run_case(root: Path, name: str, files: list[str], expected: set[str]) -> dic
     except Exception:
         payload = None
     selected = {str(g.get('feature')) for g in (payload or {}).get('selected_gates', []) if isinstance(g, dict) and g.get('feature')}
-    ok = cp.returncode == 0 and selected == expected
+    status = (payload or {}).get('status')
+    ok_return = (cp.returncode == 0) if expected_status == 'PASS' else (cp.returncode != 0)
+    ok = ok_return and status == expected_status and selected == expected
     return {
         'case': name,
         'changed_files': files,
         'expected': sorted(expected),
         'actual': sorted(selected),
         'returncode': cp.returncode,
+        'status': status,
+        'expected_status': expected_status,
         'ok': ok,
         'stdout': cp.stdout[-2000:],
         'stderr': cp.stderr[-2000:],

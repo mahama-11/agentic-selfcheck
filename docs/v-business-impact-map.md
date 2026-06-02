@@ -14,6 +14,11 @@ Status: initial control-plane map. Ecommerce critical paths are blocking; other 
 
 ## Domain map
 
+### Change Impact Selector pipeline
+
+The live selector is `config/v-business-gate-selector.yaml`, executed by `scripts/v_business_gate_selector.py`, `scripts/v_continuous_governance_trigger.py`, and `scripts/v_working_tree_governance_watchdog.py`. It now covers PR/push/manual trigger and dirty-tree watchdog paths. High-risk unmatched product source changes fail closed instead of becoming generic-governance PASS.
+
+
 ### Ecommerce Prep / Sandbox / Visual Workflow
 
 Changed paths:
@@ -114,8 +119,9 @@ Critical journeys:
 Current gate state:
 - `ecommerce-critical-journey-release-gate` covers parts of authenticated journey.
 
-Gap:
-- `platform-frontend/package.json` currently maps to no business gate; selector should classify build/runtime tooling changes at least advisory, and blocking if deployment/runtime behavior changes.
+Current gate state:
+- Platform frontend service/build/runtime changes select Platform baseline/ops gates.
+- Unmapped high-risk Platform source changes fail closed until a precise gate exists.
 
 ### Menu
 
@@ -128,10 +134,11 @@ Critical journeys:
 - Public menu/order surfaces if applicable.
 
 Current gate state:
-- No mainline business gate in the V selector.
+- No mature Menu business journey gate is available yet.
+- High-risk Menu backend/frontend source changes now fail closed as `UNMAPPED_HIGH_RISK_CHANGE` instead of passing generic code governance.
 
 Gap:
-- Add menu project adapter and at least one critical journey before treating menu changes as controlled.
+- Add Menu project adapter and at least one critical journey before treating Menu changes as controlled.
 - `.env` deletion must be reviewed as environment hygiene, not auto-fixed by product gates.
 
 ### KYC
@@ -145,11 +152,11 @@ Critical journeys:
 - Sensitive document handling and permission checks.
 
 Current gate state:
-- Not governed by current selector.
-- Git safe.directory ownership issue blocks reliable local status inspection.
+- No mature KYC business journey gate is available yet.
+- High-risk KYC backend/frontend source changes now fail closed as `UNMAPPED_HIGH_RISK_CHANGE` instead of passing generic code governance.
 
 Gap:
-- Fix repository ownership/safe-directory discovery before adding gates.
+- Fix repository ownership/safe-directory discovery and add KYC project adapter / critical journey gate before treating KYC changes as controlled.
 
 ### Deploy / Release / Runbooks
 
@@ -166,18 +173,23 @@ Critical journeys:
 Required gates:
 - `ecommerce-critical-journey-release-gate` — blocking for Ecommerce/platform release surfaces.
 
+Current gate state:
+- Deploy scripts, Docker/gateway config, PROD_DEPLOY_RUNBOOK, and release events select release/stability gates.
+
 Gap:
-- Dockerfile/deploy-script patterns should be explicitly added to selector where missing.
+- Production execution still requires real topology/public-content/runtime evidence; selector wiring alone is not prod closure.
 
 ## Selector maturity
 
 Blocking now:
 - Ecommerce Prep/Sandbox low-level.
-- Ecommerce release-wide critical journey for core backend/runtime surfaces.
+- Ecommerce release-wide critical journey for core backend/runtime/deploy surfaces.
+- Platform baseline/stability/financial/runtime gates for mapped shared Platform surfaces.
+- Fail-closed unmapped high-risk Menu/KYC/Product source changes.
 
-Advisory / not yet blocking:
-- Menu.
-- KYC.
+Advisory / not yet fully covered:
+- Menu and KYC have fail-closed selectors but still need mature business journey gates.
+- Full Pact/Broker-style can-i-deploy is not yet implemented; current contract coverage is OpenAPI/DTO/consumer-sweep oriented.
 - Platform frontend tooling.
 - CrossPlanet/List Strategy drafts.
 - Provider-live external checks.

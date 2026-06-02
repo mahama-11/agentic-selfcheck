@@ -11,6 +11,7 @@ required_ledgers:
   - platform-runtime-state-machine-baseline
   - platform-core-engineering-baseline
   - platform-ops-visible-baseline
+  - platform-stability-closed-loop-gates
   - ecommerce-critical-journey-release-gate
 high_risk_selector_features:
   - platform-runtime-business-integration-safety
@@ -18,4 +19,5 @@ high_risk_selector_features:
   - platform-runtime-state-machine-baseline
   - platform-core-engineering-baseline
   - platform-ops-visible-baseline
+  - platform-stability-closed-loop-gates
   - ecommerce-critical-journey-release-gate

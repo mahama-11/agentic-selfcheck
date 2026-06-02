@@ -521,7 +521,7 @@ def route_openapi_check(root: Path, changed_files: list[str], findings: list[dic
         for sig in signatures_to_check:
             ref = route_contract_reference(sig, spec_text)
             route_key = f"{sig['method']} {sig['path']}"
-            allowlisted_legacy_gap = not route_changed_files and route_key in (route_allowlist or set())
+            allowlisted_legacy_gap = route_key in (route_allowlist or set())
             if not ref['method_path']:
                 add(
                     findings,

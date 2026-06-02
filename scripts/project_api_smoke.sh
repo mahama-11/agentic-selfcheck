@@ -12,6 +12,9 @@ case "${PROJECT_ID}:${FEATURE_ID}" in
   v-workspace:platform-ops-visible-baseline)
     python3 scripts/platform_ops_visible_baseline_gate.py --project "$PROJECT_ID" --feature "$FEATURE_ID"
     ;;
+  v-workspace:ecommerce-runtime-observability-business-chain)
+    python3 scripts/ecommerce_runtime_observability_business_chain_gate.py --project "$PROJECT_ID" --feature "$FEATURE_ID"
+    ;;
   v-workspace:dev-seed-baseline|v-ecommerce-worktree:dev-seed-baseline)
     python3 scripts/v_seed_baseline_gate.py --project "$PROJECT_ID" --feature "$FEATURE_ID"
     ;;

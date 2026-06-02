@@ -1,9 +1,15 @@
 version: 1
 project: v-workspace
 description: >-
-  V workspace changed-file to business SelfCheck feature gate selector. Generic
-  governance events are not sufficient for product-critical Ecommerce changes;
-  this selector maps touched surfaces to required business feature gates.
+  V workspace Change Impact Selector: maps changed files and change intent to
+  affected domains, contracts, consumers, business journeys, required SelfCheck
+  gates, and evidence. Generic governance events are not sufficient for
+  product-critical or shared-Platform changes.
+selector_policy:
+  pr_push_dirty_tree: true
+  fail_closed_on_unmapped_high_risk: true
+  producer_only_api_closure_allowed: false
+  release_wide_critical_journeys: true
 features:
   ecommerce-frontend-style-governance:
     event: requirement.changed.v.ecommerce-frontend-style-governance
@@ -71,6 +77,12 @@ features:
     command: scripts/requirement-gate.sh platform-financial-business-consistency static requirement.changed.v.platform-financial-business-consistency
     blocking: true
     reason: Platform financial business-path consistency gate for wallet/metering/billing/quota/control/runtime charge/commercial/catalog/incentive invariants
+  platform-stability-closed-loop-gates:
+    event: requirement.changed.v.platform-stability-closed-loop-gates
+    groups: static
+    command: scripts/requirement-gate.sh platform-stability-closed-loop-gates static requirement.changed.v.platform-stability-closed-loop-gates
+    blocking: true
+    reason: Composite Platform stability closed-loop gate covering core contracts, runtime/provider/callback/result, financial/quota/metering, storage/audit observability, and Ecom/Menu/KYC consumer compile sweeps
 rules:
   - id: ecommerce-frontend-style-governance-surfaces
     description: Ecommerce frontend style-critical surfaces must run the shared style governance gate so style evolution is controlled by proposals/evidence rather than page-local drift.
@@ -157,6 +169,7 @@ rules:
       - platform-backend/internal/modules/catalog/**
       - platform-backend/internal/modules/quota/**
       - platform-backend/internal/modules/incentive/**
+      - platform-backend/internal/migration/menu_offerings_seed.go
     gates:
       - platform-financial-consistency-baseline
       - platform-financial-business-consistency
@@ -167,6 +180,38 @@ rules:
       - platform-backend/internal/modules/control/**
     gates:
       - platform-financial-business-consistency
+  - id: platform-stability-closed-loop-surfaces
+    description: Platform shared middle-layer changes must run the composite stability gate so core contracts, runtime/provider/callback/result, financial/quota/metering, storage/audit observability, and Ecom/Menu/KYC consumers are verified together.
+    patterns:
+      - platform-backend/internal/modules/runtime/**
+      - platform-backend/internal/modules/wallet/**
+      - platform-backend/internal/modules/metering/**
+      - platform-backend/internal/modules/billing/**
+      - platform-backend/internal/modules/quota/**
+      - platform-backend/internal/modules/control/**
+      - platform-backend/internal/modules/commercial/**
+      - platform-backend/internal/modules/catalog/**
+      - platform-backend/internal/modules/incentive/**
+      - platform-backend/internal/modules/storage/**
+      - platform-backend/internal/modules/assetstorage/**
+      - platform-backend/internal/modules/auth/**
+      - platform-backend/internal/modules/identity/**
+      - platform-backend/internal/modules/organization/**
+      - platform-backend/internal/modules/access/**
+      - platform-backend/internal/modules/audit/**
+      - platform-backend/internal/modules/diagnostics/**
+      - platform-backend/internal/migration/menu_offerings_seed.go
+      - menu-backend/internal/modules/auth/**
+      - menu-backend/internal/modules/user/**
+      - platform-backend/internal/observability/**
+      - platform-backend/internal/telemetry/**
+      - platform-backend/internal/router/**
+      - platform-backend/internal/routes/**
+      - platform-backend/docs/INTERNAL_API_CONTRACT.md
+      - platform-backend/docs/openapi/**
+      - platform-backend/docs/architecture/**
+    gates:
+      - platform-stability-closed-loop-gates
   - id: ecommerce-release-critical-surfaces
     description: Ecommerce product/runtime surfaces can break auth, SKU, generation, listing/export, delivery, or commercial journeys.
     patterns:
@@ -188,6 +233,91 @@ rules:
       - platform-backend/internal/modules/auth/**
     gates:
       - ecommerce-critical-journey-release-gate
+
+  - id: platform-api-contract-surfaces
+    description: Platform route/OpenAPI/internal API contract changes must run contract and stability gates before producer-only closure is accepted.
+    patterns:
+      - platform-backend/internal/router/**
+      - platform-backend/internal/routes/**
+      - platform-backend/docs/INTERNAL_API_CONTRACT.md
+      - platform-backend/docs/openapi/**
+      - platform-backend/docs/openapi.yaml
+      - platform-backend/docs/openapi.json
+    gates:
+      - platform-core-engineering-baseline
+      - platform-stability-closed-loop-gates
+  - id: ecommerce-api-contract-and-consumer-surfaces
+    description: Ecommerce API/DTO/type/service-layer changes require consumer sweep, affected frontend gates, and release critical journey evidence; backend producer tests alone are not closure.
+    patterns:
+      - ecommerce-backend/internal/router/**
+      - ecommerce-backend/internal/routes/**
+      - ecommerce-backend/docs/openapi/**
+      - ecommerce-backend/docs/openapi.yaml
+      - ecommerce-backend/docs/openapi.json
+      - ecommerce-frontend/src/services/**
+      - ecommerce-frontend/src/types/**
+      - ecommerce-frontend/contracts/**
+      - ecommerce-frontend/src/api/**
+    gates:
+      - ecommerce-critical-journey-release-gate
+      - ecommerce-large-source-locality-guard
+  - id: deployment-prod-bundle-and-runtime-surfaces
+    description: Deploy scripts, Docker/gateway config, and prod bundle/provenance changes must prove topology, public content, and affected release journeys.
+    patterns:
+      - tools/dev/**
+      - tools/prod/**
+      - tools/ops/**deploy**
+      - '**/Dockerfile'
+      - '**/Dockerfile.*'
+      - '**/docker-compose*.yml'
+      - '**/docker-compose*.yaml'
+      - '**/nginx*.conf'
+      - '**/PROD_DEPLOY_RUNBOOK.md'
+      - events/release-v-ecommerce.yaml
+      - events/release-v-platform.yaml
+    gates:
+      - ecommerce-critical-journey-release-gate
+      - platform-stability-closed-loop-gates
+  - id: frontend-build-runtime-contract-surfaces
+    description: Frontend build/runtime dependency and service-layer changes affect route/CTA/state/runtime evidence even when page files are unchanged.
+    patterns:
+      - platform-frontend/package.json
+      - platform-frontend/vite.config.*
+      - platform-frontend/src/services/**
+      - platform-frontend/src/api/**
+      - ecommerce-frontend/package.json
+      - ecommerce-frontend/vite.config.*
+      - ecommerce-frontend/src/services/**
+      - ecommerce-frontend/src/types/**
+      - menu-frontend/package.json
+      - menu-frontend/vite.config.*
+      - kyc-frontend/package.json
+      - kyc-frontend/vite.config.*
+    gates:
+      - ecommerce-critical-journey-release-gate
+  - id: menu-platform-compatibility-surfaces
+    description: Menu studio/template-center/platform-client source changes are product-facing Platform compatibility surfaces and must run the Platform ops-visible baseline instead of falling through as unmapped high-risk source edits.
+    patterns:
+      - menu-backend/internal/platform/**
+      - menu-backend/internal/config/**
+      - menu-backend/internal/modules/auth/**
+      - menu-backend/internal/modules/user/**
+      - menu-backend/internal/modules/studio/**
+      - menu-backend/internal/modules/templatecenter/**
+      - menu-backend/config.*.yaml
+      - menu-backend/scripts/menu-platform-compatibility-smoke.sh
+      - menu-backend/docs/architecture/**
+      - menu-backend/docs/BACKEND_GUIDE.md
+      - menu-frontend/src/pages/Studio.tsx
+      - menu-frontend/src/pages/studio/**
+      - menu-frontend/src/pages/dashboard/**
+      - menu-frontend/src/services/templateCenter.ts
+      - menu-frontend/src/store/studioStore.ts
+      - menu-frontend/src/types/studio.ts
+      - menu-frontend/src/types/templateCenter.ts
+      - menu-frontend/src/utils/studioCreativeSource.ts
+    gates:
+      - platform-ops-visible-baseline
   - id: ecommerce-prod-deploy-runbooks
     description: Explicit Ecommerce deploy/release artifacts must prove release-wide journey evidence.
     patterns:
@@ -212,3 +342,17 @@ rules:
       - ecommerce-frontend/src/types/product.ts
     gates:
       - ecommerce-v1-listing-export-gate
+
+unmatched_high_risk:
+  - id: ungoverned-product-source-change
+    message: High-risk V product source change has no mapped business gate; do not treat generic code checks as business QA.
+    recommended_action: Add/choose a SelfCheck feature gate and selector rule, or explicitly downgrade with human-approved PASS_WITH_NOTES.
+    patterns:
+      - menu-backend/internal/**
+      - menu-frontend/src/**
+      - kyc-backend/internal/**
+      - kyc-frontend/src/**
+      - platform-backend/internal/modules/**
+      - ecommerce-backend/internal/modules/**
+      - platform-frontend/src/services/**
+      - ecommerce-frontend/src/services/**

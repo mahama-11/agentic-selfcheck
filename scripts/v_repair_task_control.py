@@ -84,6 +84,7 @@ Finding type: `{task.get('finding_type')}`
 Severity: `{task.get('severity')}`
 Path: `{task.get('path')}`
 Decision: `{task.get('decision')}`
+Sandbox: `{json.dumps(task.get('sandbox') or {'required': task.get('sandbox_required')}, ensure_ascii=False)}`
 Sandbox required: `{task.get('sandbox_required')}`
 Worktree policy: `{task.get('worktree_policy')}`
 
@@ -266,6 +267,7 @@ def plan(v_root: Path, self_root: Path, limit: int, lane: str | None, project: s
             "project_path": t.get("project_path"),
             "path": t.get("path"),
             "status": t.get("status"),
+            "sandbox": t.get("sandbox") or {"required": t.get("sandbox_required")},
             "sandbox_required": t.get("sandbox_required"),
             "expected_verifiers": t.get("expected_verifiers"),
         } for t in selected],

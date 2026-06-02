@@ -29,6 +29,8 @@ def main() -> int:
         'large_changed_file_bytes_threshold': 'MAX_CHANGED_SOURCE_BYTES = 1024 * 1024' in source,
         'v_worktrees_discovered': "V_WORKTREES_ROOT.glob('*/*/.git')" in source,
         'failure_closed_loop_present': 'run_failure_closed_loop()' in source,
+        'git_status_timeout_fail_closed': 'GIT_STATUS_TIMEOUT' in source and 'status_failure' in source,
+        'subprocess_timeout_caught': 'except subprocess.TimeoutExpired' in source,
     }
     result = {'status': 'PASS' if all(checks.values()) else 'FAIL', 'checks': checks, 'script': str(script)}
     if args.format == 'json':

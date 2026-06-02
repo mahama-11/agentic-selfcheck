@@ -42,6 +42,7 @@ def match_pattern(path: str, pattern: str) -> bool:
 def select_gates(files: list[str], config: dict[str, Any]) -> dict[str, Any]:
     feature_defs = config.get('features') or {}
     rules = config.get('rules') or []
+    unmatched_high_risk = config.get('unmatched_high_risk') or []
     selected: dict[str, dict[str, Any]] = {}
     findings: list[dict[str, Any]] = []
     normalized = sorted({norm(f) for f in files if f and norm(f)})
@@ -72,6 +73,18 @@ def select_gates(files: list[str], config: dict[str, Any]) -> dict[str, Any]:
                     if file not in entry['matched_files']:
                         entry['matched_files'].append(file)
         if not matched:
+            for risk in unmatched_high_risk:
+                patterns = risk.get('patterns') or []
+                if any(match_pattern(file, pattern) for pattern in patterns):
+                    findings.append({
+                        'severity': 'error',
+                        'file': file,
+                        'rule': risk.get('id'),
+                        'failure_type': 'UNMAPPED_HIGH_RISK_CHANGE',
+                        'message': risk.get('message') or 'high-risk changed file has no mapped business gate',
+                        'recommended_action': risk.get('recommended_action') or 'add a selector rule and executable SelfCheck gate before claiming closure',
+                    })
+                    break
             continue
 
     status = 'PASS' if not findings else 'FAIL'
