@@ -1,0 +1,535 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VEvidenceContract",
+  "type": "object",
+  "required": [
+    "feature_id",
+    "change_scope",
+    "affected_services",
+    "affected_routes",
+    "auth_context",
+    "real_api_evidence",
+    "browser_evidence",
+    "contract_smoke_evidence",
+    "prod_dev_log_evidence",
+    "negative_cases",
+    "consumer_sweep",
+    "risk_level",
+    "rollback_path",
+    "blind_spots",
+    "owner_role",
+    "final_status"
+  ],
+  "properties": {
+    "feature_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "change_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "affected_services": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "affected_routes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "auth_context": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "real_api_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "PASS",
+              "PASS_WITH_NOTES",
+              "PARTIAL_PASS",
+              "NOT_RUN",
+              "BLOCKED",
+              "FAIL",
+              "REQUIRED",
+              "COVERED_BY_SCHEMA"
+            ]
+          },
+          "command": {
+            "type": "string"
+          },
+          "report_path": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "required": {},
+          "route": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "required_fields": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": true,
+        "anyOf": [
+          {
+            "required": [
+              "status"
+            ]
+          },
+          {
+            "required": [
+              "command"
+            ]
+          },
+          {
+            "required": [
+              "report_path"
+            ]
+          },
+          {
+            "required": [
+              "path"
+            ]
+          },
+          {
+            "required": [
+              "type"
+            ]
+          },
+          {
+            "required": [
+              "kind"
+            ]
+          },
+          {
+            "required": [
+              "route"
+            ]
+          },
+          {
+            "required": [
+              "fields"
+            ]
+          },
+          {
+            "required": [
+              "environment"
+            ]
+          },
+          {
+            "required": [
+              "required_fields"
+            ]
+          }
+        ]
+      }
+    },
+    "browser_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "PASS",
+              "PASS_WITH_NOTES",
+              "PARTIAL_PASS",
+              "NOT_RUN",
+              "BLOCKED",
+              "FAIL",
+              "REQUIRED",
+              "COVERED_BY_SCHEMA"
+            ]
+          },
+          "command": {
+            "type": "string"
+          },
+          "report_path": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "required": {},
+          "route": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "required_fields": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": true,
+        "anyOf": [
+          {
+            "required": [
+              "status"
+            ]
+          },
+          {
+            "required": [
+              "command"
+            ]
+          },
+          {
+            "required": [
+              "report_path"
+            ]
+          },
+          {
+            "required": [
+              "path"
+            ]
+          },
+          {
+            "required": [
+              "type"
+            ]
+          },
+          {
+            "required": [
+              "kind"
+            ]
+          },
+          {
+            "required": [
+              "route"
+            ]
+          },
+          {
+            "required": [
+              "fields"
+            ]
+          },
+          {
+            "required": [
+              "environment"
+            ]
+          },
+          {
+            "required": [
+              "required_fields"
+            ]
+          }
+        ]
+      }
+    },
+    "contract_smoke_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "PASS",
+              "PASS_WITH_NOTES",
+              "PARTIAL_PASS",
+              "NOT_RUN",
+              "BLOCKED",
+              "FAIL",
+              "REQUIRED",
+              "COVERED_BY_SCHEMA"
+            ]
+          },
+          "command": {
+            "type": "string"
+          },
+          "report_path": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "required": {},
+          "route": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "required_fields": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": true,
+        "anyOf": [
+          {
+            "required": [
+              "status"
+            ]
+          },
+          {
+            "required": [
+              "command"
+            ]
+          },
+          {
+            "required": [
+              "report_path"
+            ]
+          },
+          {
+            "required": [
+              "path"
+            ]
+          },
+          {
+            "required": [
+              "type"
+            ]
+          },
+          {
+            "required": [
+              "kind"
+            ]
+          },
+          {
+            "required": [
+              "route"
+            ]
+          },
+          {
+            "required": [
+              "fields"
+            ]
+          },
+          {
+            "required": [
+              "environment"
+            ]
+          },
+          {
+            "required": [
+              "required_fields"
+            ]
+          }
+        ]
+      }
+    },
+    "prod_dev_log_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "PASS",
+              "PASS_WITH_NOTES",
+              "PARTIAL_PASS",
+              "NOT_RUN",
+              "BLOCKED",
+              "FAIL",
+              "REQUIRED",
+              "COVERED_BY_SCHEMA"
+            ]
+          },
+          "command": {
+            "type": "string"
+          },
+          "report_path": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "required": {},
+          "route": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "required_fields": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": true,
+        "anyOf": [
+          {
+            "required": [
+              "status"
+            ]
+          },
+          {
+            "required": [
+              "command"
+            ]
+          },
+          {
+            "required": [
+              "report_path"
+            ]
+          },
+          {
+            "required": [
+              "path"
+            ]
+          },
+          {
+            "required": [
+              "type"
+            ]
+          },
+          {
+            "required": [
+              "kind"
+            ]
+          },
+          {
+            "required": [
+              "route"
+            ]
+          },
+          {
+            "required": [
+              "fields"
+            ]
+          },
+          {
+            "required": [
+              "environment"
+            ]
+          },
+          {
+            "required": [
+              "required_fields"
+            ]
+          }
+        ]
+      }
+    },
+    "negative_cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "consumer_sweep": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "risk_level": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "rollback_path": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "blind_spots": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "owner_role": {
+      "type": "string",
+      "minLength": 1
+    },
+    "final_status": {
+      "enum": [
+        "PASS",
+        "PASS_WITH_NOTES",
+        "PARTIAL_PASS",
+        "BLOCKED",
+        "FAIL"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

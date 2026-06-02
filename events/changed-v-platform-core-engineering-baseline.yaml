@@ -1,0 +1,20 @@
+id: changed-v-platform-core-engineering-baseline
+event: requirement.changed.v.platform-core-engineering-baseline
+description: Gate Platform core shared-capability changes through Platform Phase-1 Engineering Hardening baseline.
+feature: platform-core-engineering-baseline
+groups:
+  - static
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - raw_status_write_or_unscoped_idempotency
+  - route_openapi_contract_drift

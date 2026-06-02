@@ -1,0 +1,20 @@
+id: changed-ecommerce-frontend-style-governance
+event: requirement.changed.v.ecommerce-frontend-style-governance
+description: Gate Agent Ecommerce frontend style, acceptance/TDD, and visual-consistency requirement changes.
+feature: ecommerce-frontend-style-governance
+groups:
+  - static
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - global_style_change_without_accepted_proposal
+  - product_flow_ui_change_without_visual_evidence

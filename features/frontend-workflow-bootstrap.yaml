@@ -1,0 +1,33 @@
+id: frontend-workflow-bootstrap
+project: agentic-selfcheck
+description: Bootstrap C/D frontend workflows with prototype templates, project adapter, workflow state, and evidence manifest.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+- frontend-runtime
+- ai-generation
+must_pass:
+  static:
+  - frontend-workflow-bootstrap-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- Human acceptance is still required after bootstrap; generated workflows are not implementation-ready.
+evidence_required:
+- scripts/frontend_workflow_bootstrap.py
+- scripts/frontend_workflow_bootstrap_smoke.py
+- templates/frontend/workflow-state/FRONTEND_WORKFLOW_STATE.json
+- templates/frontend/evidence-manifest/FRONTEND_EVIDENCE_MANIFEST.json
+risk_dimensions:
+- frontend
+- workflow-bootstrap
+- evidence-initialization
+- fail-closed
+governance:
+  generic: true
+  bootstrap_only: true

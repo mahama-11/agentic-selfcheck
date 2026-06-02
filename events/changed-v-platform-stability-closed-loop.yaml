@@ -1,0 +1,23 @@
+id: changed-v-platform-stability-closed-loop
+event: requirement.changed.v.platform-stability-closed-loop-gates
+description: Gate Platform shared stability closure through core contracts, runtime/provider/callback/result, financial/quota/metering, storage/audit observability, and Ecom/Menu/KYC consumers.
+feature: platform-stability-closed-loop-gates
+groups:
+  - static
+  - api
+  - browser
+  - evidence
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - failing_consumer_compile
+  - selector_mapping_missing

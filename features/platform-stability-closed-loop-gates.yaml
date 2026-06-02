@@ -1,0 +1,48 @@
+id: platform-stability-closed-loop-gates
+project: v-workspace
+description: "Composite Platform stability closed-loop gate: core API/DTO/state contracts, runtime/provider/callback/result, financial quota/metering/grant-policy, storage/audit/observability manifest, and Ecom/Menu/KYC consumer compile sweep."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - continuous-governance
+target_services:
+  platform: platform-backend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - platform-stability-closed-loop-static
+  api:
+    - platform-stability-closed-loop-api
+  browser:
+    - platform-stability-closed-loop-browser
+  evidence:
+    - platform-stability-closed-loop-evidence
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+governance:
+  contract:
+    phase: platform-shared-stability-closed-loop
+    blocking_domains:
+      - auth_org_rbac_contracts
+      - wallet_quota_grant_policy_metering
+      - runtime_provider_fallback_callback_result_assets
+      - storage_registry_asset_binding
+      - audit_observability_request_trace
+      - ecommerce_menu_kyc_consumer_sweep
+    fail_closed:
+      - missing_expected_test
+      - failing_platform_gate
+      - failing_consumer_compile
+      - missing_selector_mapping
+      - missing_observability_or_repairtask_contract
+human_required:
+  - Any FAIL/BLOCKED result is not a partial completion; it must become RepairTask/fix work before merge or deploy.
+  - Live prod/dev deployment claims additionally require platform-ops-visible-baseline api,evidence and product journey smoke in the target lane.
+evidence_required:
+  - reports/platform-stability-closed-loop-gates/platform-stability-closed-loop-static.json
+  - reports/platform-stability-closed-loop-gates/platform-core-engineering-baseline.json

@@ -1,6 +1,6 @@
 id: frontend-risk-routing
 project: agentic-selfcheck
-description: Risk router that sends C/D frontend work into the prototype-first design-quality, lane, coverage, freeze, and parity gates before production acceptance.
+description: Risk router that sends C/D frontend work into the prototype-first design-quality, existing-product intake, lane, coverage, freeze, and parity gates before production acceptance.
 level_target: L3.5
 repair_policy: default-repair-policy
 depends_on:
@@ -20,7 +20,6 @@ evidence_required:
 - scripts/frontend_risk_router.py
 - scripts/frontend_risk_routing_smoke.py
 - verifiers/frontend-risk-routing-gate.yaml
-- reports/frontend-risk-routing/latest.json
 risk_dimensions:
 - frontend
 - orchestration
@@ -37,6 +36,9 @@ governance:
     D: prototype_first_required_with_human_signoff
   required_gates_for_cd_production:
   - frontend-design-quality-pack-gate
+  - frontend-existing-product-intake-gate
+  - frontend-prototype-foundation-ledger-gate
+  - frontend-prototype-iteration-policy-gate
   - frontend-design-lane-generation-gate
   - frontend-high-fidelity-prototype-gate
   - frontend-prototype-freeze-gate

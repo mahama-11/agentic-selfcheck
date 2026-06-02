@@ -1,0 +1,20 @@
+id: changed-v-ai-native-governance-foundation
+event: requirement.changed.v-ai-native-governance-foundation
+description: Gate V Evidence Contract, API contract/client generation, GenAI observability, GenAI security/evaluation, release ring, cron, and branch hygiene governance baseline.
+feature: v-ai-native-governance-foundation
+groups:
+  - static
+  - evidence
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - missing_required_evidence
+  - failing_governance_foundation_gate
+  - selector_mapping_missing

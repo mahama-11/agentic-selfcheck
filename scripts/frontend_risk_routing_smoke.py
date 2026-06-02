@@ -12,6 +12,9 @@ depends_on: [review-gates]
 must_pass:
   static:
     - frontend-design-quality-pack-gate
+    - frontend-existing-product-intake-gate
+    - frontend-prototype-foundation-ledger-gate
+    - frontend-prototype-iteration-policy-gate
     - frontend-design-lane-generation-gate
     - frontend-high-fidelity-prototype-gate
     - frontend-prototype-freeze-gate
@@ -89,7 +92,7 @@ governance:
 '''
 
 TASK_C = {
-    'id': 'frontend-risk-routing-product-center-redesign',
+    'id': 'frontend-risk-routing-smoke-product-center-redesign',
     'title': 'Redesign ecommerce Product Center workbench page',
     'description': 'Complex frontend page redesign with new interaction flow and visual hierarchy.',
     'changed_files': ['ecommerce-frontend/src/pages/ProductCenter.tsx'],
@@ -135,6 +138,31 @@ def main() -> int:
     outside=Path('/tmp/frontend-risk-routing-outside-task.json')
     outside.write_text(json.dumps(TASK_C), encoding='utf-8')
 
+    expected_wf=root/'.hermes/workflows/frontend-risk-routing-smoke-product-center-redesign'
+    if expected_wf.exists(): shutil.rmtree(expected_wf)
+    symlink_task=smoke/'task-symlink.json'; symlink_task.write_text(json.dumps({**TASK_C, 'id':'frontend-risk-routing-symlink-reuse'}), encoding='utf-8')
+    child_symlink_task=smoke/'task-child-symlink.json'; child_symlink_task.write_text(json.dumps({**TASK_C, 'id':'frontend-risk-routing-child-symlink-reuse'}), encoding='utf-8')
+    backslash_task=smoke/'task-backslash-traversal.json'; backslash_task.write_text(json.dumps({**TASK_C, 'id':'frontend-risk-routing-backslash-traversal', 'project':'ecommerce-frontend', 'project_root':'ecommerce-frontend', 'changed_files':['..\\ecommerce-frontend\\src\\pages\\Evil.tsx']}), encoding='utf-8')
+    legacy_task=smoke/'task-legacy-incomplete.json'; legacy_task.write_text(json.dumps({**TASK_C, 'id':'frontend-risk-routing-legacy-incomplete-reuse'}), encoding='utf-8')
+    symlink_wf=root/'.hermes/workflows/frontend-risk-routing-symlink-reuse'
+    if symlink_wf.exists() or symlink_wf.is_symlink():
+        if symlink_wf.is_symlink(): symlink_wf.unlink()
+        else: shutil.rmtree(symlink_wf)
+    symlink_wf.symlink_to('/tmp')
+    child_wf=root/'.hermes/workflows/frontend-risk-routing-child-symlink-reuse'
+    if child_wf.exists(): shutil.rmtree(child_wf)
+    child_wf.mkdir(parents=True, exist_ok=True)
+    (child_wf/'FRONTEND_WORKFLOW_STATE.json').write_text('{}', encoding='utf-8')
+    (child_wf/'FRONTEND_EVIDENCE_MANIFEST.json').write_text('{}', encoding='utf-8')
+    (child_wf/'PROJECT_ADAPTER.yaml').write_text('name: ecommerce-frontend\nroot: ecommerce-frontend\n', encoding='utf-8')
+    (child_wf/'evil-link').symlink_to('/tmp')
+    legacy_wf=root/'.hermes/workflows/frontend-risk-routing-legacy-incomplete-reuse'
+    if legacy_wf.exists(): shutil.rmtree(legacy_wf)
+    legacy_wf.mkdir(parents=True, exist_ok=True)
+    (legacy_wf/'FRONTEND_WORKFLOW_STATE.json').write_text('{}', encoding='utf-8')
+    (legacy_wf/'FRONTEND_EVIDENCE_MANIFEST.json').write_text('{}', encoding='utf-8')
+    (legacy_wf/'PROJECT_ADAPTER.yaml').write_text('name: ecommerce-frontend\nroot: ecommerce-frontend\n', encoding='utf-8')
+
     cases=[]; ok=True
     commands=[
         ('good-production-feature', True, ['scripts/frontend_risk_router.py','--root','.','--feature-file',str(good),'--format','json']),
@@ -147,13 +175,27 @@ def main() -> int:
         ('task-vue-routes-to-prototype-first', True, ['scripts/frontend_risk_router.py','--root','.','--task-json',str(task_vue),'--expect-risk','C','--format','json']),
         ('bad-task-json-outside-root', False, ['scripts/frontend_risk_router.py','--root','.','--task-json',str(outside),'--format','json']),
         ('init-c-workflow', True, ['scripts/frontend_risk_router.py','--root','.','--task-json',str(task_c),'--init-workflow','--format','json']),
+        ('bad-symlink-workflow-reuse', False, ['scripts/frontend_risk_router.py','--root','.','--task-json',str(symlink_task),'--init-workflow','--format','json']),
+        ('bad-child-symlink-workflow-reuse', False, ['scripts/frontend_risk_router.py','--root','.','--task-json',str(child_symlink_task),'--init-workflow','--format','json']),
+        ('bad-backslash-traversal-task', False, ['scripts/frontend_risk_router.py','--root','.','--task-json',str(backslash_task),'--init-workflow','--format','json']),
+        ('bad-legacy-incomplete-workflow-reuse', False, ['scripts/frontend_risk_router.py','--root','.','--task-json',str(legacy_task),'--init-workflow','--format','json']),
     ]
     for name, should_pass, cmd in commands:
         passed, stdout, stderr, rc=run(cmd, root)
+        if name == 'task-c-routes-to-prototype-first' and passed:
+            try:
+                payload=json.loads(stdout)
+                route=payload['results'][0].get('route', [])
+                if 'existing-product-intake' not in route or 'prototype-foundation-ledger' not in route or 'prototype-iteration-policy' not in route: passed=False
+            except Exception:
+                passed=False
         if passed != should_pass: ok=False
         cases.append({'case':name,'expected':'PASS' if should_pass else 'FAIL','actual':'PASS' if passed else 'FAIL','returncode':rc,'stdout':stdout[-1600:],'stderr':stderr[-1600:]})
-    expected_wf=root/'.hermes/workflows/frontend-risk-routing-product-center-redesign'
-    wf_ok=(expected_wf/'PROTOTYPE_COVERAGE.md').exists() and (expected_wf/'README.md').exists()
+    expected_wf=root/'.hermes/workflows/frontend-risk-routing-smoke-product-center-redesign'
+    wf_ok=(expected_wf/'PROTOTYPE_COVERAGE.md').exists() and (expected_wf/'README.md').exists() and (expected_wf/'FRONTEND_WORKFLOW_STATE.json').exists() and (expected_wf/'FRONTEND_EVIDENCE_MANIFEST.json').exists() and (expected_wf/'PROJECT_ADAPTER.yaml').exists() and (expected_wf/'PROTOTYPE_FOUNDATION_LEDGER.md').exists() and (expected_wf/'PROTOTYPE_ITERATION_POLICY.md').exists()
+    for cleanup in (symlink_wf, child_wf, legacy_wf):
+        if cleanup.is_symlink(): cleanup.unlink()
+        elif cleanup.exists(): shutil.rmtree(cleanup)
     if not wf_ok: ok=False
     cases.append({'case':'init-created-prototype-workflow','expected':'PASS','actual':'PASS' if wf_ok else 'FAIL','workflow':str(expected_wf)})
     result={'status':'PASS' if ok else 'FAIL','cases':cases}

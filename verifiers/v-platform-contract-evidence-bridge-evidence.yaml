@@ -1,0 +1,6 @@
+id: v-platform-contract-evidence-bridge-evidence
+kind: evidence
+description: "Verify Platform shared capability bridge evidence exists."
+command: "python3 -m selfcheck audit --root . --feature {feature.id} --strict-missing"
+evidence:
+  - platform_shared_capability_evidence

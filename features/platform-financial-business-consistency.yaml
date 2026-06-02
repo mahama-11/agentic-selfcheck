@@ -1,0 +1,54 @@
+id: platform-financial-business-consistency
+project: v-workspace
+description: "Dedicated Platform financial business-consistency gate using existing wallet, metering, quota/control, runtime charge-session, commercial, catalog, and incentive Go tests."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - continuous-governance
+target_services:
+  platform: platform-backend
+must_pass:
+  static:
+    - platform-financial-business-consistency-static
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Financial/business-path changes must preserve wallet ledger idempotency, bucket expiry rules, settlement/finalize idempotency, quota reservation lifecycle, charge-session binding, catalog visibility, and incentive settlement/redemption behavior.
+  - If existing targeted Go coverage is removed or renamed, this gate must fail closed and be updated in the same change rather than silently falling back to static scanner evidence.
+risk_dimensions:
+  - wallet-ledger-debit-idempotency
+  - wallet-expired-bucket-exclusion
+  - metering-wallet-quota-billing-settlement
+  - metering-finalize-idempotency
+  - control-reserve-commit-release-idempotency
+  - runtime-charge-session-terminal-binding
+  - commercial-catalog-visible-baseline
+  - incentive-channel-settlement-idempotency
+governance:
+  trigger_policy:
+    required_for:
+      - any change under platform-backend/internal/modules/wallet
+      - any change under platform-backend/internal/modules/metering
+      - any change under platform-backend/internal/modules/billing
+      - any change under platform-backend/internal/modules/commercial
+      - any change under platform-backend/internal/modules/catalog
+      - any change under platform-backend/internal/modules/quota
+      - any change under platform-backend/internal/modules/incentive
+      - runtime charge-session adjacent changes under platform-backend/internal/modules/runtime
+      - platform-backend/internal/modules/control quota or reservation changes
+    default_command: "cd /root/work/agentic-selfcheck && scripts/requirement-gate.sh platform-financial-business-consistency static requirement.changed.v.platform-financial-business-consistency"
+    fail_policy: "BLOCK merge/deploy on any targeted Go test failure, timeout, BLOCK, or NEEDS_REPAIR; do not replace with only static source review."
+  guardrails:
+    - "Wallet debit/idempotency and expired-bucket tests must remain green for ledger correctness."
+    - "Metering wallet/quota/billing settlement and finalize idempotency tests must remain green for charge traceability."
+    - "Control reserve/commit/release idempotency tests must remain green for quota/credit lifecycle correctness."
+    - "Runtime charge-session idempotency and terminal binding tests must remain green for commercial correctness."
+    - "Commercial/catalog visible baseline tests must remain green where existing repo tests cover them."
+    - "Incentive channel settlement/idempotency and commission redemption tests must remain green for referral/revenue-share correctness."
+evidence_required:
+  - reports/platform-financial-business-consistency/platform-financial-business-consistency-static.json

@@ -1,0 +1,21 @@
+id: changed-v-menu-contract-evidence-bridge
+event: requirement.changed.v-menu-contract-evidence-bridge
+description: Gate Menu Studio core-chain OpenAPI/frontend consumer readiness and V Evidence Contract bridge.
+feature: v-menu-contract-evidence-bridge
+groups:
+  - static
+  - evidence
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - missing_required_evidence
+  - menu_openapi_missing_core_route
+  - real_smoke_requested_without_safe_lane
+  - generated_client_drift

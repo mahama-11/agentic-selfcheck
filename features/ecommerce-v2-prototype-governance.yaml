@@ -1,0 +1,40 @@
+id: ecommerce-v2-prototype-governance
+project: agentic-selfcheck
+description: Concrete Ecommerce V2 prototype governance entrypoint; default manifest runs foundation, business-backbone, interaction-affordance, growth, change-intent, and Current+Kimi dual-model gates without relying on agent memory.
+level_target: L3
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+must_pass:
+  static:
+  - ecommerce-v2-prototype-governance-entrypoint
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- Human direction acceptance remains required after executable checks pass.
+evidence_required:
+- scripts/prototype_governance_gate.py
+- scripts/ecommerce_v2_prototype_governance_entrypoint.sh
+- scripts/prototype_business_backbone_gate.py
+- scripts/prototype_interaction_affordance_gate.py
+- scripts/prototype_change_intent_gate.py
+- scripts/prototype_dual_model_gate.py
+- verifiers/ecommerce-v2-prototype-governance-entrypoint.yaml
+- /root/work/v/.hermes/workflows/ecommerce-v2-interaction-redesign/PROTOTYPE_GOVERNANCE_MANIFEST.env
+- /root/work/v/.hermes/workflows/ecommerce-v2-interaction-redesign/00-PROTOTYPE-GOVERNANCE-ENTRYPOINT.md
+risk_dimensions:
+- frontend
+- prototype
+- governance
+- non-regression
+governance:
+  concrete_workflow: /root/work/v/.hermes/workflows/ecommerce-v2-interaction-redesign
+  mandatory_triggers:
+  - before_next_prototype_lane
+  - before_user_presentation
+  - after_user_acceptance_or_rejection
+  - before_prototype_freeze

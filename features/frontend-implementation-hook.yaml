@@ -1,0 +1,37 @@
+id: frontend-implementation-hook
+project: agentic-selfcheck
+description: Wire V frontend implementation change trigger to auto-bootstrap frontend workflow and enforce the before-implementation hard stop.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+- frontend-runtime
+- ai-generation
+must_pass:
+  static:
+  - frontend-implementation-hook-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- C/D frontend implementation changes auto-bootstrap a workflow, but still require human acceptance before implementation readiness.
+evidence_required:
+- scripts/v_continuous_governance_trigger.py
+- scripts/frontend_implementation_hook_smoke.py
+- scripts/frontend_before_implementation_gate.py
+- scripts/frontend_risk_router.py
+- scripts/frontend_workflow_bootstrap.py
+risk_dimensions:
+- frontend
+- implementation-readiness
+- governance-trigger
+- fail-closed
+governance:
+  generic: true
+  trigger_flags:
+  - --enforce-frontend-implementation
+  - --auto-bootstrap-frontend-workflow
+  - --frontend-workflow

@@ -8,6 +8,9 @@ import yaml
 
 REQUIRED_PRODUCTION_GATES = [
     'frontend-design-quality-pack-gate',
+    'frontend-existing-product-intake-gate',
+    'frontend-prototype-foundation-ledger-gate',
+    'frontend-prototype-iteration-policy-gate',
     'frontend-design-lane-generation-gate',
     'frontend-high-fidelity-prototype-gate',
     'frontend-prototype-freeze-gate',
@@ -148,6 +151,9 @@ def classify_task(task: dict[str, Any]) -> dict[str, Any]:
     if frontend and risk in {'C','D'}:
         route=[
             'design-quality-pack',
+            'existing-product-intake',
+            'prototype-foundation-ledger',
+            'prototype-iteration-policy',
             'design-lane-generation',
             'high-fidelity-prototype-coverage-gate',
             'prototype-freeze-before-implementation',
@@ -161,16 +167,71 @@ def classify_task(task: dict[str, Any]) -> dict[str, Any]:
     return {'status':'PASS','scope':'task','task':task.get('id') or task.get('title'),'frontend':frontend,'risk':risk,'reasons':reasons,'route':route,'required_gates':required_gates}
 
 
-def init_workflow(root: Path, task: dict[str, Any], classification: dict[str, Any]) -> str | None:
+def unsafe_changed_file(raw: str) -> bool:
+    p = str(raw).strip().replace('\\','/')
+    return (not p) or p.startswith('/') or any(part in {'..', ''} for part in p.split('/'))
+
+
+def infer_project(task: dict[str, Any]) -> tuple[str, str]:
+    project = str(task.get('project') or '').strip()
+    project_root = str(task.get('project_root') or '').strip()
+    files=[str(x).replace('\\','/') for x in task.get('changed_files', []) if isinstance(x, str)]
+    if not project and files:
+        project = files[0].split('/')[0]
+    if not project_root:
+        project_root = project or '.'
+    return project or 'unspecified', project_root
+
+
+def workflow_safe_to_reuse(workflow: Path, root: Path) -> tuple[bool, str]:
+    governed = (root / '.hermes/workflows').resolve()
+    try:
+        resolved = workflow.resolve()
+        resolved.relative_to(governed)
+    except Exception:
+        return False, 'workflow must stay under governed .hermes/workflows'
+    cur = workflow
+    while cur != governed and cur != cur.parent:
+        if cur.is_symlink():
+            return False, 'workflow path must not contain symlinks'
+        cur = cur.parent
+    if any(p.is_symlink() for p in workflow.rglob('*')):
+        return False, 'workflow must not contain symlinked files'
+    critical = ['FRONTEND_WORKFLOW_STATE.json', 'FRONTEND_EVIDENCE_MANIFEST.json', 'PROJECT_ADAPTER.yaml', 'PROJECT_CONTEXT.md', 'EXISTING_PRODUCT_BASELINE.md', 'API_BACKEND_FEASIBILITY_MAP.md', 'PRODUCT_SURFACE_LANGUAGE_RULES.md', 'PROTOTYPE_REQUIREMENT_TRACE.md', 'PROTOTYPE_FOUNDATION_LEDGER.md', 'PROTOTYPE_ITERATION_POLICY.md']
+    missing = [name for name in critical if not (resolved / name).exists()]
+    if missing:
+        return False, 'workflow already exists but is not bootstrap-complete: ' + ', '.join(missing)
+    return True, ''
+
+
+def init_workflow(root: Path, task: dict[str, Any], classification: dict[str, Any], *, force: bool = False) -> str | None:
     if not classification.get('frontend') or classification.get('risk') not in {'C','D'}:
         return None
+    unsafe = [str(x) for x in task.get('changed_files', []) if isinstance(x, str) and unsafe_changed_file(x)]
+    if unsafe:
+        raise RuntimeError('task changed_files contain unsafe paths: ' + ', '.join(unsafe[:3]))
     name=str(task.get('id') or task.get('title') or 'frontend-task')
     title=str(task.get('title') or name)
-    cmd=[sys.executable,'scripts/init_frontend_workflow.py','--root',str(root),'--name',name,'--risk',classification['risk'],'--project',str(task.get('project','unspecified')),'--title',title,'--force']
-    cp=subprocess.run(cmd, cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", name.strip()).strip("-").lower()
+    slug = re.sub(r"-+", "-", slug) or 'frontend-task'
+    workflow = root / '.hermes/workflows' / slug
+    if workflow.exists() and not force:
+        ok, reason = workflow_safe_to_reuse(workflow, root)
+        if ok:
+            return str(workflow.resolve())
+        raise RuntimeError(reason + f': {workflow}')
+    project, project_root = infer_project(task)
+    cmd=[sys.executable,'scripts/frontend_workflow_bootstrap.py','--root',str(root),'--name',name,'--risk',classification['risk'],'--project',project,'--project-root',project_root,'--title',title,'--format','json']
+    if force:
+        cmd.append('--force')
+    cp=subprocess.run(cmd, cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=180)
     if cp.returncode != 0:
-        raise RuntimeError(cp.stderr.strip() or cp.stdout.strip() or 'init_frontend_workflow failed')
-    return cp.stdout.strip().splitlines()[-1]
+        raise RuntimeError(cp.stderr.strip() or cp.stdout.strip() or 'frontend_workflow_bootstrap failed')
+    try:
+        payload=json.loads(cp.stdout)
+        return str(payload.get('workflow') or workflow)
+    except Exception:
+        return str(workflow)
 
 
 def main() -> int:
@@ -180,7 +241,8 @@ def main() -> int:
     ap.add_argument('--scan-features', action='store_true')
     ap.add_argument('--task-json')
     ap.add_argument('--expect-risk', choices=['A','B','C','D'])
-    ap.add_argument('--init-workflow', action='store_true')
+    ap.add_argument('--init-workflow', action='store_true', help='For C/D frontend task JSON, bootstrap workflow state/manifest/adapter automatically.')
+    ap.add_argument('--force-init-workflow', action='store_true', help='Allow bootstrap to overwrite generated workflow files; default is non-destructive reuse/fail-closed.')
     ap.add_argument('--format', choices=['json','text'], default='json')
     args=ap.parse_args()
     root=Path(args.root).resolve()
@@ -209,7 +271,7 @@ def main() -> int:
                 res.setdefault('findings', []).append(finding('error', str(task_path), f'expected risk {args.expect_risk}, got {res["risk"]}'))
             if args.init_workflow:
                 try:
-                    res['initialized_workflow']=init_workflow(root, task, res)
+                    res['initialized_workflow']=init_workflow(root, task, res, force=args.force_init_workflow)
                 except Exception as exc:
                     res['status']='FAIL'; res.setdefault('findings', []).append(finding('error', str(task_path), str(exc)))
             results.append(res); findings.extend(res.get('findings', []))

@@ -1,0 +1,33 @@
+id: crossplanet-listing-strategy-gate-repair
+project: v-workspace
+description: Repaired same-run root-aware gate for CrossPlanet/List Strategy worktrees. Runs focused backend listing-strategy tests and frontend typecheck/build from explicit intended roots before permitting repair classification.
+level_target: L3
+repair_policy: default-repair-policy
+depends_on:
+  - continuous-governance
+target_services:
+  frontend: ecommerce-frontend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - crossplanet-listing-strategy-gate-repair-static
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Human approval is required before merging or deploying CrossPlanet product worktrees after gates pass.
+evidence_required:
+  - features/crossplanet-listing-strategy-gate-repair.yaml
+  - verifiers/crossplanet-listing-strategy-gate-repair-static.yaml
+  - scripts/crossplanet_gate_repair_quarantine.py
+risk_dimensions:
+  - mixed-root-evidence
+  - stale-report-false-pass
+  - brittle-browser-copy-checks
+  - product-worktree-quarantine
+governance:
+  quarantine_gate: false
+  merge_policy: "Do not merge or deploy CrossPlanet product worktrees until this explicit-root same-run gate passes and HITL approval is recorded."

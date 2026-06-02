@@ -1,0 +1,8 @@
+id: frontend-existing-product-intake-gate
+kind: static
+description: Validate existing-product prototype intake templates, workflow evidence, backend feasibility mapping, and user-facing language boundary checks.
+command: scripts/frontend_existing_product_intake_smoke.py --root . --format json
+evidence:
+- scripts/frontend_existing_product_intake_gate.py
+- scripts/frontend_existing_product_intake_smoke.py
+- templates/frontend/existing-product-intake/

@@ -1,0 +1,6 @@
+id: v-contract-client-evidence-bridge-evidence
+kind: evidence
+description: "Verify Ecommerce contract-client V Evidence Contract report exists and required workflow evidence is present."
+command: "python3 -m selfcheck audit --root . --feature {feature.id} --strict-missing"
+evidence:
+  - evidence_contract_report

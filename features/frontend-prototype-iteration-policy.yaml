@@ -1,0 +1,36 @@
+id: frontend-prototype-iteration-policy
+project: agentic-selfcheck
+description: Decide whether prototype feedback should optimize the existing prototype, create a fresh lane, or restart from foundation, while preserving accumulated constraints and preventing repeated regressions.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+must_pass:
+  static:
+  - frontend-prototype-iteration-policy-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- Human feedback can trigger optimize/fresh-lane/restart decisions, but the agent must encode reusable constraints and regression checks before generating the next prototype.
+evidence_required:
+- scripts/frontend_prototype_iteration_policy_gate.py
+- scripts/frontend_prototype_iteration_policy_smoke.py
+- templates/frontend/prototype-iteration-policy/PROTOTYPE_ITERATION_POLICY.md
+risk_dimensions:
+- frontend
+- prototype-iteration
+- regression-prevention
+- constraint-accumulation
+governance:
+  generic: true
+  blocks_before:
+  - design-lane-generation
+  - high-fidelity-prototype-generation
+  decisions:
+  - optimize_existing
+  - fresh_lane
+  - restart_from_foundation

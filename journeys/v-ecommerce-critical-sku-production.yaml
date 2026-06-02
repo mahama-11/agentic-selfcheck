@@ -1,0 +1,26 @@
+id: v-ecommerce-critical-sku-production
+project: v-workspace
+description: Release-blocking Ecommerce critical journey for auth, SKU lifecycle, and SKU-driven production workflow readiness.
+release_blocking: true
+phases:
+  - static
+  - api
+  - browser
+  - evidence
+adapter:
+  command: scripts/adapters/v_ecommerce_critical_journey.py
+  description: V adapter for SKU lifecycle + production workflow checks. Generic SelfCheck only invokes this adapter.
+secret_fixture:
+  path: /root/.hermes/secrets/ecommerce-login.env
+  required: true
+  required_keys:
+    - PLATFORM_DEV_ADMIN_EMAIL
+    - PLATFORM_DEV_ADMIN_PASSWORD
+    - ECOMMERCE_BASE_URL
+mode_env: ECOM_CRITICAL_JOURNEY_MODE
+report_aliases:
+  - project
+notes:
+  - Default contract mode validates route/UI/report readiness without mutating live data.
+  - Set ECOM_CRITICAL_JOURNEY_MODE=live for release environments with reachable backend and valid account.
+  - Adapter-owned V logic must not be moved into generic SelfCheck core.

@@ -1,0 +1,6 @@
+id: platform-stability-closed-loop-evidence
+kind: evidence
+description: "Evidence-group alias for Platform stability closure; verifies the feature contract, event routes, trace ledger, and SelfCheck verifier wiring exist before final evidence is read from the static gate report."
+command: "scripts/platform_stability_closed_loop_alias.py platform-stability-closed-loop-evidence"
+evidence:
+  - reports/platform-stability-closed-loop-gates/platform-stability-closed-loop-evidence.json

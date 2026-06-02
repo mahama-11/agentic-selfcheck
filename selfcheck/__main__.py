@@ -22,6 +22,8 @@ KINDS = {
     "verifier": ("verifiers", "schemas/verifier.schema.json"),
     "loop": ("loops", "schemas/loop.schema.json"),
     "event": ("events", "schemas/event-route.schema.json"),
+    "requirement_trace": ("requirement-traces", "schemas/requirement-trace.schema.json"),
+    "critical_journey": ("journeys", "schemas/critical-journey.schema.json"),
     "repair_policy": ("repair-policies", "schemas/repair-policy.schema.json"),
     "pr_autonomy_policy": ("pr-autonomy-policies", "schemas/pr-autonomy-policy.schema.json"),
     "role_model_routing": ("role-model-routing", "schemas/role-model-routing.schema.json"),
@@ -148,15 +150,33 @@ def feature_plan(root: Path, feature_id: str) -> tuple[dict[str, Any], list[dict
     return feature, ordered
 
 
+def feature_project_root(root: Path, feature: dict[str, Any]) -> Path:
+    """Return the filesystem root that owns feature-relative evidence.
+
+    Feature contracts describe project evidence. For SelfCheck's own features the
+    project root is this checkout; for V/product adapters it is the adapter root.
+    """
+    projects = load_index(root, "project")
+    project_id = str(feature.get("project") or "")
+    project = projects.get(project_id, {})
+    raw = project.get("root") or str(root)
+    return Path(raw).expanduser().resolve()
+
+
+def resolve_feature_evidence_path(root: Path, feature: dict[str, Any], rel: str) -> Path:
+    p = Path(rel).expanduser()
+    if p.is_absolute():
+        return p
+    return feature_project_root(root, feature) / p
+
+
 def audit(root: Path, feature_id: str | None = None, strict_missing: bool = False) -> list[Issue]:
     issues = validate(root)
     features = load_index(root, "feature")
     selected = {feature_id: features[feature_id]} if feature_id else features
     for fid, feat in selected.items():
         for rel in feat.get("evidence_required", []):
-            p = Path(rel)
-            if not p.is_absolute():
-                p = root / p
+            p = resolve_feature_evidence_path(root, feat, rel)
             try:
                 exists = p.exists()
             except OSError as exc:
@@ -302,6 +322,24 @@ def resolve_harness_command(root: Path, command: str) -> tuple[list[str], Path]:
     return [str(script_path), *argv[1:]], root
 
 
+def infer_process_status(returncode: int, stdout: str, stderr: str) -> str:
+    if returncode != 0:
+        return "FAIL"
+    combined = "\n".join([stdout or "", stderr or ""])
+    # Prefer explicit machine-readable JSON when a harness prints it, but keep a
+    # conservative text fallback for legacy governance scripts that print JSON
+    # followed by Markdown.
+    for match in re.finditer(r'"status"\s*:\s*"([A-Z_]+)"', combined):
+        status = match.group(1)
+        if status == "PASS_WITH_NOTES":
+            return "PASS_WITH_NOTES"
+        if status in {"BLOCK", "BLOCKED", "FAIL", "NEEDS_REPAIR"}:
+            return "FAIL"
+    if "PASS_WITH_NOTES" in combined:
+        return "PASS_WITH_NOTES"
+    return "PASS"
+
+
 def run_verifier(root: Path, feature: dict[str, Any], verifier: dict[str, Any], timeout: int) -> dict[str, Any]:
     cwd, argv, command, resolved = resolve_service_command(root, feature, verifier)
     started = time.time()
@@ -311,6 +349,7 @@ def run_verifier(root: Path, feature: dict[str, Any], verifier: dict[str, Any], 
         "kind": verifier["kind"],
         "group": verifier.get("group"),
         "resolved": resolved,
+        "project_root": str(feature_project_root(root, feature)),
         "command": command,
         "started_at_epoch": started,
     }
@@ -326,13 +365,14 @@ def run_verifier(root: Path, feature: dict[str, Any], verifier: dict[str, Any], 
         else:
             if verifier["kind"] == "evidence" and command.startswith("python3 -m selfcheck audit "):
                 proc = subprocess.run(shlex.split(command), cwd=root, capture_output=True, text=True, timeout=timeout)
-            elif verifier["kind"] in {"static", "unit", "api", "browser"}:
+            elif verifier["kind"] in {"static", "unit", "api", "browser", "evidence"}:
                 harness_argv, harness_cwd = resolve_harness_command(root, command)
                 proc = subprocess.run(harness_argv, cwd=harness_cwd, capture_output=True, text=True, timeout=timeout)
             else:
                 raise ValueError("generic shell command execution is disabled; use service_command or a dedicated harness")
+        status = infer_process_status(proc.returncode, proc.stdout, proc.stderr)
         report.update({
-            "status": "PASS" if proc.returncode == 0 else "FAIL",
+            "status": status,
             "exit_code": proc.returncode,
             "duration_seconds": round(time.time() - started, 3),
             "stdout_tail": redact_sensitive_text(proc.stdout[-4000:]),
@@ -582,6 +622,8 @@ def cmd_loop(args):
     if failures:
         failure_counts[sig] = int(failure_counts.get(sig, 0)) + 1
     terminal = "PASS" if not failures else "NEEDS_REPAIR"
+    if not failures and any(r.get("status") == "PASS_WITH_NOTES" for r in results):
+        terminal = "PASS_WITH_NOTES"
     if not failures and (not full_selection or not args.strict_audit):
         terminal = "PASS_WITH_NOTES"
     escalation_reasons = []

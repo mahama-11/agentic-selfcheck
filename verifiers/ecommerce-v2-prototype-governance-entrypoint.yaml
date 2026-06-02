@@ -1,0 +1,16 @@
+id: ecommerce-v2-prototype-governance-entrypoint
+kind: static
+description: Run the real Ecommerce V2 prototype governance entrypoint with default manifest so foundation, business backbone, interaction-affordance, change-intent, and mandatory Current+Kimi dual-model constraints execute without manual remembering.
+command: scripts/ecommerce_v2_prototype_governance_entrypoint.sh
+evidence:
+- scripts/prototype_governance_gate.py
+- scripts/prototype_constraint_system_audit.py
+- scripts/prototype_foundation_gate.py
+- scripts/prototype_foundation_growth_gate.py
+- scripts/prototype_interaction_affordance_gate.py
+- scripts/prototype_business_backbone_gate.py
+- scripts/prototype_change_intent_gate.py
+- scripts/prototype_dual_model_gate.py
+- /root/work/v/.hermes/workflows/ecommerce-v2-interaction-redesign/PROTOTYPE_GOVERNANCE_MANIFEST.env
+- /root/work/v/.hermes/workflows/ecommerce-v2-interaction-redesign/00-PROTOTYPE-GOVERNANCE-ENTRYPOINT.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-interaction-redesign/run-prototype-governance.sh

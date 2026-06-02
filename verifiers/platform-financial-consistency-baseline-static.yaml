@@ -1,0 +1,7 @@
+id: platform-financial-consistency-baseline-static
+kind: static
+description: "Deterministic Platform Phase-3 financial profile scanners for wallet/metering/billing/commercial/catalog consistency and route-contract regressions."
+command: "scripts/platform_core_engineering_baseline.py --profile financial --target-root /root/work/v --report /root/work/v/reports/platform-financial-consistency-baseline/platform-financial-consistency-baseline.json"
+# Evidence is project-relative to `v-workspace` (`/root/work/v/reports/...`).
+evidence:
+  - reports/platform-financial-consistency-baseline/platform-financial-consistency-baseline.json

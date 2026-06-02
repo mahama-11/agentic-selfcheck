@@ -1,0 +1,8 @@
+id: v-evidence-contract-schema-gate
+kind: static
+description: "Validate V Evidence Contract schema, docs, and Platform/Ecommerce/Menu examples."
+command: "scripts/v_evidence_contract_gate.py --format json"
+evidence:
+  - schema
+  - examples
+  - required_fields

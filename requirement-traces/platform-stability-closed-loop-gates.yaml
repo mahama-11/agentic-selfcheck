@@ -1,0 +1,56 @@
+id: platform-stability-closed-loop-gates
+project: v-workspace
+workflow: .hermes/workflows/platform-stability-closed-loop
+feature: platform-stability-closed-loop-gates
+owner: platform-engineering
+status: active
+requirements:
+  - id: REQ-PLATFORM-STABILITY-001
+    summary: Platform core auth/org/RBAC, API/DTO/envelope, error, idempotency, and state contracts must be selector-gated and executable.
+    acceptance_examples:
+      - The composite gate runs the Platform core engineering baseline scanner and records same-run evidence before Platform shared changes merge.
+    affected_gates:
+      - platform-stability-closed-loop-gates
+      - platform-core-engineering-baseline
+    evidence_paths:
+      - reports/platform-stability-closed-loop-gates/platform-stability-closed-loop-static.json
+    workflow_evidence:
+      - .hermes/workflows/platform-stability-closed-loop/01-implementation-summary.md
+    waiver: null
+  - id: REQ-PLATFORM-STABILITY-002
+    summary: Runtime job creation, provider routing/fallback, callback/result asset persistence, charge binding, and terminal no-op behavior must be verified in one gate.
+    acceptance_examples:
+      - Runtime business integration safety focused Go tests pass in the same composite gate run.
+    affected_gates:
+      - platform-stability-closed-loop-gates
+      - platform-runtime-business-integration-safety
+    evidence_paths:
+      - reports/platform-stability-closed-loop-gates/platform-stability-closed-loop-static.json
+      - reports/platform-runtime-business-integration-safety/platform-runtime-business-integration-safety-static.json
+    workflow_evidence:
+      - .hermes/workflows/platform-stability-closed-loop/01-implementation-summary.md
+    waiver: null
+  - id: REQ-PLATFORM-STABILITY-003
+    summary: Wallet, quota/control, metering, commercial grant-policy/catalog, incentive, and runtime charge-session invariants must be verified in one gate.
+    acceptance_examples:
+      - Financial business consistency focused Go tests pass in the same composite gate run.
+    affected_gates:
+      - platform-stability-closed-loop-gates
+      - platform-financial-business-consistency
+    evidence_paths:
+      - reports/platform-stability-closed-loop-gates/platform-stability-closed-loop-static.json
+      - reports/platform-financial-business-consistency/platform-financial-business-consistency-static.json
+    workflow_evidence:
+      - .hermes/workflows/platform-stability-closed-loop/01-implementation-summary.md
+    waiver: null
+  - id: REQ-PLATFORM-STABILITY-004
+    summary: Platform shared capability changes must sweep Ecom/Menu/KYC backend consumers instead of relying on producer-only tests.
+    acceptance_examples:
+      - Ecom/Menu/KYC backend consumer compile commands pass in the composite gate report.
+    affected_gates:
+      - platform-stability-closed-loop-gates
+    evidence_paths:
+      - reports/platform-stability-closed-loop-gates/platform-stability-closed-loop-static.json
+    workflow_evidence:
+      - .hermes/workflows/platform-stability-closed-loop/01-implementation-summary.md
+    waiver: null

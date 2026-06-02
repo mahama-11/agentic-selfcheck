@@ -1,0 +1,43 @@
+id: platform-runtime-business-integration-safety
+project: v-workspace
+description: "Dedicated Platform runtime business-integration safety gate for product-facing dispatch/provider/fallback/callback/charge-path regressions."
+level_target: L4
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - continuous-governance
+target_services:
+  platform: platform-backend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - platform-runtime-business-integration-safety-static
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Runtime business-path changes must preserve product callback compatibility, provider dispatch/fallback semantics, and charge-session terminal binding.
+  - Failed-to-queued and stale terminal provider progress/callback behavior require explicit compatibility evidence before release.
+risk_dimensions:
+  - runtime-dispatch-provider-accepted
+  - runtime-fallback-retry
+  - runtime-completion-charge-binding
+  - runtime-terminal-callback-noop
+  - runtime-failed-to-queued-rejection
+governance:
+  trigger_policy:
+    required_for:
+      - any change under platform-backend/internal/modules/runtime
+    default_command: "cd /root/work/agentic-selfcheck && scripts/requirement-gate.sh platform-runtime-business-integration-safety static requirement.changed.v.platform-runtime-business-integration-safety"
+    fail_policy: "BLOCK merge/deploy on BLOCK or NEEDS_REPAIR; do not replace with only static source review."
+  guardrails:
+    - "Dispatch/provider accepted tests must remain green for product-facing async runtime submissions."
+    - "Fallback/retry tests must remain green for provider handoff and retry business continuity."
+    - "Completion and terminal charge binding tests must remain green for commercial correctness."
+    - "Stale terminal progress/callback events must remain no-op and must not downgrade completed business state."
+    - "Failed-to-queued transitions must remain rejected unless an explicitly reviewed business migration changes the contract."
+evidence_required:
+  - reports/platform-runtime-business-integration-safety/platform-runtime-business-integration-safety-static.json

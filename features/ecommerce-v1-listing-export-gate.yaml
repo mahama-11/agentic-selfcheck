@@ -1,0 +1,35 @@
+id: ecommerce-v1-listing-export-gate
+project: v-workspace
+description: Quarantine/readiness gate for Ecommerce V1 listing immutability and listing/export product slice. This first-pass gate prevents anonymous dirty worktree merge and records required full-gate checks before approval.
+level_target: L3
+repair_policy: default-repair-policy
+depends_on:
+  - continuous-governance
+target_services:
+  frontend: ecommerce-frontend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - ecommerce-v1-listing-export-static
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Human approval is required before merging quarantined V1 listing/export product worktrees.
+  - Product owner decides whether package-manager lockfile changes are intended.
+evidence_required:
+  - /root/work/agentic-selfcheck/docs/plans/2026-05-22-v-automation-gap-closure.md
+  - /root/work/agentic-selfcheck/scripts/ecommerce_v1_listing_export_gate.py
+risk_dimensions:
+  - listing-version-immutability
+  - export-delivery
+  - image-runtime-linkage
+  - productcore-contract
+  - frontend-contract
+  - package-manager-drift
+governance:
+  quarantine_gate: true
+  merge_policy: "Do not merge product worktree until full same-run backend/frontend gate passes and owner approves."

@@ -1,0 +1,37 @@
+id: v-menu-contract-evidence-bridge
+project: v-workspace
+description: "Dedicated Menu Studio core-chain contract/evidence bridge: validates Menu OpenAPI readiness, frontend consumer routes, and emits V Evidence Contract for Template Center, Studio upload/generation, history/library, quota and callback boundaries."
+level_target: L3
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - continuous-governance
+target_services:
+  menu_backend: menu-backend
+  menu_frontend: menu-frontend
+  platform: platform-backend
+must_pass:
+  static:
+    - v-menu-contract-evidence-bridge-smoke
+    - v-menu-contract-evidence-bridge-gate
+  evidence:
+    - v-menu-contract-evidence-bridge-evidence
+reviewer_gates:
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+governance:
+  rollout:
+    product_lane: menu-studio-core-chain
+    real_smoke_upgrade: set V_RUN_MENU_REAL_CONTRACT_SMOKE=1 only in approved local/dev Menu+Platform lane with auth and cleanup evidence
+human_required:
+  - Real Menu Studio smoke may create synthetic assets/jobs/history records; run only in local/dev or approved smoke lanes.
+  - Prod deploy/promote and prod write smoke remain approval-gated.
+evidence_required:
+  - /root/work/v/reports/evidence-contract/menu-studio-core-chain/latest.json
+risk_dimensions:
+  - menu-studio-core-chain
+  - contract-drift
+  - platform-shared-consumer
+  - auth-quota-runtime-callback

@@ -7,6 +7,9 @@ depends_on: [review-gates]
 must_pass:
   static:
     - frontend-design-quality-pack-gate
+    - frontend-existing-product-intake-gate
+    - frontend-prototype-foundation-ledger-gate
+    - frontend-prototype-iteration-policy-gate
     - frontend-design-lane-generation-gate
     - frontend-high-fidelity-prototype-gate
     - frontend-prototype-freeze-gate

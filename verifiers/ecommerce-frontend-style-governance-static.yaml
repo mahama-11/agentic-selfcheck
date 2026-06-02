@@ -1,0 +1,9 @@
+id: ecommerce-frontend-style-governance-static
+kind: static
+description: "Run Agent Ecommerce frontend automation gate and verify style drift, acceptance/TDD policy, style-change proposal, and product-flow evidence policies."
+command: "scripts/ecommerce_frontend_style_governance_gate.py --format json"
+evidence:
+  - reports/ecommerce-frontend-style-governance/static.json
+  - /root/work/v/ecommerce-frontend/reports/frontend-quality/acceptance-governance-latest.json
+  - /root/work/v/ecommerce-frontend/reports/frontend-style-consistency/selfcheck-static.json
+  - /root/work/v/ecommerce-frontend/reports/frontend-style-consistency/style-consistency-latest.json

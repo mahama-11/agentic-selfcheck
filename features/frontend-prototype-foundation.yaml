@@ -1,0 +1,41 @@
+id: frontend-prototype-foundation
+project: agentic-selfcheck
+description: Existing-product prototype foundation and non-regression gate; prevents prototype iterations from silently weakening requirement origin, project context, business backbone, visual backbone, or project style.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+must_pass:
+  static:
+  - frontend-prototype-foundation-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- Human acceptance remains required for direction/taste; this gate only prevents unstable or regressive candidates from being presented as progress.
+evidence_required:
+- scripts/prototype_foundation_gate.py
+- scripts/prototype_foundation_gate_smoke.py
+- templates/frontend/design-quality-pack/PROJECT_CONTEXT.md
+risk_dimensions:
+- frontend
+- prototype
+- existing-product
+- non-regression
+governance:
+  risk_levels:
+  - C
+  - D
+  generic: true
+  hard_constraints:
+  - requirement_origin_artifacts_exist
+  - project_context_artifacts_exist
+  - business_backbone_declared
+  - visual_backbone_declared
+  - iteration_delta_required
+  - removed_or_weakened_foundation_requires_accepted_tradeoff
+  - project_style_alignment_must_not_fail
+  - complexity_floor_for_candidate_prototypes

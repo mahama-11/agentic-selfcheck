@@ -1,0 +1,24 @@
+id: v-product-worktree-batch-status
+project: agentic-selfcheck
+description: Product-side dirty worktree batch classifier for V workspace automation gaps; distinguishes clean environment noise from quarantined product slices that require dedicated gates before merge.
+level_target: L3
+repair_policy: default-repair-policy
+depends_on:
+  - continuous-governance
+must_pass:
+  static:
+    - v-product-worktree-batch-status-smoke
+reviewer_gates:
+  - spec-review
+  - quality-review
+  - final-verification
+human_required:
+  - Human approval is required before merging quarantined CrossPlanet or V1 listing product worktrees.
+evidence_required:
+  - scripts/v_product_worktree_batch_status.py
+  - scripts/v_product_worktree_batch_status_smoke.py
+  - docs/v-product-worktree-batch-status.md
+risk_dimensions:
+  - product-worktree-quarantine
+  - dirty-tree-governance
+  - business-gate-coverage

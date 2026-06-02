@@ -1,0 +1,8 @@
+id: v-release-cron-branch-hygiene-baseline-gate
+kind: static
+description: "Verify release ring, cron noise/capacity, and branch hygiene baseline."
+command: "scripts/v_release_cron_branch_hygiene_baseline_gate.py"
+evidence:
+  - release_rings
+  - watchdog_severity
+  - branch_hygiene

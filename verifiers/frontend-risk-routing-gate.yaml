@@ -5,5 +5,3 @@ command: scripts/frontend_risk_routing_smoke.py --root . --format json
 evidence:
 - scripts/frontend_risk_router.py
 - scripts/frontend_risk_routing_smoke.py
-- reports/frontend-risk-routing/latest.json
-- .hermes/workflows/frontend-risk-routing-smoke/

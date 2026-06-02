@@ -1,0 +1,9 @@
+id: frontend-before-implementation-gate
+kind: static
+description: Validate hard-stop behavior before frontend implementation by requiring both controller and evidence manifest readiness.
+command: scripts/frontend_before_implementation_smoke.py --root . --format json
+evidence:
+- scripts/frontend_before_implementation_gate.py
+- scripts/frontend_before_implementation_smoke.py
+- scripts/frontend_workflow_controller.py
+- scripts/frontend_evidence_manifest_gate.py

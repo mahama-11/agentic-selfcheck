@@ -1,0 +1,8 @@
+id: crossplanet-listing-strategy-gate-repair-static
+kind: static
+description: Run the repaired CrossPlanet/List Strategy same-run gate from explicit selfcheck/backend/frontend roots and classify generated evidence separately from governance evidence.
+command: scripts/crossplanet_gate_repair_quarantine.py --selfcheck-root . --backend-root /root/work/v-worktrees/crossplanet-listing-strategy-backend --frontend-root /root/work/v-worktrees/crossplanet-listing-strategy-frontend --format json
+evidence:
+  - features/crossplanet-listing-strategy-gate-repair.yaml
+  - verifiers/crossplanet-listing-strategy-gate-repair-static.yaml
+  - scripts/crossplanet_gate_repair_quarantine.py

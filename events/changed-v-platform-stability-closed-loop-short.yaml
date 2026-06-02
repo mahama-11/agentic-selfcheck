@@ -1,0 +1,23 @@
+id: changed-v-platform-stability-closed-loop-short
+event: requirement.changed.v.platform-stability-closed-loop
+description: Alias route for the explicit Platform stability closure command used by the execution plan; routes to the same feature as the selector event with the -gates suffix.
+feature: platform-stability-closed-loop-gates
+groups:
+  - static
+  - api
+  - browser
+  - evidence
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - failing_consumer_compile
+  - selector_mapping_missing

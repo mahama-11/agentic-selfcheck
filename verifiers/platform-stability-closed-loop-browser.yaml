@@ -1,0 +1,6 @@
+id: platform-stability-closed-loop-browser
+kind: browser
+description: "Browser-group alias for Platform stability closure; verifies gate wiring and preserves fail-closed routing for browser/evidence requests while user-visible Platform Console checks remain covered by frontend build/lint and target-lane smoke evidence."
+command: "scripts/platform_stability_closed_loop_alias.py platform-stability-closed-loop-browser"
+evidence:
+  - reports/platform-stability-closed-loop-gates/platform-stability-closed-loop-browser.json

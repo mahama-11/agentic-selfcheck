@@ -1,0 +1,86 @@
+{
+  "feature_id": "ecommerce-v1-sellable-closure",
+  "change_scope": "ecommerce-v1-sellable-closure",
+  "affected_services": [
+    "ecommerce-backend",
+    "ecommerce-frontend",
+    "platform-backend"
+  ],
+  "affected_routes": [
+    "POST /api/v1/ecommerce/auth/login",
+    "POST /api/v1/ecommerce/products",
+    "GET /api/v1/ecommerce/products/:id",
+    "POST /api/v1/ecommerce/image-jobs",
+    "GET /api/v1/ecommerce/downloads"
+  ],
+  "auth_context": {
+    "mode": "user_jwt",
+    "org_context": "required",
+    "internal_hmac": "platform callbacks only"
+  },
+  "real_api_evidence": [
+    {
+      "command": "v-contract-smoke ecommerce product-create",
+      "report_path": "/root/work/v/reports/contract-smoke/ecommerce/product-create/latest.json",
+      "required": true
+    }
+  ],
+  "browser_evidence": [
+    {
+      "route": "/products",
+      "action": "create product -> detail -> visual tools -> downloads",
+      "required": true
+    }
+  ],
+  "contract_smoke_evidence": [
+    {
+      "type": "real_proxy_contract_smoke",
+      "path": "/root/work/v/docs/REAL_RUNTIME_CONTRACT_QA.md"
+    }
+  ],
+  "prod_dev_log_evidence": [
+    {
+      "fields": [
+        "request_id",
+        "trace_id",
+        "runtime_job_id",
+        "charge_session_id"
+      ],
+      "environment": "cloud-dev-or-prod"
+    }
+  ],
+  "negative_cases": [
+    {
+      "case": "quota_insufficient",
+      "expected": "fail_closed_no_charge_commit"
+    },
+    {
+      "case": "bad_callback_hmac",
+      "expected": "reject_without_result_asset"
+    }
+  ],
+  "consumer_sweep": [
+    {
+      "consumer": "ecommerce-frontend/src/services/product.ts",
+      "paths": [
+        "create/read/list/detail mutation refresh"
+      ]
+    },
+    {
+      "consumer": "ecommerce-frontend/src/services/imageRuntime.ts",
+      "paths": [
+        "job create/list/read/callback projection"
+      ]
+    }
+  ],
+  "risk_level": "high",
+  "rollback_path": {
+    "type": "runbook",
+    "path": "/root/work/v/tools/dev/promote-cloud-dev-to-prod.sh rollback or PR revert"
+  },
+  "blind_spots": [
+    "example fixture; real IDs must be filled by runtime smoke"
+  ],
+  "owner_role": "qa",
+  "final_status": "PARTIAL_PASS"
+}

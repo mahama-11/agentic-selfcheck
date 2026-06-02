@@ -1,0 +1,34 @@
+id: v-platform-contract-evidence-bridge
+project: v-workspace
+description: "Bridge Platform runtime/quota/storage/auth/wallet shared capability contract-smoke readiness into V Evidence Contract for all Platform consumers including Ecommerce, Menu, and KYC."
+level_target: L3
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - continuous-governance
+target_services:
+  backend: platform-backend
+must_pass:
+  static:
+    - v-platform-contract-evidence-bridge-smoke
+    - v-platform-contract-evidence-bridge-gate
+  evidence:
+    - v-platform-contract-evidence-bridge-evidence
+reviewer_gates:
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Live Platform smoke can mutate runtime jobs, quota reservations, storage assets, wallet ledger, or metering settlements; run only in approved safe local/dev/prod-candidate lanes with cleanup strategy.
+  - Prod promotion or prod write smoke remains explicit-approval gated.
+governance:
+  rollout:
+    menu_consumer_impact_included: true
+    live_smoke_upgrade: run platform live smoke only in approved safe lane with cleanup strategy
+evidence_required:
+  - /root/work/v/reports/evidence-contract/platform-shared-capabilities/latest.json
+risk_dimensions:
+  - platform-shared-capability
+  - internal-auth
+  - runtime-quota-storage-wallet

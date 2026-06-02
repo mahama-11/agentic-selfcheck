@@ -1,0 +1,36 @@
+id: frontend-evidence-manifest
+project: agentic-selfcheck
+description: Unified frontend evidence manifest gate for prototype-first workflow phases.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+- frontend-runtime
+- ai-generation
+must_pass:
+  static:
+  - frontend-evidence-manifest-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- C/D frontend workflows need human decision evidence before implementation.
+evidence_required:
+- schemas/frontend-evidence-manifest.schema.json
+- templates/frontend/evidence-manifest/FRONTEND_EVIDENCE_MANIFEST.json
+- scripts/frontend_evidence_manifest_gate.py
+- scripts/frontend_evidence_manifest_smoke.py
+risk_dimensions:
+- frontend
+- evidence
+- prototype-first
+- fail-closed
+governance:
+  generic: true
+  phases:
+  - before-user-presentation
+  - before-implementation
+  - before-final

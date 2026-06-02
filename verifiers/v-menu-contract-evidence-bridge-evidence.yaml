@@ -1,0 +1,6 @@
+id: v-menu-contract-evidence-bridge-evidence
+kind: evidence
+description: "Verify Menu V Evidence Contract report exists and workflow evidence is present."
+command: "python3 -m selfcheck audit --root . --feature {feature.id} --strict-missing"
+evidence:
+  - evidence_contract_report

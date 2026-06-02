@@ -1,0 +1,7 @@
+id: platform-runtime-state-machine-baseline-static
+kind: static
+description: "Deterministic Platform Phase-3 runtime profile scanners for runtime state/idempotency/provider callback/route-contract regressions."
+command: "scripts/platform_core_engineering_baseline.py --profile runtime --target-root /root/work/v --report /root/work/v/reports/platform-runtime-state-machine-baseline/platform-runtime-state-machine-baseline.json"
+# Evidence is project-relative to `v-workspace` (`/root/work/v/reports/...`).
+evidence:
+  - reports/platform-runtime-state-machine-baseline/platform-runtime-state-machine-baseline.json

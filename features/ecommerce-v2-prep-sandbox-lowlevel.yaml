@@ -1,0 +1,87 @@
+id: ecommerce-v2-prep-sandbox-lowlevel
+project: v-workspace
+description: "Ecommerce V2 Prep/Sandbox low-level regression control: deterministic prompt composition, fixed four questions, no raw/internal copy, fail-closed image analysis, slot add/delete sanity, and deploy evidence."
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - frontend-runtime
+  - review-gates
+target_services:
+  frontend: ecommerce-frontend
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - ecommerce-v2-prep-sandbox-lowlevel-static
+    - ecommerce-v2-visualworkflow-tests
+    - frontend-typecheck
+    - frontend-build
+  api:
+    - ecommerce-v2-prep-sandbox-lowlevel-api
+  browser:
+    - ecommerce-v2-prep-sandbox-lowlevel-browser
+  evidence:
+    - ecommerce-v2-prep-sandbox-lowlevel-evidence
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Product owner confirms four fixed Prep questions and Sandbox blocker copy are understandable to ecommerce operators.
+  - Product owner approves any intentional change to user-visible Prep/Sandbox wording or production flow semantics.
+risk_dimensions:
+  - prompt-composition
+  - fixed-four-questions
+  - user-facing-copy
+  - image-analysis-quality
+  - slot-count-state
+  - prod-bundle-drift
+governance:
+  trigger_policy:
+    required_for:
+      - any change under ecommerce-backend/internal/modules/visualworkflow
+      - any change under ecommerce-frontend/src/pages/production
+      - any change under ecommerce-frontend/src/services/production.ts
+      - any change under ecommerce-frontend/src/store/productionStore.ts
+      - any change under ecommerce-frontend/src/i18n
+      - any production deployment touching ecommerce-backend or ecommerce-frontend
+    default_command: "cd /root/work/agentic-selfcheck && scripts/v-requirement-gate.sh ecommerce-v2-prep-sandbox-lowlevel static,api,browser,evidence requirement.changed.v.ecommerce-v2-prep-sandbox-lowlevel"
+    fail_policy: "BLOCK merge/deploy on BLOCK; PASS_WITH_NOTES allowed only when note is explicit non-user-visible evidence debt and owner records follow-up."
+  feedback_policy:
+    on_requirement_change:
+      - update this feature contract before claiming completion
+      - add or revise verifier rules for changed acceptance criteria
+      - rerun full static,api,browser,evidence groups
+    on_low_level_bug_found:
+      - fix product code
+      - add a deterministic verifier assertion for the bug class
+      - record evidence under reports/ecommerce-v2-prep-sandbox-lowlevel
+      - rerun the full gate instead of only the new assertion
+    on_verifier_failure:
+      - SelfCheck emits dispatch artifacts with owner role
+      - assigned owner fixes implementation or verifier harness
+      - orchestrator reruns full gate and closes only with PASS/PASS_WITH_NOTES/BLOCKED evidence
+    recurring_feedback:
+      - event trigger on requirement.changed.v.ecommerce-v2-prep-sandbox-lowlevel
+      - cron watchdog every 4h, silent on PASS and notify on failure
+  guardrails:
+    - "V1 prompt planning must be deterministic composition, not LLM/runtime/provider planning."
+    - "Fixed Prep flow must always require 4/4 yes/no choices before entering Sandbox generation planning."
+    - "Low-confidence or empty image understanding must fail closed and must not produce composed prompt text."
+    - "User-facing text must not expose raw JSON, prompt_plan, prompt_id, runtime, provider, backend, LLM/大模型, or legacy Keep/Replace/Drop language."
+    - "Slot deletion must update both task state and visible count; adding slots must honor the visible 10-slot cap."
+    - "Prod evidence must include source checks, tests/build, public route/browser smoke, and bundle scan."
+evidence_required:
+  - .hermes/workflows/ecommerce-v2-prep-sandbox-lowlevel/01-requirement.md
+  - .hermes/workflows/ecommerce-v2-prep-sandbox-lowlevel/02-architecture-review.md
+  - .hermes/workflows/ecommerce-v2-prep-sandbox-lowlevel/03-implementation-plan.md
+  - .hermes/workflows/ecommerce-v2-prep-sandbox-lowlevel/04-developer-summary.md
+  - .hermes/workflows/ecommerce-v2-prep-sandbox-lowlevel/05-spec-review-report.md
+  - .hermes/workflows/ecommerce-v2-prep-sandbox-lowlevel/06-quality-review-report.md
+  - .hermes/workflows/ecommerce-v2-prep-sandbox-lowlevel/07-qa-report.md
+  - .hermes/workflows/ecommerce-v2-prep-sandbox-lowlevel/08-final-verification.md
+  - reports/ecommerce-v2-prep-sandbox-lowlevel/static.json
+  - reports/ecommerce-v2-prep-sandbox-lowlevel/api.json
+  - reports/ecommerce-v2-prep-sandbox-lowlevel/browser.json
+  - reports/ecommerce-v2-prep-sandbox-lowlevel/evidence.json

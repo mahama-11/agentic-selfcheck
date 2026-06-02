@@ -1,0 +1,57 @@
+id: v-ai-native-governance-foundation
+project: v-workspace
+description: "P0/P1 governance foundation for V Evidence Contract, API contract/client generation, GenAI observability, GenAI security/evaluation, release rings, cron noise/capacity, and branch hygiene across Platform, Ecommerce, Menu, and SelfCheck."
+level_target: L3
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+  - continuous-governance
+target_services:
+  platform: platform-backend
+  backend: ecommerce-backend
+  frontend: ecommerce-frontend
+  menu_backend: menu-backend
+  menu_frontend: menu-frontend
+must_pass:
+  static:
+    - v-ai-native-governance-foundation-smoke
+    - v-evidence-contract-schema-gate
+    - v-contract-client-generation-gate
+    - v-genai-observability-baseline-gate
+    - v-genai-security-eval-baseline-gate
+    - v-release-cron-branch-hygiene-baseline-gate
+  evidence:
+    - v-ai-native-governance-foundation-evidence-gate
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+governance:
+  rollout:
+    menu_included: true
+    first_targets:
+      - ecommerce-v1-sellable-closure
+      - menu-studio-core-chain
+      - platform-runtime-billing-auth-storage
+      - selfcheck-governance-reports
+human_required:
+  - Prod promote remains approval-gated; this feature creates the governance baseline and does not deploy.
+  - Menu real local/dev/prod write smokes remain approval/safety-lane gated; governance/schema/selector coverage is mandatory now.
+evidence_required:
+  - /root/work/v/reports/ai-native-governance-foundation/v-evidence-contract-schema-gate.json
+  - /root/work/v/reports/ai-native-governance-foundation/v-contract-client-generation-gate.json
+  - /root/work/v/reports/ai-native-governance-foundation/v-genai-observability-baseline-gate.json
+  - /root/work/v/reports/ai-native-governance-foundation/v-genai-security-eval-baseline-gate.json
+  - /root/work/v/reports/ai-native-governance-foundation/v-release-cron-branch-hygiene-baseline-gate.json
+  - /root/work/v/reports/ai-native-governance-foundation/v-ai-native-governance-foundation-evidence-gate.json
+risk_dimensions:
+  - platform-shared-capability
+  - ecommerce-sellable-closure
+  - menu-studio-core-chain
+  - ai-security
+  - observability
+  - release-governance
+  - cron-noise
+  - branch-hygiene

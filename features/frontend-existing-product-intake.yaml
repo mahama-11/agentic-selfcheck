@@ -1,0 +1,37 @@
+id: frontend-existing-product-intake
+project: agentic-selfcheck
+description: Enforce existing-project context, baseline, backend feasibility, requirement trace, and user-facing language boundaries before high-fidelity prototype generation.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+- frontend-runtime
+must_pass:
+  static:
+  - frontend-existing-product-intake-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- Human product direction remains required after intake; the gate only proves the prototype is grounded and user-facing language is clean.
+evidence_required:
+- scripts/frontend_existing_product_intake_gate.py
+- scripts/frontend_existing_product_intake_smoke.py
+- templates/frontend/existing-product-intake/
+risk_dimensions:
+- frontend
+- existing-product-context
+- backend-feasibility
+- product-language-boundary
+- fail-closed
+governance:
+  generic: true
+  applies_to_risks:
+  - C
+  - D
+  blocks_before:
+  - design-lane-generation
+  - high-fidelity-prototype-generation

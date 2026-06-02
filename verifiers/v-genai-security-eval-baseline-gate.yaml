@@ -1,0 +1,7 @@
+id: v-genai-security-eval-baseline-gate
+kind: static
+description: "Verify OWASP LLM security and offline/online eval baseline."
+command: "scripts/v_genai_security_eval_baseline_gate.py"
+evidence:
+  - owasp_llm_matrix
+  - offline_online_eval

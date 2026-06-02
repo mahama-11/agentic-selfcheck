@@ -1,0 +1,20 @@
+id: changed-v-platform-contract-evidence-bridge
+event: requirement.changed.v-platform-contract-evidence-bridge
+description: Gate Platform runtime/quota/storage/auth/wallet contract smoke readiness and V Evidence Contract bridge.
+feature: v-platform-contract-evidence-bridge
+groups:
+  - static
+  - evidence
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - missing_required_evidence
+  - platform_live_smoke_required
+  - internal_auth_boundary_changed

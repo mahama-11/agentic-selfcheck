@@ -1,0 +1,29 @@
+id: ecommerce-v2-platform-first-contract-doc-gate
+kind: static
+description: Deterministically verify Ecommerce V2 platform-first landing and runtime-readiness integration workflow docs, key Platform/Ecommerce boundary invariants, and focused SelfCheck scaffolding without runtime/browser execution.
+command: "scripts/ecommerce_v2_platform_first_contract_doc_gate.py --workflow /root/work/v/.hermes/workflows/ecommerce-v2-platform-first-landing --runtime-readiness-workflow /root/work/v/.hermes/workflows/ecommerce-v2-runtime-readiness-integration --frontend-stageview-workflow /root/work/v/.hermes/workflows/ecommerce-v2-frontend-stageview-contract --intent-prompt-workflow /root/work/v/.hermes/workflows/ecommerce-v2-intent-prompt-plan-persistence --frontend-root /root/work/v-worktrees/ecommerce-v2-frontend-stageview-contract/ecommerce-frontend --ecommerce-backend-root /root/work/v-worktrees/ecommerce-v2-visualworkflow-s1-s2/ecommerce-backend --selfcheck-root ."
+evidence:
+- scripts/ecommerce_v2_platform_first_contract_doc_gate.py
+- features/ecommerce-v2-platform-first-landing.yaml
+- /root/work/v/.hermes/workflows/ecommerce-v2-platform-first-landing/01-requirement.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-platform-first-landing/02a-platform-architecture-review.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-platform-first-landing/02b-ecommerce-architecture-review.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-platform-first-landing/02c-selfcheck-integration-plan.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-platform-first-landing/03-implementation-plan.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-runtime-readiness-integration/01-requirement.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-runtime-readiness-integration/02-architecture-review.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-runtime-readiness-integration/03-implementation-plan.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-frontend-stageview-contract/01-requirement.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-frontend-stageview-contract/02-architecture-review.md
+- /root/work/v-worktrees/ecommerce-v2-frontend-stageview-contract/ecommerce-frontend/src/services/visualWorkflow.ts
+- /root/work/v-worktrees/ecommerce-v2-frontend-stageview-contract/ecommerce-frontend/src/types/visualWorkflow.ts
+- /root/work/v-worktrees/ecommerce-v2-frontend-stageview-contract/ecommerce-frontend/src/pages/ProductVisualToolsPage.tsx
+- /root/work/v-worktrees/ecommerce-v2-frontend-stageview-contract/ecommerce-frontend/src/pages/product/components/VisualWorkflowStageViewPanel.tsx
+- /root/work/v/.hermes/workflows/ecommerce-v2-intent-prompt-plan-persistence/01-requirement.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-intent-prompt-plan-persistence/02-architecture-review.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-intent-prompt-plan-persistence/03-implementation-plan.md
+- /root/work/v/.hermes/workflows/ecommerce-v2-intent-prompt-plan-persistence/04-developer-summary.md
+- /root/work/v-worktrees/ecommerce-v2-visualworkflow-s1-s2/ecommerce-backend/internal/modules/visualworkflow/types.go
+- /root/work/v-worktrees/ecommerce-v2-visualworkflow-s1-s2/ecommerce-backend/internal/modules/visualworkflow/service.go
+- /root/work/v-worktrees/ecommerce-v2-visualworkflow-s1-s2/ecommerce-backend/internal/modules/visualworkflow/mapper.go
+- /root/work/v-worktrees/ecommerce-v2-visualworkflow-s1-s2/ecommerce-backend/internal/modules/visualworkflow/service_test.go

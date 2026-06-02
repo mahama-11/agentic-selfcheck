@@ -1,0 +1,12 @@
+id: v-control-plane-status-smoke
+kind: static
+description: Validate unified V/SelfCheck control-plane status projection emits required sections and evidence artifacts.
+command: scripts/v_control_plane_status_smoke.py --root . --v-root /root/work/v --format json
+evidence:
+  - docs/plans/2026-05-22-control-plane-stabilization.md
+  - docs/v-cron-governance-responsibility-map.md
+  - scripts/v_control_plane_status.py
+  - scripts/v_control_plane_status_smoke.py
+  - scripts/v_control_plane_dirty_inventory.py
+  - scripts/v_product_worktree_batch_status.py
+  - docs/v-product-worktree-batch-status.md

@@ -1,0 +1,6 @@
+id: platform-stability-closed-loop-static
+kind: static
+description: "Composite fail-closed Platform stability gate: runs core Platform static contract scanner, runtime business closed-loop Go tests, financial business closed-loop Go tests, and Ecom/Menu/KYC backend consumer compile sweeps."
+command: "scripts/platform_stability_closed_loop_gate.py"
+evidence:
+  - reports/platform-stability-closed-loop-gates/platform-stability-closed-loop-static.json

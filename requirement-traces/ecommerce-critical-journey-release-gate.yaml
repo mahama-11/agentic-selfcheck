@@ -1,0 +1,32 @@
+id: ecommerce-critical-journey-release-gate
+project: v-workspace
+workflow: .hermes/workflows/requirement-to-governance-quality-track
+feature: ecommerce-critical-journey-release-gate
+owner: ecommerce-release
+status: active
+requirements:
+  - id: REQ-ECOMMERCE-CRITICAL-001
+    summary: Ecommerce release candidates must preserve the production critical SKU journey across static, API, browser, and evidence gates.
+    acceptance_examples:
+      - Release-wide critical journey reports include static, API, browser, and evidence JSON outputs for the v-ecommerce-critical-sku-production journey.
+    affected_gates:
+      - ecommerce-critical-journey-release-gate
+    evidence_paths:
+      - reports/critical-journeys/v-ecommerce-critical-sku-production/static.json
+      - reports/critical-journeys/v-ecommerce-critical-sku-production/api.json
+      - reports/critical-journeys/v-ecommerce-critical-sku-production/browser.json
+      - reports/critical-journeys/v-ecommerce-critical-sku-production/evidence.json
+    workflow_evidence:
+      - .hermes/workflows/requirement-to-governance-quality-track/01-requirement.md
+    waiver: null
+  - id: REQ-ECOMMERCE-CRITICAL-002
+    summary: Ecommerce critical journey evidence must cover SKU lifecycle, product workflow, listing/export/download delivery, Template Center, commercial account, protected browser paths, and cleanup readiness before release.
+    acceptance_examples:
+      - The evidence report for the critical SKU production journey is present and release decisions can trace required journey dimensions to the Ecommerce release gate.
+    affected_gates:
+      - ecommerce-critical-journey-release-gate
+    evidence_paths:
+      - reports/critical-journeys/v-ecommerce-critical-sku-production/evidence.json
+    workflow_evidence:
+      - .hermes/workflows/requirement-to-governance-quality-track/01-requirement.md
+    waiver: null

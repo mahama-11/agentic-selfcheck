@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FrontendEvidenceManifest",
+  "type": "object",
+  "required": ["schema_version", "workflow_id", "risk"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "workflow_id": {"type": "string", "minLength": 1},
+    "risk": {"enum": ["A", "B", "C", "D", "E"]},
+    "project_adapter": {"type": ["string", "null"]},
+    "design_pack": {"type": "array", "items": {"type": "string"}},
+    "lanes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "artifact"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "artifact": {"type": "string", "minLength": 1},
+          "notes": {"type": ["string", "null"]}
+        },
+        "additionalProperties": true
+      }
+    },
+    "screenshots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["surface", "path"],
+        "properties": {
+          "surface": {"type": "string", "minLength": 1},
+          "path": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": true
+      }
+    },
+    "coverage": {"type": ["string", "null"]},
+    "human_decision": {
+      "type": "object",
+      "properties": {
+        "decision": {"enum": ["ACCEPTED", "ACCEPTED_WITH_NOTES", "REQUEST_CHANGES", "REJECTED_DIRECTION", null]},
+        "artifact": {"type": ["string", "null"]},
+        "signer": {"type": ["string", "null"]},
+        "signer_role": {"type": ["string", "null"]},
+        "decided_at": {"type": ["string", "null"]},
+        "decision_source": {"type": ["string", "null"]},
+        "notes": {"type": ["string", "null"]},
+        "notes_closure": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "freeze": {
+      "type": "object",
+      "properties": {
+        "document": {"type": ["string", "null"]},
+        "payload": {"type": ["string", "null"]},
+        "screenshots": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "parity_plan": {"type": ["string", "null"]},
+    "parity_report": {"type": ["string", "null"]},
+    "runtime_evidence": {"type": "array", "items": {"type": "string"}},
+    "review_urls": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

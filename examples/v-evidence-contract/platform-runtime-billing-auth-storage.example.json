@@ -1,0 +1,89 @@
+{
+  "feature_id": "platform-runtime-billing-auth-storage-baseline",
+  "change_scope": "platform-shared-capability",
+  "affected_services": [
+    "platform-backend",
+    "platform-frontend",
+    "ecommerce-backend"
+  ],
+  "affected_routes": [
+    "/internal/v1/runtime/*",
+    "/internal/v1/controls/*",
+    "/internal/v1/storage/assets*",
+    "/internal/v1/wallet/*",
+    "/internal/v1/metering/*"
+  ],
+  "auth_context": {
+    "mode": "internal_hmac_and_admin_jwt",
+    "hmac_required": true
+  },
+  "real_api_evidence": [
+    {
+      "command": "platform-runtime-smoke --auto-route",
+      "report_path": "/root/work/v/reports/platform/runtime-smoke/latest.json",
+      "required": true
+    }
+  ],
+  "browser_evidence": [
+    {
+      "route": "platform console runtime/billing/storage diagnostics",
+      "required": false,
+      "reason": "backend shared capability first rollout"
+    }
+  ],
+  "contract_smoke_evidence": [
+    {
+      "type": "internal_api_contract",
+      "path": "/root/work/v/platform-backend/docs/INTERNAL_API_CONTRACT.md"
+    }
+  ],
+  "prod_dev_log_evidence": [
+    {
+      "fields": [
+        "request_id",
+        "trace_id",
+        "provider",
+        "fallback_attempts",
+        "callback_status",
+        "quota_reservation_id",
+        "charge_session_id"
+      ],
+      "environment": "cloud-dev-or-prod"
+    }
+  ],
+  "negative_cases": [
+    {
+      "case": "missing_internal_hmac",
+      "expected": "401_or_403"
+    },
+    {
+      "case": "provider_unavailable",
+      "expected": "fallback_or_fail_closed"
+    },
+    {
+      "case": "storage_asset_missing",
+      "expected": "no_false_success"
+    }
+  ],
+  "consumer_sweep": [
+    {
+      "consumer": "ecommerce-backend runtime/wallet/storage clients",
+      "paths": [
+        "provider route",
+        "quota reservation",
+        "asset registry",
+        "settlement"
+      ]
+    }
+  ],
+  "risk_level": "critical",
+  "rollback_path": {
+    "type": "runbook",
+    "path": "platform prod/dev drift + deploy rollback runbooks"
+  },
+  "blind_spots": [
+    "example fixture; real prod/dev smoke must fill request ids"
+  ],
+  "owner_role": "reviewer",
+  "final_status": "PARTIAL_PASS"
+}

@@ -1,0 +1,19 @@
+id: changed-v-ecommerce-v1-listing-export
+event: requirement.changed.v.ecommerce-v1-listing-export
+description: Gate Ecommerce V1 listing/export requirement changes through active-slice quarantine/readiness checks.
+feature: ecommerce-v1-listing-export-gate
+groups:
+  - static
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - verifier_failure_after_retry
+  - missing_required_evidence
+  - listing_export_or_product_readiness_scope

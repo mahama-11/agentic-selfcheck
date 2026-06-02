@@ -1,0 +1,36 @@
+id: frontend-before-implementation
+project: agentic-selfcheck
+description: Hard stop before C/D-risk frontend implementation; combines workflow controller and evidence manifest checks.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+- frontend-runtime
+- ai-generation
+must_pass:
+  static:
+  - frontend-before-implementation-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- Human prototype acceptance is required before implementation starts.
+evidence_required:
+- scripts/frontend_before_implementation_gate.py
+- scripts/frontend_before_implementation_smoke.py
+- scripts/frontend_workflow_controller.py
+- scripts/frontend_evidence_manifest_gate.py
+risk_dimensions:
+- frontend
+- implementation-readiness
+- prototype-first
+- fail-closed
+governance:
+  generic: true
+  blocks:
+  - React implementation before prototype freeze
+  - implementation without parity plan
+  - implementation without frozen screenshot evidence

@@ -1,0 +1,42 @@
+id: frontend-workflow-controller
+project: agentic-selfcheck
+description: Lightweight SelfCheck frontend workflow state machine that blocks C/D-risk prototype-first work from advancing without required evidence.
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+- review-gates
+- frontend-runtime
+- ai-generation
+must_pass:
+  static:
+  - frontend-workflow-controller-gate
+reviewer_gates:
+- architect
+- spec-review
+- quality-review
+- qa
+- final-verification
+human_required:
+- C/D frontend implementation cannot advance past freeze without human prototype acceptance.
+evidence_required:
+- schemas/frontend-workflow-state.schema.json
+- templates/frontend/workflow-state/FRONTEND_WORKFLOW_STATE.json
+- scripts/frontend_workflow_controller.py
+- scripts/frontend_workflow_controller_smoke.py
+risk_dimensions:
+- frontend
+- workflow-control
+- prototype-first
+- fail-closed
+governance:
+  generic: true
+  not_new_agent_runtime: true
+  applies_to_risks:
+  - C
+  - D
+  controller_scope:
+  - read workflow state
+  - validate required evidence
+  - block illegal transitions
+  - do not execute coding agents
+  - do not generate production code

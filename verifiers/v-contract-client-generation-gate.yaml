@@ -1,0 +1,8 @@
+id: v-contract-client-generation-gate
+kind: static
+description: "Verify API contract/generated-client baseline and selector anchors."
+command: "scripts/v_contract_client_generation_gate.py"
+evidence:
+  - openapi_source_of_truth
+  - generated_client_drift
+  - contract_smoke

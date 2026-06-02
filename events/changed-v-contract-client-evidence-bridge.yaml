@@ -1,0 +1,20 @@
+id: changed-v-contract-client-evidence-bridge
+event: requirement.changed.v-contract-client-evidence-bridge
+description: Gate Ecommerce OpenAPI/generated-client drift and V Evidence Contract bridge.
+feature: v-contract-client-evidence-bridge
+groups:
+  - static
+  - evidence
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - missing_required_evidence
+  - generated_client_drift
+  - breaking_contract_diff

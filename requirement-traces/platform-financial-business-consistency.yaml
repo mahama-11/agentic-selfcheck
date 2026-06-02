@@ -1,0 +1,29 @@
+id: platform-financial-business-consistency
+project: v-workspace
+workflow: .hermes/workflows/platform-financial-business-consistency-gate
+feature: platform-financial-business-consistency
+owner: platform-financial
+status: active
+requirements:
+  - id: REQ-FINANCIAL-BIZ-001
+    summary: Wallet, metering, quota, billing, and charge-session mutations must remain idempotent and auditable.
+    acceptance_examples:
+      - Repeating settlement/finalize/reserve/commit/release operations does not double charge, double settle, or corrupt ledger state.
+    affected_gates:
+      - platform-financial-business-consistency
+    evidence_paths:
+      - reports/platform-financial-business-consistency/platform-financial-business-consistency-static.json
+    workflow_evidence:
+      - .hermes/workflows/platform-financial-business-consistency-gate/08-final-verification.md
+    waiver: null
+  - id: REQ-FINANCIAL-BIZ-002
+    summary: Commercial catalog and incentive/referral financial behavior must preserve visible baseline and settlement consistency.
+    acceptance_examples:
+      - Catalog visibility and incentive settlement/redemption targeted tests remain green for release-critical commercial changes.
+    affected_gates:
+      - platform-financial-business-consistency
+    evidence_paths:
+      - reports/platform-financial-business-consistency/platform-financial-business-consistency-static.json
+    workflow_evidence:
+      - .hermes/workflows/platform-financial-business-consistency-gate/08-final-verification.md
+    waiver: null

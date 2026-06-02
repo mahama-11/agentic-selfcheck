@@ -1,0 +1,9 @@
+id: frontend-evidence-manifest-gate
+kind: static
+description: Validate frontend evidence manifest schema/template compatibility and phase-specific fail-closed behavior.
+command: scripts/frontend_evidence_manifest_smoke.py --root . --format json
+evidence:
+- schemas/frontend-evidence-manifest.schema.json
+- templates/frontend/evidence-manifest/FRONTEND_EVIDENCE_MANIFEST.json
+- scripts/frontend_evidence_manifest_gate.py
+- scripts/frontend_evidence_manifest_smoke.py

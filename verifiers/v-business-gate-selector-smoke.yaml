@@ -1,0 +1,9 @@
+id: v-business-gate-selector-smoke
+kind: static
+description: Validate changed-file to Ecommerce business feature gate selection for V workspace governance triggers.
+command: scripts/v_business_gate_selector_smoke.py --root . --format json
+evidence:
+  - config/v-business-gate-selector.yaml
+  - scripts/v_business_gate_selector.py
+  - scripts/v_business_gate_selector_smoke.py
+  - scripts/v_continuous_governance_trigger.py

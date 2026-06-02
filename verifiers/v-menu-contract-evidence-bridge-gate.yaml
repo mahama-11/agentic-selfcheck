@@ -1,0 +1,8 @@
+id: v-menu-contract-evidence-bridge-gate
+kind: static
+description: "Validate Menu OpenAPI/frontend consumer contract readiness and emit V Evidence Contract report."
+command: "scripts/v_menu_contract_evidence_bridge_gate.py"
+evidence:
+  - menu_openapi
+  - frontend_consumer_sweep
+  - v_evidence_contract

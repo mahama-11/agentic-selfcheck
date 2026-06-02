@@ -1,0 +1,9 @@
+id: frontend-workflow-controller-gate
+kind: static
+description: Validate the frontend workflow controller state machine, templates, schema, and fail-closed smoke behavior.
+command: scripts/frontend_workflow_controller_smoke.py --root . --format json
+evidence:
+- schemas/frontend-workflow-state.schema.json
+- templates/frontend/workflow-state/FRONTEND_WORKFLOW_STATE.json
+- scripts/frontend_workflow_controller.py
+- scripts/frontend_workflow_controller_smoke.py
