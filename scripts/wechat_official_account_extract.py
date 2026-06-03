@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import html
+import http.client
 import json
 import os
 import re
@@ -71,13 +72,23 @@ def fetch_direct(url: str, timeout: int = 25) -> dict[str, Any]:
     )
     started = time.time()
     with urllib.request.urlopen(req, timeout=timeout) as r:  # noqa: S310 - explicit user-provided public article URL
-        data = r.read()
+        warning = ""
+        try:
+            data = r.read()
+        except http.client.IncompleteRead as exc:
+            # WeChat occasionally closes the response early while the received
+            # partial HTML already contains the full #js_content article body.
+            # Keep the partial payload and let parse_article/complete_enough
+            # decide whether it is usable instead of failing before parsing.
+            data = exc.partial or b""
+            warning = f"IncompleteRead partial={len(data)} expected_more={exc.expected}"
         return {
-            "ok": True,
+            "ok": bool(data),
             "method": "direct",
             "status": getattr(r, "status", None),
             "final_url": getattr(r, "url", url),
             "bytes": len(data),
+            "warning": warning,
             "duration_seconds": round(time.time() - started, 3),
             "html": data.decode("utf-8", "replace"),
         }
@@ -86,7 +97,7 @@ def fetch_direct(url: str, timeout: int = 25) -> dict[str, Any]:
 def fetch_via_ssh(alias: str, url: str, timeout: int = 35) -> dict[str, Any]:
     # Pass URL via argv to avoid shell interpolation. The heredoc body is constant.
     code = r'''
-import json, sys, time, urllib.request
+import http.client, json, sys, time, urllib.request
 url=sys.argv[1]
 ua=sys.argv[2]
 started=time.time()
@@ -98,12 +109,18 @@ try:
         'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
     })
     with urllib.request.urlopen(req, timeout=25) as r:
-        data=r.read()
+        warning=''
+        try:
+            data=r.read()
+        except http.client.IncompleteRead as e:
+            data=e.partial or b''
+            warning=f'IncompleteRead partial={len(data)} expected_more={e.expected}'
     print(json.dumps({
-        'ok': True,
+        'ok': bool(data),
         'status': getattr(r, 'status', None),
         'final_url': getattr(r, 'url', url),
         'bytes': len(data),
+        'warning': warning,
         'duration_seconds': round(time.time()-started, 3),
         'html': data.decode('utf-8', 'replace'),
     }, ensure_ascii=False))
@@ -171,7 +188,9 @@ def first_match(patterns: list[str], text: str, *, clean: bool = True) -> str:
         m = re.search(pat, text, flags=re.S | re.I)
         if m:
             value = m.group(1)
-            return clean_html_fragment(value) if clean else html.unescape(value.strip())
+            value = clean_html_fragment(value) if clean else html.unescape(value.strip())
+            if value:
+                return value
     return ""
 
 
@@ -183,13 +202,15 @@ def parse_article(page_html: str) -> dict[str, Any]:
         r'"title"\s*:\s*"([^"]+)"',
     ], page_html)
     account = first_match([
-        r'<span[^>]*id=["\']js_name["\'][^>]*>([\s\S]*?)</span>',
+        r'<(?:span|a)[^>]*id=["\']js_name["\'][^>]*>([\s\S]*?)</(?:span|a)>',
         r'var\s+nickname\s*=\s*["\']([\s\S]*?)["\'];',
         r'"nickname"\s*:\s*"([^"]+)"',
     ], page_html)
     publish_time = first_match([
-        r'id=["\']publish_time["\'][^>]*>([\s\S]*?)</span>',
+        r'id=["\']publish_time["\'][^>]*>([\s\S]*?)</(?:span|em)>',
         r'var\s+publish_time\s*=\s*["\']([\s\S]*?)["\'];',
+        r'var\s+createTime\s*=\s*["\']([\s\S]*?)["\'];',
+        r'create_time\s*:\s*["\']([\s\S]*?)["\']',
         r'"publish_time"\s*:\s*"([^"]+)"',
     ], page_html)
     content_match = re.search(r'<div[^>]*id=["\']js_content["\'][^>]*>([\s\S]*?)</div>\s*<(?:script|div)', page_html, flags=re.S | re.I)
