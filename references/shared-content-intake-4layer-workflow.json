@@ -1,0 +1,241 @@
+{
+  "workflow_name": "shared-content-intake-4layer",
+  "version": "1.0.0",
+  "description": "用户分享内容的标准化四层评估流程：先解析、再分析、再判断价值、最后才决定是否执行",
+  "principle": "评估优先，执行后置。不是每篇文章都值得行动，先判断价值再决定投入",
+  "layers": [
+    {
+      "layer": 1,
+      "name": "内容解析层",
+      "purpose": "把原始内容变成结构化数据",
+      "triggers": [
+        "用户发送链接",
+        "用户发送文档",
+        "用户发送截图",
+        "用户发送文字"
+      ],
+      "steps": [
+        "识别内容类型（文章/文档/图片/视频/文字）",
+        "用对应工具抽取完整内容（extractor/OCR/转录）",
+        "记录元信息：标题、作者、时间、来源、长度",
+        "校验完整性：内容是否完整抽取、有无 block_signals",
+        "输出：结构化内容 + 元信息 + 完整性标记"
+      ],
+      "gates": [
+        "内容完整抽取",
+        "无 block_signals",
+        "元信息可识别"
+      ],
+      "abort_conditions": [
+        "抽取失败且无法修复",
+        "内容被删除/不可访问",
+        "存在安全风险提示"
+      ]
+    },
+    {
+      "layer": 2,
+      "name": "深度分析层",
+      "purpose": "判断文章质量、洞察深度、可执行性",
+      "steps": [
+        "判断文章类型：观点启发文 / 操作手册 / 数据报告 / 案例复盘 / 行业动态",
+        "评估证据密度：有无数据、有无案例、有无截图、有无来源链接",
+        "提取核心论点：作者想说什么",
+        "识别说对了什么：哪些观点有价值",
+        "识别漏掉了什么：关键盲区、未提及的风险、未回答的问题",
+        "评估可执行性：读完能否直接行动，还是需要大量补充",
+        "输出：类型判断 + 证据密度评分 + 核心论点 + 盲区清单 + 可执行性评估"
+      ],
+      "scoring_dimensions": [
+        {
+          "dimension": "认知价值",
+          "range": "1-5",
+          "meaning": "是否提供了新的视角或认知"
+        },
+        {
+          "dimension": "可靠性",
+          "range": "1-5",
+          "meaning": "证据是否充分、来源是否可信"
+        },
+        {
+          "dimension": "实用性",
+          "range": "1-5",
+          "meaning": "是否可直接执行或落地"
+        },
+        {
+          "dimension": "信息增量",
+          "range": "1-5",
+          "meaning": "对当前用户的知识储备是否有新增"
+        }
+      ],
+      "judgment_labels": [
+        {
+          "label": "认知入口",
+          "criteria": "认知价值≥4，实用性≤2",
+          "action": "收藏归档，作为背景认知"
+        },
+        {
+          "label": "执行手册",
+          "criteria": "实用性≥4，可靠性≥3",
+          "action": "纳入任务系统，安排执行"
+        },
+        {
+          "label": "参考素材",
+          "criteria": "认知价值≥3，可靠性≥2",
+          "action": "归入灵感库，需要时检索"
+        },
+        {
+          "label": "水货",
+          "criteria": "认知价值≤2，实用性≤2，可靠性≤2",
+          "action": "标记为低价值，不投入资源"
+        },
+        {
+          "label": "待验证",
+          "criteria": "观点有趣但证据不足",
+          "action": "标记为假设，需要独立验证"
+        }
+      ]
+    },
+    {
+      "layer": 3,
+      "name": "视觉评估层",
+      "purpose": "判断图片/视觉内容的价值",
+      "applies_to": [
+        "文章",
+        "文档",
+        "截图"
+      ],
+      "skip_if": [
+        "纯文字内容",
+        "音频",
+        "视频未要求分析画面"
+      ],
+      "steps": [
+        "统计总图片数",
+        "分类：封面图 / 信息图 / 截图 / 示意图 / 装饰图 / 头像 / 水图",
+        "判断每张图的信息增量：有无 alt/title、是否承载关键信息",
+        "识别水图特征：GIF 装饰、无 alt、无标题、与正文无关",
+        "输出：图片分类统计 + 有意义图片列表 + 水图比例"
+      ],
+      "judgment": [
+        {
+          "ratio_meaningful": ">50%",
+          "assessment": "视觉信息丰富，值得单独分析"
+        },
+        {
+          "ratio_meaningful": "10-50%",
+          "assessment": "有少量关键图，可快速浏览"
+        },
+        {
+          "ratio_meaningful": "<10%",
+          "assessment": "几乎全是水图，无需为图片投入"
+        }
+      ]
+    },
+    {
+      "layer": 4,
+      "name": "系统映射层",
+      "purpose": "判断是否与当前系统相关，决定是否执行",
+      "prerequisite": "必须通过 Layer 2 评估，且 judgment_label 不是'水货'",
+      "steps": [
+        "映射相关 Skill：哪些已有能力可以承接这个内容",
+        "映射相关 Cron Job：哪些定时任务可能受影响或需要触发",
+        "映射相关项目：与当前进行中的工程是否相关",
+        "映射 Feishu Base：应该归入哪个 Base、哪个表",
+        "评估执行成本：需要多少时间、多少资源、多少协调",
+        "评估预期收益：对当前主线有什么帮助",
+        "输出：系统映射 + 执行成本评估 + 预期收益评估 + 建议动作"
+      ],
+      "decision_matrix": [
+        {
+          "cost": "低",
+          "收益": "高",
+          "decision": "立即执行"
+        },
+        {
+          "cost": "低",
+          "收益": "中",
+          "decision": "纳入待办，按优先级排队"
+        },
+        {
+          "cost": "中",
+          "收益": "高",
+          "decision": "制定计划，安排资源执行"
+        },
+        {
+          "cost": "中",
+          "收益": "中",
+          "decision": "记录归档，需要时检索"
+        },
+        {
+          "cost": "高",
+          "收益": "高",
+          "decision": "需要专项评估，可能拆分成子任务"
+        },
+        {
+          "cost": "高",
+          "收益": "中/低",
+          "decision": "不执行，仅归档"
+        }
+      ],
+      "default_posture": "记录归档优先，执行需要明确批准"
+    }
+  ],
+  "execution_rules": [
+    "Layer 1 失败 → 停止，报告原因",
+    "Layer 2 判断为'水货' → 停止，仅记录归档",
+    "Layer 2 判断为'认知入口' → 执行 Layer 3（如有图片），Layer 4 仅做映射不执行",
+    "Layer 2 判断为'参考素材' → 执行 Layer 3，Layer 4 归入灵感库",
+    "Layer 2 判断为'执行手册' → 完整执行四层，Layer 4 给出执行建议等待批准",
+    "Layer 4 任何执行动作都需要明确批准，默认只记录不执行",
+    "所有评估结果写入持久化证据，便于后续检索和复盘"
+  ],
+  "evidence_outputs": [
+    "{article_dir}/content.json — 结构化内容",
+    "{article_dir}/analysis.json — 深度分析结果",
+    "{article_dir}/image-classification.json — 图片分类（如有）",
+    "{article_dir}/system-mapping.json — 系统映射",
+    "{article_dir}/decision.json — 最终决策和理由",
+    "reports/shared-content-intake/summary.json — 所有 intake 的汇总索引"
+  ],
+  "example_application": {
+    "article": "Reddit不是社交平台，更像是副业实验室",
+    "layer_1": "完整抽取，1273字，无 block_signals",
+    "layer_2": {
+      "type": "观点启发文",
+      "scores": {
+        "认知价值": 4,
+        "可靠性": 2,
+        "实用性": 2,
+        "信息增量": 3
+      },
+      "judgment_label": "认知入口",
+      "blind_spots": [
+        "社区规则",
+        "信号噪声比",
+        "验证深度",
+        "业务类型区分",
+        "方法论缺失",
+        "转化断层"
+      ]
+    },
+    "layer_3": {
+      "total": 81,
+      "meaningful": 4,
+      "water": 77,
+      "assessment": "无需为图片投入"
+    },
+    "layer_4": {
+      "relevant_skills": [
+        "wechat-official-account-extraction",
+        "idea-capture-lark-base"
+      ],
+      "relevant_projects": [
+        "agentic-selfcheck extractor 验证"
+      ],
+      "cost": "低",
+      "benefit": "中",
+      "decision": "归入灵感库，不立即执行",
+      "next_action": "如需启动 Reddit 验证工程，需单独制定计划并走门禁流程"
+    }
+  }
+}
