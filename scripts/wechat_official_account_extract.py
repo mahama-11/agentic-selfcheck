@@ -217,6 +217,19 @@ def parse_article(page_html: str) -> dict[str, Any]:
     if not content_match:
         content_match = re.search(r'<div[^>]*id=["\']js_content["\'][^>]*>([\s\S]*?)</div>', page_html, flags=re.S | re.I)
     content = clean_html_fragment(content_match.group(1)) if content_match else ""
+    if not content:
+        # Some WeChat responses (often after an early IncompleteRead) include
+        # the article body in OpenGraph/msg_desc metadata even when the
+        # #js_content node is absent from the partial HTML. Use it as a
+        # conservative fallback so short-but-real articles are still usable.
+        desc = first_match([
+            r'<meta[^>]+property=["\']og:description["\'][^>]+content=["\']([^"\']*)["\']',
+            r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']*)["\']',
+            r'var\s+msg_desc\s*=\s*["\']([\s\S]*?)["\'];',
+        ], page_html, clean=False)
+        if desc:
+            desc = html.unescape(desc).replace("\\x0a", "\n").replace("\\n", "\n")
+            content = clean_html_fragment(desc)
     block_signals = []
     visible = clean_html_fragment(page_html[:20000])
     for token in ("环境异常", "完成验证", "captcha.gtimg.com", "访问过于频繁", "该内容已被发布者删除"):
