@@ -27,5 +27,9 @@ def main():
         payload=json.loads(selector.stdout); gates={g.get('feature') for g in payload.get('selected_gates',[])}
         if 'v-menu-contract-evidence-bridge' not in gates:
             findings.append({'severity':'error','message':'Menu bridge selector did not select v-menu-contract-evidence-bridge','payload':payload})
+        bridge_gate=next((g for g in payload.get('selected_gates',[]) if g.get('feature')=='v-menu-contract-evidence-bridge'), {})
+        command=bridge_gate.get('command','')
+        if 'SELFCHECK_ALLOW_PARTIAL=1' not in command:
+            findings.append({'severity':'error','message':'Menu bridge selector must allow bounded partial evidence because live write smoke is approval-gated','command':command})
     return emit_result('v-menu-contract-evidence-bridge-smoke','PASS' if not findings else 'FAIL',findings)
 if __name__=='__main__': raise SystemExit(main())
