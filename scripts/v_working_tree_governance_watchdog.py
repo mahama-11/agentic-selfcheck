@@ -221,7 +221,8 @@ def run_trigger(repo: Path, files: list[str], timeout: int) -> dict[str, Any]:
     ]
     for file in files:
         argv.extend(['--changed-file', file])
-    cp = run(argv, SELF_ROOT, timeout=timeout + 90)
+    aggregate_timeout = max(timeout + 90, timeout * 2 + 90)
+    cp = run(argv, SELF_ROOT, timeout=aggregate_timeout)
     try:
         parsed = json.loads(cp.stdout) if cp.stdout.strip() else {}
         payload: dict[str, Any] = parsed if isinstance(parsed, dict) else {'raw_stdout': cp.stdout[-4000:]}

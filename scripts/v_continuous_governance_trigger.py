@@ -247,7 +247,10 @@ def run_business_gate_selector(files: list[str], dry_run: bool, run_gates: bool,
     for file in files:
         argv.extend(['--changed-file', file])
     try:
-        proc = subprocess.run(argv, cwd=SELF_ROOT, text=True, capture_output=True, timeout=timeout + 30)
+        # Keep each selected gate bounded by --timeout, but allow the selector
+        # process enough wall-clock budget to execute a bounded gate bundle.
+        aggregate_timeout = max(timeout + 30, timeout * 2 + 30)
+        proc = subprocess.run(argv, cwd=SELF_ROOT, text=True, capture_output=True, timeout=aggregate_timeout)
         payload = None
         try:
             payload = json.loads(proc.stdout) if proc.stdout.strip() else None
