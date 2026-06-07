@@ -35,6 +35,12 @@ features:
     command: env SELFCHECK_ALLOW_PARTIAL=1 scripts/requirement-gate.sh v-menu-contract-evidence-bridge static,evidence requirement.changed.v-menu-contract-evidence-bridge
     blocking: true
     reason: Menu Studio core-chain OpenAPI/frontend consumer readiness emitted as V Evidence Contract; live write smoke remains approval-gated
+  menu-critical-journey-gates:
+    event: requirement.changed.v.menu-critical-journey-gates
+    groups: static,evidence
+    command: env SELFCHECK_ALLOW_PARTIAL=1 scripts/requirement-gate.sh menu-critical-journey-gates static,evidence requirement.changed.v.menu-critical-journey-gates
+    blocking: true
+    reason: Menu P0/P1 critical journey selector, safe smoke, contract drift, and evidence gate wrapper; full live write smoke remains approval-gated
   ecommerce-frontend-style-governance:
     event: requirement.changed.v.ecommerce-frontend-style-governance
     groups: static
@@ -206,13 +212,23 @@ rules:
       - menu-frontend/src/services/upload.ts
       - menu-frontend/src/store/**
       - menu-frontend/src/pages/**
+      - menu-frontend/tests/e2e/**
+      - menu-frontend/playwright.config.ts
+      - menu-frontend/package.json
+      - menu-backend/scripts/menu-contract-smoke.mjs
+      - menu-backend/scripts/menu-contract-consumer-sweep.mjs
       - scripts/v_menu_contract_evidence_bridge_*.py
       - scripts/v_menu_safe_contract_smoke.py
+      - scripts/v_menu_critical_journey_gates_smoke.py
       - features/v-menu-contract-evidence-bridge.yaml
+      - features/menu-critical-journey-gates.yaml
       - verifiers/v-menu-contract-evidence-bridge*.yaml
+      - verifiers/menu-critical-journey-gates*.yaml
       - events/changed-v-menu-contract-evidence-bridge.yaml
+      - events/changed-menu-critical-journey-gates.yaml
     gates:
       - v-menu-contract-evidence-bridge
+      - menu-critical-journey-gates
   - id: ecommerce-frontend-style-governance-surfaces
     description: Ecommerce frontend style-critical surfaces must run the shared style governance gate so style evolution is controlled by proposals/evidence rather than page-local drift.
     patterns:

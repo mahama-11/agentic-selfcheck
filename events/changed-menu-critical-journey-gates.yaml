@@ -1,0 +1,22 @@
+id: changed-menu-critical-journey-gates
+event: requirement.changed.v.menu-critical-journey-gates
+description: Gate Menu P0/P1 critical journey OpenAPI, frontend consumer, safe smoke, and V Evidence Contract readiness.
+feature: menu-critical-journey-gates
+groups:
+  - static
+  - evidence
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - missing_required_evidence
+  - menu_openapi_missing_core_route
+  - real_smoke_requested_without_safe_lane
+  - generated_client_drift
+  - p0_business_journey_regression

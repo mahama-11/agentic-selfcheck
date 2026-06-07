@@ -105,7 +105,12 @@ CASES = [
     (
         'menu-platform-compatibility-change-selects-platform-ops-gate',
         ['menu-backend/internal/modules/studio/service.go'],
-        {'platform-ops-visible-baseline', 'v-ai-native-governance-foundation', 'v-menu-contract-evidence-bridge'},
+        {'platform-ops-visible-baseline', 'v-ai-native-governance-foundation', 'v-menu-contract-evidence-bridge', 'menu-critical-journey-gates'},
+    ),
+    (
+        'menu-selfcheck-artifact-change-selects-menu-gates',
+        ['features/menu-critical-journey-gates.yaml', 'scripts/v_menu_critical_journey_gates_smoke.py'],
+        {'v-menu-contract-evidence-bridge', 'menu-critical-journey-gates'},
     ),
     (
         'unrelated-doc-selects-no-business-gate',

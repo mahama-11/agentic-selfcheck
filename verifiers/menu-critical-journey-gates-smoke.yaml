@@ -1,0 +1,8 @@
+id: menu-critical-journey-gates-smoke
+kind: static
+description: "Smoke-test Menu critical journey selector coverage and underlying Menu evidence bridge positive/negative checks."
+command: "scripts/v_menu_critical_journey_gates_smoke.py"
+evidence:
+  - selector_smoke
+  - validator_negative_positive
+  - bridge_smoke
