@@ -55,14 +55,30 @@ classifications:
         end: 18
       - start: 60
         end: 61
+      - start: 69
+        end: 70
       - start: 78
         end: 78
+      - start: 91
+        end: 91
       - start: 118
         end: 119
+      - start: 131
+        end: 132
       - start: 206
         end: 217
+      - start: 223
+        end: 223
+      - start: 232
+        end: 232
+      - start: 234
+        end: 234
       - start: 314
         end: 317
+      - start: 331
+        end: 331
+      - start: 333
+        end: 333
       - start: 408
         end: 408
       - start: 450

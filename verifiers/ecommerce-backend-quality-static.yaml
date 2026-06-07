@@ -1,0 +1,6 @@
+id: ecommerce-backend-quality-static
+kind: static
+description: Verify Phase G Ecommerce backend business-quality closure scaffold, prod refusal guard, dry-run default, report paths, and SelfCheck wiring.
+command: "scripts/ecommerce_backend_quality_closure_gate.py --kind static"
+evidence:
+  - reports/ecommerce-backend-business-quality-closure/static.json

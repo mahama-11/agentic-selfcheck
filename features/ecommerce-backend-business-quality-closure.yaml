@@ -1,0 +1,72 @@
+id: ecommerce-backend-business-quality-closure
+project: v-workspace
+description: "Ecommerce backend business quality closure release gate: Phase G local/dev critical-journey dry-run scaffold, API-contract route smoke, evidence freshness, prod hard-refusal, and Agentic SelfCheck wiring."
+level_target: L3.5
+repair_policy: default-repair-policy
+depends_on:
+  - review-gates
+target_services:
+  backend: ecommerce-backend
+must_pass:
+  static:
+    - ecommerce-backend-quality-static
+  api:
+    - ecommerce-backend-quality-api
+  evidence:
+    - ecommerce-backend-quality-evidence
+reviewer_gates:
+  - architect
+  - spec-review
+  - quality-review
+  - qa
+  - final-verification
+human_required:
+  - Guo Kai explicitly approves any prod critical-journey/live smoke by setting ECOM_PROD_SMOKE_APPROVED=1 in the runner environment.
+  - Product owner approves destructive cleanup/retention policy before any write-capable live smoke is enabled.
+risk_dimensions:
+  - auth-session-access
+  - platform-contract
+  - product-assets-prompts
+  - visual-workflow
+  - wallet-commercial-billing
+  - promotion-commission
+  - export-download
+  - internal-runtime-callback
+  - cleanup-evidence
+  - secret-redaction
+governance:
+  trigger_policy:
+    required_for:
+      - any Ecommerce backend release candidate
+      - any change touching ecommerce-backend critical business routes, auth middleware, Platform client contract, wallet/commercial/billing/promotion/commission modules, Product Center, image runtime, visual workflow, export/download, or internal callbacks
+      - any claim that Ecommerce backend has reached full business quality closure
+    default_command: "cd /root/work/agentic-selfcheck && scripts/v-requirement-gate.sh ecommerce-backend-business-quality-closure static,api,evidence requirement.changed.v.ecommerce-backend-quality-closure"
+    local_dry_run_commands:
+      - "cd /root/work/v/ecommerce-backend && scripts/ecommerce-backend-critical-journey-smoke.py --env local --dry-run"
+      - "cd /root/work/v/ecommerce-backend && scripts/ecommerce-backend-api-contract-smoke.py --env local --dry-run"
+    prod_command_requires: "ECOM_PROD_SMOKE_APPROVED=1"
+    fail_policy: "BLOCK merge/release on BLOCK/FAIL. PASS_WITH_NOTES is allowed for local dry-run or NOT_RUN prod-live evidence, but must not be reported as full business closure."
+  prod_safety:
+    default_prod_status: NOT_RUN
+    hard_refusal_without_env: ECOM_PROD_SMOKE_APPROVED
+    no_prod_smoke_in_default_gate: true
+  evidence_policy:
+    backend_business_journey_report: /root/work/v/ecommerce-backend/reports/quality/business-journeys/latest.json
+    backend_api_contract_report: /root/work/v/ecommerce-backend/reports/quality/business-journeys/api-contract-latest.json
+    selfcheck_report_dir: /root/work/agentic-selfcheck/reports/ecommerce-backend-business-quality-closure
+    full_pass_requires_live_local_or_dev: true
+    pass_with_not_run_live_evidence: PASS_WITH_NOTES
+    forbid_secret_fields:
+      - Authorization
+      - Bearer
+      - access_token
+      - refresh_token
+      - password
+      - secret
+      - service_secret
+evidence_required:
+  - /root/work/agentic-selfcheck/reports/ecommerce-backend-business-quality-closure/static.json
+  - /root/work/agentic-selfcheck/reports/ecommerce-backend-business-quality-closure/api.json
+  - /root/work/agentic-selfcheck/reports/ecommerce-backend-business-quality-closure/evidence.json
+  - /root/work/v/ecommerce-backend/reports/quality/business-journeys/latest.json
+  - /root/work/v/ecommerce-backend/reports/quality/business-journeys/api-contract-latest.json

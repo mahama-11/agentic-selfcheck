@@ -1,0 +1,22 @@
+id: changed-ecommerce-backend-business-quality-closure
+event: requirement.changed.v.ecommerce-backend-quality-closure
+description: Gate Ecommerce backend business quality closure changes through Phase G local/dev dry-run critical journey and API contract SelfCheck.
+feature: ecommerce-backend-business-quality-closure
+groups:
+  - static
+  - api
+  - evidence
+mode: event
+strict_audit: true
+allowed_sources:
+  - local
+  - git-hook
+  - ci-webhook
+  - hermes-webhook
+  - cron
+debounce_seconds: 15
+human_escalation:
+  - prod_smoke_requested_without_ECOM_PROD_SMOKE_APPROVED
+  - write_fixture_without_cleanup_policy
+  - full_pass_claimed_with_not_run_live_evidence
+  - missing_required_evidence
