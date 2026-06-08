@@ -1,6 +1,6 @@
 id: ecommerce-backend-quality-api
 kind: api
-description: Run the safe local dry-run Ecommerce backend API-contract smoke scaffold; no prod smoke and no writes.
+description: Run the safe local isolated Ecommerce backend API-contract smoke with cleanup; no prod smoke, no prod approval, and prod-only NOT_RUN is reported in semantic notes.
 command: "scripts/ecommerce_backend_quality_closure_gate.py --kind api"
 evidence:
   - reports/ecommerce-backend-business-quality-closure/api.json

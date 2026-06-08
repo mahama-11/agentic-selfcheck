@@ -1,6 +1,6 @@
 id: ecommerce-backend-quality-evidence
 kind: evidence
-description: Run the safe local dry-run Ecommerce backend critical-journey smoke scaffold and assert NOT_RUN live/prod evidence is only PASS_WITH_NOTES.
+description: Run the safe local isolated Ecommerce backend critical-journey smoke with cleanup; never runs prod, and records prod-only NOT_RUN as semantic PASS_WITH_NOTES detail.
 command: "scripts/ecommerce_backend_quality_closure_gate.py --kind evidence"
 evidence:
   - reports/ecommerce-backend-business-quality-closure/evidence.json

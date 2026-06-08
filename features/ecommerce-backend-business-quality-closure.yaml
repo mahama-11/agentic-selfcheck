@@ -1,6 +1,6 @@
 id: ecommerce-backend-business-quality-closure
 project: v-workspace
-description: "Ecommerce backend business quality closure release gate: Phase G local/dev critical-journey dry-run scaffold, API-contract route smoke, evidence freshness, prod hard-refusal, and Agentic SelfCheck wiring."
+description: "Ecommerce backend business quality closure release gate: Phase5 local isolated critical-journey/API-contract execute with cleanup, semantic evidence validation, contract gates, prod hard-refusal, and Agentic SelfCheck wiring."
 level_target: L3.5
 repair_policy: default-repair-policy
 depends_on:
@@ -41,21 +41,23 @@ governance:
       - any change touching ecommerce-backend critical business routes, auth middleware, Platform client contract, wallet/commercial/billing/promotion/commission modules, Product Center, image runtime, visual workflow, export/download, or internal callbacks
       - any claim that Ecommerce backend has reached full business quality closure
     default_command: "cd /root/work/agentic-selfcheck && scripts/v-requirement-gate.sh ecommerce-backend-business-quality-closure static,api,evidence requirement.changed.v.ecommerce-backend-quality-closure"
-    local_dry_run_commands:
-      - "cd /root/work/v/ecommerce-backend && scripts/ecommerce-backend-critical-journey-smoke.py --env local --dry-run"
-      - "cd /root/work/v/ecommerce-backend && scripts/ecommerce-backend-api-contract-smoke.py --env local --dry-run"
-    prod_command_requires: "ECOM_PROD_SMOKE_APPROVED=1"
-    fail_policy: "BLOCK merge/release on BLOCK/FAIL. PASS_WITH_NOTES is allowed for local dry-run or NOT_RUN prod-live evidence, but must not be reported as full business closure."
+    local_execute_commands:
+      - "cd /root/work/v/ecommerce-backend && scripts/ecommerce-backend-critical-journey-smoke.py --env local --execute --fixture isolated --cleanup"
+      - "cd /root/work/v/ecommerce-backend && scripts/ecommerce-backend-api-contract-smoke.py --env local --execute --fixture isolated --cleanup"
+      - "cd /root/work/v/ecommerce-backend && scripts/evidence-semantic-validator.py"
+    prod_command_requires: "separate approved prod runbook; SelfCheck never sets prod approval"
+    fail_policy: "BLOCK merge/release on BLOCK/FAIL. Local isolated execute+cleanup can PASS SelfCheck; NOT_RUN prod-live evidence must remain explicit as semantic PASS_WITH_NOTES detail and must not be hidden."
   prod_safety:
     default_prod_status: NOT_RUN
-    hard_refusal_without_env: ECOM_PROD_SMOKE_APPROVED
+    hard_refusal_without_env: builtin-prod-refusal
     no_prod_smoke_in_default_gate: true
   evidence_policy:
     backend_business_journey_report: /root/work/v/ecommerce-backend/reports/quality/business-journeys/latest.json
     backend_api_contract_report: /root/work/v/ecommerce-backend/reports/quality/business-journeys/api-contract-latest.json
     selfcheck_report_dir: /root/work/agentic-selfcheck/reports/ecommerce-backend-business-quality-closure
     full_pass_requires_live_local_or_dev: true
-    pass_with_not_run_live_evidence: PASS_WITH_NOTES
+    local_execute_requires_cleanup: true
+    pass_with_not_run_prod_evidence: semantic_PASS_WITH_NOTES
     forbid_secret_fields:
       - Authorization
       - Bearer
