@@ -447,6 +447,9 @@ rules:
     patterns:
       - menu-backend/internal/platform/**
       - menu-backend/internal/config/**
+      - menu-backend/internal/storage/**
+      - menu-backend/internal/models/audit.go
+      - menu-backend/internal/repository/audit_repository.go
       - menu-backend/internal/modules/auth/**
       - menu-backend/internal/modules/user/**
       - menu-backend/internal/modules/studio/**
