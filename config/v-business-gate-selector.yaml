@@ -136,7 +136,11 @@ rules:
       - menu-backend/docs/openapi/**
       - menu-backend/docs/architecture/STUDIO_FRONTEND_INTEGRATION.md
       - menu-backend/docs/architecture/TEMPLATE_CREATIVE_STRATEGY.md
+      - menu-backend/internal/middleware/menu_permission.go
       - menu-backend/internal/modules/auth/**
+      - menu-backend/internal/modules/authz/**
+      - menu-backend/internal/modules/channel/**
+      - menu-backend/internal/modules/referral/**
       - menu-backend/internal/modules/studio/**
       - menu-backend/internal/modules/job/**
       - menu-backend/internal/modules/jobs/**
@@ -195,7 +199,13 @@ rules:
       - menu-backend/docs/openapi/**
       - menu-backend/scripts/gen-swagger.sh
       - menu-backend/internal/router/**
+      - menu-backend/internal/middleware/menu_permission.go
+      - menu-backend/internal/middleware/request_context.go
+      - menu-backend/internal/middleware/request_context_test.go
       - menu-backend/internal/modules/auth/**
+      - menu-backend/internal/modules/authz/**
+      - menu-backend/internal/modules/channel/**
+      - menu-backend/internal/modules/referral/**
       - menu-backend/internal/modules/studio/**
       - menu-backend/internal/modules/job/**
       - menu-backend/internal/modules/jobs/**
@@ -349,6 +359,10 @@ rules:
       - platform-backend/internal/modules/diagnostics/**
       - platform-backend/internal/migration/menu_offerings_seed.go
       - menu-backend/internal/modules/auth/**
+      - menu-backend/internal/modules/authz/**
+      - menu-backend/internal/middleware/menu_permission.go
+      - menu-backend/internal/modules/channel/**
+      - menu-backend/internal/modules/referral/**
       - menu-backend/internal/modules/user/**
       - platform-backend/internal/observability/**
       - platform-backend/internal/telemetry/**
@@ -443,11 +457,16 @@ rules:
     gates:
       - ecommerce-critical-journey-release-gate
   - id: menu-platform-compatibility-surfaces
-    description: Menu studio/template-center/platform-client source changes are product-facing Platform compatibility surfaces and must run the Platform ops-visible baseline instead of falling through as unmapped high-risk source edits.
+    description: Menu studio/template-center/platform-client/telemetry source changes are product-facing Platform compatibility surfaces and must run the Platform ops-visible baseline instead of falling through as unmapped high-risk source edits.
     patterns:
       - menu-backend/internal/platform/**
       - menu-backend/internal/config/**
+      - menu-backend/internal/telemetry/**
       - menu-backend/internal/modules/auth/**
+      - menu-backend/internal/modules/authz/**
+      - menu-backend/internal/middleware/menu_permission.go
+      - menu-backend/internal/modules/channel/**
+      - menu-backend/internal/modules/referral/**
       - menu-backend/internal/modules/user/**
       - menu-backend/internal/modules/studio/**
       - menu-backend/internal/modules/templatecenter/**
